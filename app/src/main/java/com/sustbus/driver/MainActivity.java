@@ -20,7 +20,7 @@ import java.util.Map;
 import studio.carbonylgroup.textfieldboxes.SimpleTextChangedWatcher;
 import studio.carbonylgroup.textfieldboxes.TextFieldBoxes;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = "MainActivity";
     private TextView signInTv;
@@ -41,8 +41,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN
-                );
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN
+        );
         setContentView(R.layout.activity_main);
 
 
@@ -78,14 +78,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * end of on create
-    **/
+     **/
+
+    @Override
+    public void onClick(View view) {
+        int i = view.getId();
+        if (i == R.id.sign_in_tv) {
+            startActivity(new Intent(MainActivity.this, LoginActivity.class));
+            finish();
+        } else if (i == R.id.signup_btn) {
+
+
+            if (emailOk && userNameOk && passwordOk) {
+
+                intent = new Intent(MainActivity.this, HomeActivity.class);
+                bundle.putString("email", email);
+                bundle.putString("username", userName);
+                bundle.putString("password", password);
+                intent.putExtras(bundle);
+                startActivity(intent);
+                finish();
+            } else {
+                Toast.makeText(MainActivity.this, "please enter the fields correctly", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
 
 
     private void emailIdValidator(String theNewText) {
         if (Patterns.EMAIL_ADDRESS.matcher(theNewText).matches()) {
             emailEt.setHelperText(" ");
             emailEt.setCounterTextColor(ContextCompat.getColor(MainActivity.this, R.color.sust));
-            emailEt.setPrimaryColor(ContextCompat.getColor( MainActivity.this,R.color.sust));
+            emailEt.setPrimaryColor(ContextCompat.getColor(MainActivity.this, R.color.sust));
             email = theNewText;
             emailOk = true;
 
@@ -97,16 +121,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             emailOk = false;
         }
     }
-    private void userNameValidator(String theNewText){
-        if (theNewText.length() < 4 ) {
+
+    private void userNameValidator(String theNewText) {
+        if (theNewText.length() < 4) {
 
             userNameEt.setHelperText("user name must contain 6 letters at least");
             userNameEt.setHelperTextColor(ContextCompat.getColor(com.sustbus.driver.MainActivity.this, R.color.A400red));
             userNameEt.setCounterTextColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
             userNameEt.setPrimaryColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
             userNameOk = false;
-        }
-        else if (theNewText.contains(".") ||
+        } else if (theNewText.contains(".") ||
                 theNewText.contains("$") ||
                 theNewText.contains("[") ||
                 theNewText.contains("]") ||
@@ -127,8 +151,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             userNameOk = true;
         }
     }
-    private void passwordValidator(String theNewText){
-        if(theNewText.length()<6 ){
+
+    private void passwordValidator(String theNewText) {
+        if (theNewText.length() < 6) {
             passwordEt.setHelperText("user name must contain 6 letters at least");
             passwordEt.setHelperTextColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
             passwordEt.setCounterTextColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
@@ -143,27 +168,5 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    @Override
-    public void onClick(View view) {
-        int i=view.getId();
-        if(i == R.id.sign_in_tv){
-            startActivity(new Intent(MainActivity.this, LoginActivity.class));
-        }
-        else if(i == R.id.signup_btn){
 
-
-            if(emailOk && userNameOk && passwordOk) {
-                finish();
-                intent = new Intent(MainActivity.this, HomeActivity.class);
-                bundle.putString("email", email);
-                bundle.putString("username", userName);
-                bundle.putString("password", password);
-                intent.putExtras(bundle);
-                startActivity(intent);
-            }
-            else {
-                Toast.makeText(MainActivity.this, "please enter the fields correctly", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
 }

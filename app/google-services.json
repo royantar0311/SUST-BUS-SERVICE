@@ -1,0 +1,69 @@
+{
+  "project_info": {
+    "project_number": "299917705979",
+    "firebase_url": "https://driversideapp-86489.firebaseio.com",
+    "project_id": "driversideapp-86489",
+    "storage_bucket": "driversideapp-86489.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:299917705979:android:af7ee896f6e87e0ef8665e",
+        "android_client_info": {
+          "package_name": "com.example.driversideapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "299917705979-hmkr13eg1f53djha1vgo7ofcj42m4uuh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJsyecW4eYPOQzuC5VonO9IyAJjNx2_XQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "299917705979-hmkr13eg1f53djha1vgo7ofcj42m4uuh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:299917705979:android:c3e540b929a6313df8665e",
+        "android_client_info": {
+          "package_name": "com.sustbus.driver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "299917705979-hmkr13eg1f53djha1vgo7ofcj42m4uuh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJsyecW4eYPOQzuC5VonO9IyAJjNx2_XQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "299917705979-hmkr13eg1f53djha1vgo7ofcj42m4uuh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

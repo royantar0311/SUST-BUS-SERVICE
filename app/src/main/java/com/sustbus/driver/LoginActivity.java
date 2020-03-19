@@ -109,11 +109,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     public void onClick(View view) {
         int i=view.getId();
         if(i == R.id.sign_up_tv){
-            finish();
+
             startActivity(new Intent(LoginActivity.this, MainActivity.class));
+            finish();
         }
         else if(i == R.id.login_btn){
-            finish();
+
             if( userNameOk && passwordOk) {
                 finish();
                 bundle = new Bundle();
