@@ -22,6 +22,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private TextFieldBoxes passwordEt;
     boolean userNameOk = false;
     private String userName;
+
     private String password;
     boolean passwordOk = false;
     private Intent intent;
