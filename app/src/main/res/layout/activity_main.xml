@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background_bus"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="0dp"
+        android:fontFamily="@font/bungee_shade"
+        android:text="BUS"
+        android:textColor="@color/ash_color"
+        android:textSize="34dp" />
+
+    <TextView
+        android:id="@+id/signup_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="230dp"
+        android:fontFamily="@font/amiko_bold"
+        android:text="Register"
+        android:textColor="@color/dark_red"
+
+        android:textSize="30dp" />
+
+    <studio.carbonylgroup.textfieldboxes.TextFieldBoxes
+        android:id="@+id/email_tf"
+        android:layout_width="266dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/signup_tv"
+        android:layout_marginLeft="50dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/edit_round"
+
+        app:hasFocus="true"
+        app:helperText="enter your email here"
+        app:iconSignifier="@drawable/ic_email_black_24dp"
+        app:labelText="Email"
+        app:primaryColor="@color/A400red">
+
+        <studio.carbonylgroup.textfieldboxes.ExtendedEditText
+            android:id="@+id/email_et"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:layout_conversion_absoluteHeight="20dp"
+            tools:layout_conversion_absoluteWidth="14dp"
+            tools:layout_editor_absoluteX="100dp"
+            tools:layout_editor_absoluteY="206dp"
+            android:singleLine="true"
+            android:imeOptions="actionNext"
+            />
+
+    </studio.carbonylgroup.textfieldboxes.TextFieldBoxes>
+
+    <studio.carbonylgroup.textfieldboxes.TextFieldBoxes
+        android:id="@+id/username_tf"
+        android:layout_width="266dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:layout_marginLeft="50dp"
+
+        android:background="@drawable/edit_round"
+        android:layout_below="@id/email_tf"
+        app:hasClearButton="true"
+        app:helperText="enter user name here"
+        app:primaryColor="@color/A400red"
+        app:labelText="Username"
+        app:iconSignifier="@drawable/ic_account_circle_black_24dp"
+        app:maxCharacters="16"
+        app:minCharacters="4"
+        app:manualValidateError="true"
+        >
+        <studio.carbonylgroup.textfieldboxes.ExtendedEditText
+            android:id="@+id/username_et"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:imeOptions="actionNext"
+            android:singleLine="true"
+            tools:layout_conversion_absoluteHeight="20dp"
+            tools:layout_conversion_absoluteWidth="14dp"
+            tools:layout_editor_absoluteX="100dp"
+            tools:layout_editor_absoluteY="206dp"/>
+    </studio.carbonylgroup.textfieldboxes.TextFieldBoxes>
+
+
+    <studio.carbonylgroup.textfieldboxes.TextFieldBoxes
+        android:id="@+id/password_tf"
+        android:layout_width="266dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/username_tf"
+        android:background="@drawable/edit_round"
+        android:layout_marginTop="15dp"
+        android:layout_marginLeft="50dp"
+
+
+        app:hasClearButton="true"
+        app:helperText="choose a password"
+        app:iconSignifier="@drawable/ic_vpn_key_black_24dp"
+        app:labelText="Password"
+        app:primaryColor="@color/A400red"
+
+        >
+
+        <studio.carbonylgroup.textfieldboxes.ExtendedEditText
+            android:id="@+id/password_et"
+            android:singleLine="true"
+            android:imeOptions="actionNext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"
+            tools:layout_conversion_absoluteHeight="20dp"
+            tools:layout_conversion_absoluteWidth="14dp"
+            tools:layout_editor_absoluteX="100dp"
+            tools:layout_editor_absoluteY="206dp" />
+
+
+    </studio.carbonylgroup.textfieldboxes.TextFieldBoxes>
+
+    <Button
+        android:id="@+id/signup_btn"
+        android:layout_width="226dp"
+        android:layout_height="48dp"
+        android:layout_below="@id/password_tf"
+        android:layout_marginLeft="92dp"
+        android:layout_marginTop="15dp"
+
+        android:background="@drawable/custom_button"
+        android:text="Sign Up" />
+
+    <TextView
+        android:id="@+id/sign_in_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="already have an account? \n                login here"
+        android:layout_below="@+id/signup_btn"
+        android:layout_marginTop="15dp"
+        android:layout_centerHorizontal="true"
+        />
+
+
+</RelativeLayout>
