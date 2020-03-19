@@ -1,5 +1,6 @@
 package com.sustbus.driver;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
@@ -11,8 +12,16 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +46,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Intent intent;
     private Bundle bundle;
 
+    private FirebaseAuth mAuth;
+    private DatabaseReference databaseReference;
+
+    private FirebaseAuth.AuthStateListener authStateListener;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         signUpBtn = findViewById(R.id.signup_btn);
         signInTv = findViewById(R.id.sign_in_tv);
 
+        databaseReference= FirebaseDatabase.getInstance().getReference().child("users");
         bundle = new Bundle();
 
         emailEt.setSimpleTextChangeWatcher(new SimpleTextChangedWatcher() {
@@ -74,6 +90,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
         signUpBtn.setOnClickListener(this);
         signInTv.setOnClickListener(this);
+
+
+        mAuth=FirebaseAuth.getInstance();
+
+             if(mAuth.getCurrentUser()!=null) {
+                 startActivity(new Intent(MainActivity.this, HomeActivity.class));
+                 finish();
+             }
     }
 
     /**
@@ -91,13 +115,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             if (emailOk && userNameOk && passwordOk) {
 
-                intent = new Intent(MainActivity.this, HomeActivity.class);
-                bundle.putString("email", email);
-                bundle.putString("username", userName);
-                bundle.putString("password", password);
-                intent.putExtras(bundle);
-                startActivity(intent);
-                finish();
+
+                mAuth.createUserWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+
+                        if(task.isSuccessful()) {
+
+                            String uid=mAuth.getCurrentUser().getUid();
+
+                            DatabaseReference childDb=databaseReference.child(uid);
+                            childDb.child("name").setValue(userName);
+                            startActivity(new Intent(MainActivity.this, HomeActivity.class));
+                            finish();
+                        }
+                        else{
+                            Toast.makeText(MainActivity.this, task.getException().getMessage() , Toast.LENGTH_SHORT).show();
+                        }
+
+                    }
+                });
+
             } else {
                 Toast.makeText(MainActivity.this, "please enter the fields correctly", Toast.LENGTH_SHORT).show();
             }
