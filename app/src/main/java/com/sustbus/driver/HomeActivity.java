@@ -12,6 +12,8 @@ import android.widget.Toast;
 
 public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "HomeActivity";
+
+
     private TextView userNameTv;
     private TextView passwordTv;
     private Button signOutBtn;
