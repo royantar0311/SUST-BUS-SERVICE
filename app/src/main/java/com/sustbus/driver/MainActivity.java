@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,14 +19,17 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthEmailException;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 import studio.carbonylgroup.textfieldboxes.SimpleTextChangedWatcher;
 import studio.carbonylgroup.textfieldboxes.TextFieldBoxes;
 
@@ -49,8 +53,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private FirebaseAuth mAuth;
     private DatabaseReference databaseReference;
 
-    private FirebaseAuth.AuthStateListener authStateListener;
-
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,8 +70,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         signUpBtn = findViewById(R.id.signup_btn);
         signInTv = findViewById(R.id.sign_in_tv);
 
-        databaseReference= FirebaseDatabase.getInstance().getReference().child("users");
-        bundle = new Bundle();
+        progressDialog=new ProgressDialog(this);
 
         emailEt.setSimpleTextChangeWatcher(new SimpleTextChangedWatcher() {
             @Override
@@ -92,29 +94,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         signInTv.setOnClickListener(this);
 
 
-        mAuth=FirebaseAuth.getInstance();
-
-             if(mAuth.getCurrentUser()!=null) {
-                 startActivity(new Intent(MainActivity.this, HomeActivity.class));
-                 finish();
-             }
     }
 
     /**
      * end of on create
      **/
 
+    protected void onStart(){
+        super.onStart();
+        databaseReference= FirebaseDatabase.getInstance().getReference().child("users");
+        mAuth=FirebaseAuth.getInstance();
+
+    }
+
+
     @Override
     public void onClick(View view) {
         int i = view.getId();
         if (i == R.id.sign_in_tv) {
-            startActivity(new Intent(MainActivity.this, LoginActivity.class));
+
+            Intent intent=new Intent(MainActivity.this,LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+            startActivity(intent);
             finish();
+
+
+
         } else if (i == R.id.signup_btn) {
 
 
             if (emailOk && userNameOk && passwordOk) {
 
+                progressDialog.setMessage("Register in progress");
+                progressDialog.show();
 
                 mAuth.createUserWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
 
@@ -122,23 +135,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     public void onComplete(@NonNull Task<AuthResult> task) {
 
                         if(task.isSuccessful()) {
-
+                            progressDialog.hide();
                             String uid=mAuth.getCurrentUser().getUid();
 
                             DatabaseReference childDb=databaseReference.child(uid);
                             childDb.child("name").setValue(userName);
-                            startActivity(new Intent(MainActivity.this, HomeActivity.class));
+                            childDb.child("isDriver").setValue("0");
+
+                            Intent intent=new Intent(MainActivity.this,HomeActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivity(intent);
                             finish();
+
                         }
                         else{
-                            Toast.makeText(MainActivity.this, task.getException().getMessage() , Toast.LENGTH_SHORT).show();
+                            progressDialog.hide();
+                            String error=task.getException().getMessage();
+
+                            if(error.contains("email")){
+                                emailEt.setHelperText(error);
+                            }
+                            else if(error.contains("password")){
+                                passwordEt.setHelperText(error);
+                            }
+                            else{
+                                Toast.makeText(MainActivity.this,error,Toast.LENGTH_SHORT).show();
+                            }
                         }
 
                     }
                 });
 
             } else {
-                Toast.makeText(MainActivity.this, "please enter the fields correctly", Toast.LENGTH_SHORT).show();
+                Snackbar.make(findViewById(R.id.main_relative_layout),"Please enter all the fields correctly",Snackbar.LENGTH_SHORT).show();
             }
         }
     }

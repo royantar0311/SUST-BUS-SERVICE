@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Patterns;
@@ -19,6 +20,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 import studio.carbonylgroup.textfieldboxes.SimpleTextChangedWatcher;
 import studio.carbonylgroup.textfieldboxes.TextFieldBoxes;
 
@@ -34,7 +36,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private String password;
     boolean passwordOk = false;
 
-
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +48,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         loginBtn = findViewById(R.id.login_btn);
         signUpTv = findViewById(R.id.sign_up_tv);
 
-
+        progressDialog=new ProgressDialog(this);
 
         emailEt.setSimpleTextChangeWatcher(new SimpleTextChangedWatcher() {
             @Override
@@ -72,7 +74,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         int i=view.getId();
         if(i == R.id.sign_up_tv){
 
-            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+            Intent intent=new Intent(LoginActivity.this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+            startActivity(intent);
             finish();
         }
         else if(i == R.id.login_btn){
@@ -80,14 +85,22 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             if( emailOk && passwordOk) {
 
                 FirebaseAuth mAuth=FirebaseAuth.getInstance();
+                progressDialog.setMessage("Logging in");
+                progressDialog.show();
                 mAuth.signInWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if(task.isSuccessful()){
-                            startActivity(new Intent(LoginActivity.this,HomeActivity.class));
+
+                            progressDialog.hide();
+                            Intent intent=new Intent(LoginActivity.this, HomeActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+                            startActivity(intent);
                             finish();
                         }
                         else{
+                            progressDialog.hide();
                             passwordEt.setHelperText("Wrong Email id or Password");
                             passwordEt.setHelperTextColor(ContextCompat.getColor(com.sustbus.driver.LoginActivity.this, R.color.A400red));
                         }
