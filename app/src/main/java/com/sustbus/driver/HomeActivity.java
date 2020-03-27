@@ -37,13 +37,13 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private DatabaseReference databaseReference;
     private FirebaseAuth mAuth;
     private DatabaseReference userDatabaseReference;
-    private String userName;
-    private boolean isDriver;
+    UserInfo userInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
         signOutBtn = findViewById(R.id.sign_out_btn);
         openMapBtn=findViewById(R.id.show_map);
         shareRideBtn=findViewById(R.id.share_ride);
@@ -67,23 +67,18 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         else{
             userDatabaseReference=databaseReference.child("users").child(mAuth.getCurrentUser().getUid());
 
-            (userDatabaseReference.child("name")).addValueEventListener(new ValueEventListener() {
+
+            userDatabaseReference.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    userName=dataSnapshot.getValue(String.class);
-                    Toast.makeText(HomeActivity.this, "welcome "+userName, Toast.LENGTH_SHORT).show();
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                }
-            });
-
-            (userDatabaseReference.child("isDriver")).addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    isDriver=Boolean.parseBoolean(dataSnapshot.getValue(String.class));
+                    userInfo = UserInfo.getBuilder()
+                            .setUserName(dataSnapshot.child("userName").getValue(String.class))
+                            .setPassword(dataSnapshot.child("password").getValue(String.class))
+                            .setEmail(dataSnapshot.child("email").getValue(String.class))
+                            .setDriver(dataSnapshot.child("isDriver").getValue(Boolean.class))
+                            .build();
+                    Toast.makeText(HomeActivity.this, userInfo.getUserName() + " ",Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "onDataChange: " + userInfo.getUserName());
                 }
 
                 @Override
@@ -94,7 +89,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         }
 
     }
-
 
 
     @Override
@@ -123,15 +117,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void handleRideShare(){
-
-
-
-
-
-       //Toast.makeText(this,currentLocation.getLongitude()+" "+currentLocation.getLatitude(),Toast.LENGTH_SHORT).show();
-
-
-
 
     }
 

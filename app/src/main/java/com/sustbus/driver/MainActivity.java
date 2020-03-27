@@ -7,13 +7,11 @@ import androidx.core.content.ContextCompat;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,14 +20,12 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthEmailException;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 import studio.carbonylgroup.textfieldboxes.SimpleTextChangedWatcher;
 import studio.carbonylgroup.textfieldboxes.TextFieldBoxes;
 
@@ -49,9 +45,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     boolean passwordOk = false;
     private Intent intent;
     private Bundle bundle;
-
+    private Boolean isDriver;
     private FirebaseAuth mAuth;
     private DatabaseReference databaseReference;
+    UserInfo userInfo;
 
     private ProgressDialog progressDialog;
 
@@ -139,8 +136,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             String uid=mAuth.getCurrentUser().getUid();
 
                             DatabaseReference childDb=databaseReference.child(uid);
-                            childDb.child("name").setValue(userName);
-                            childDb.child("isDriver").setValue("0");
+
+                            userInfo = new UserInfo().getBuilder()
+                                    .setUserName(userName)
+                                    .setEmail(email)
+                                    .setPassword(password)
+                                    .setDriver(false)
+                                    .build();
+
+                            childDb.setValue(userInfo.toMap()) ;
 
                             Intent intent=new Intent(MainActivity.this,HomeActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
