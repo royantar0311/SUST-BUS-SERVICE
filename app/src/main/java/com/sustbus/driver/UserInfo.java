@@ -106,4 +106,32 @@ public  class UserInfo {
     public Double getLang() {
         return lang;
     }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public void setDriver(boolean driver) {
+        isDriver = driver;
+    }
+
+    public void setLat(Double lat) {
+        this.lat = lat;
+    }
+
+    public void setLang(Double lang) {
+        this.lang = lang;
+    }
+    public void setLatLang(Double Lat, Double Lang){
+        this.lat = lat;
+        this.lang = lang;
+    }
 }

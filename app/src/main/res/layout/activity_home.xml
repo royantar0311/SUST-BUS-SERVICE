@@ -2,13 +2,13 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/home_scrollview"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/homscreen_background"
     tools:context=".HomeActivity"
     >
     <LinearLayout
-
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -45,24 +45,26 @@
                 android:orientation="vertical"
                 android:gravity="center"
                 android:layout_alignParentRight="true">
-            <ImageView
-                android:id="@+id/user_image"
-                android:layout_width="62dp"
-                android:layout_height="62dp"
-                android:src="@drawable/user_not_available_image">
-            </ImageView>
-            <TextView
+
+                <ImageView
+                    android:id="@+id/user_image_ev"
+                    android:layout_width="62dp"
+                    android:layout_height="66dp"
+                    android:src="@drawable/user_not_available_image"/>
+                <TextView
+                android:id="@+id/user_name_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="N/A"
-                android:textSize="17dp"
+                android:textSize="17sp"
                 android:textColor="@color/white"/>
+
             </LinearLayout>
         </RelativeLayout>
         <GridLayout
             android:columnCount="2"
             android:rowCount="2"
-            android:layout_marginTop="50dp"
+            android:layout_marginTop="10dp"
             android:columnOrderPreserved="false"
             android:alignmentMode="alignMargins"
             android:layout_width="match_parent"
@@ -85,15 +87,15 @@
                     android:orientation="vertical"
                     >
                     <ImageView
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
                         android:layout_gravity="center"
                         android:src="@drawable/track_buses"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:textSize="18dp"
+                        android:textSize="16dp"
                         android:textColor="@color/black"
                         android:text="Track Buses"
                         android:layout_marginTop="12dp"
@@ -120,15 +122,15 @@
                     android:orientation="vertical"
                     >
                     <ImageView
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
                         android:layout_gravity="center"
                         android:src="@drawable/bus_schedule"/>
                     <TextView
                         android:layout_gravity="center"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="18sp"
+                        android:textSize="16sp"
                         android:textColor="@color/black"
                         android:text="Bus Schedule"
                         android:layout_marginTop="12dp"
@@ -156,15 +158,15 @@
                     android:orientation="vertical"
                     >
                     <ImageView
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
                         android:layout_gravity="center"
                         android:src="@drawable/start_ride"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:textSize="18dp"
+                        android:textSize="16dp"
                         android:textColor="@color/black"
                         android:text="Ride"
                         android:layout_marginTop="12dp"
@@ -192,15 +194,15 @@
                     >
                     <ImageView
                         android:contentDescription=""
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
                         android:layout_gravity="center"
                         android:src="@drawable/setting_icon"/>
                     <TextView
                         android:layout_gravity="center"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="18sp"
+                        android:textSize="16sp"
                         android:textColor="@color/black"
                         android:text="Bus Schedule"
                         android:layout_marginTop="12dp"
@@ -227,15 +229,15 @@
                     android:orientation="vertical"
                     >
                     <ImageView
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
                         android:layout_gravity="center"
                         android:src="@drawable/user_not_available_image"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:textSize="18dp"
+                        android:textSize="16dp"
                         android:textColor="@color/black"
                         android:text="Profile"
                         android:layout_marginTop="12dp"
@@ -263,15 +265,15 @@
                     >
                     <ImageView
                         android:contentDescription=""
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
                         android:layout_gravity="center"
                         android:src="@drawable/help_center"/>
                     <TextView
                         android:layout_gravity="center"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="18sp"
+                        android:textSize="16sp"
                         android:textColor="@color/black"
                         android:text="Help Center"
                         android:layout_marginTop="12dp"
