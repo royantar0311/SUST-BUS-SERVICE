@@ -137,14 +137,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                             DatabaseReference childDb=databaseReference.child(uid);
 
-                            userInfo = new UserInfo().getBuilder()
-                                    .setUserName(userName)
-                                    .setEmail(email)
-                                    .setPassword(password)
-                                    .setDriver(false)
-                                    .build();
-
-                            childDb.setValue(userInfo.toMap()) ;
+                            childDb.child("email").setValue(email);
+                            childDb.child("isStudentPermitted").setValue(false);
+                            childDb.child("isDriver").setValue(false);
+                            childDb.child("userName").setValue(userName);
 
                             Intent intent=new Intent(MainActivity.this,HomeActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

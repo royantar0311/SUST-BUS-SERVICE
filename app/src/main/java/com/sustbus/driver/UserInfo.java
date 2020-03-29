@@ -9,7 +9,7 @@ import java.util.Map;
 
 public  class UserInfo {
     String email;
-    String password;
+    boolean isStudentPermitted;
     String userName;
     boolean isDriver;
     Double lat;
@@ -26,7 +26,7 @@ public  class UserInfo {
 
     private UserInfo(Builder builder) {
         theInfo.email=this.email = builder.email;
-        theInfo.password=this.password = builder.password;
+        theInfo.isStudentPermitted=this.isStudentPermitted = builder.isStudentPermitted;
         theInfo.userName=this.userName = builder.userName;
         theInfo.isDriver=this.isDriver = builder.isDriver;
         theInfo.lat=this.lat = builder.lat;
@@ -39,7 +39,7 @@ public  class UserInfo {
 
     public static class Builder{
         String email;
-        String password;
+        boolean isStudentPermitted;
         String userName;
         boolean isDriver;
         Double lat;
@@ -51,8 +51,8 @@ public  class UserInfo {
             return this;
         }
 
-        public Builder setPassword(String password) {
-            this.password = password;
+        public Builder setIsStudentPermitted(boolean isStudentPermitted) {
+            this.isStudentPermitted = isStudentPermitted;
             return this;
         }
 
@@ -83,7 +83,7 @@ public  class UserInfo {
     public Map<String, Object> toMap(){
         Map<String, Object>map = new HashMap<>();
         map.put("email", email);
-        map.put("password", password);
+        map.put("isStudentPermitted",isStudentPermitted);
         map.put("userName", userName);
         map.put("isDriver", isDriver);
         map.put("lat",lat);
@@ -95,8 +95,8 @@ public  class UserInfo {
         return email;
     }
 
-    public String getPassword() {
-        return password;
+    public boolean getIsStudentPermitted() {
+        return isStudentPermitted;
     }
 
     public String getUserName() {
@@ -119,8 +119,8 @@ public  class UserInfo {
         this.email = email;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setIsStudentPermitted(boolean isStudentPermitted) {
+        this.isStudentPermitted =isStudentPermitted;
     }
 
     public void setUserName(String userName) {

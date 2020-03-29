@@ -31,31 +31,36 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, View.OnClickListener {
     private static final String TAG = "MapsActivity";
 
     private GoogleMap mMap;
-    private LocationListener locationListener;
-    private LocationManager locationManager;
     public static final int MIN_TIME = 1000;
     public static final int MIN_DIST = 5;
     private ImageButton locateMeBtn;
-    private  LatLng cur;
     private FirebaseAuth mAuth;
     private DatabaseReference userDatabaseReference;
     private DatabaseReference databaseReference;
+    private ChildEventListener childEventListener;
+    private Map<String,Marker> markerMap;
+
     UserInfo userInfo;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +87,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         else{
             userInfo=UserInfo.getInstance();
+            userDatabaseReference=databaseReference.child("alive").child(mAuth.getCurrentUser().getUid());
            // Toast.makeText(this,userInfo.getUserName(),Toast.LENGTH_SHORT).show();
         }
     }
@@ -90,55 +96,97 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        markerMap=new HashMap<>();
 
-
-        LatLng sustGolChattor = new LatLng(24.919141, 91.831745);
-        mMap.addMarker(new MarkerOptions()
-                .position(sustGolChattor)
-                .title("SUST GolChattor"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sustGolChattor,19));
-
-
-        locationListener = new LocationListener() {
+         childEventListener =new ChildEventListener() {
             @Override
-            public void onLocationChanged(Location location) {
-                mMap.clear();
-                cur = new LatLng(location.getLatitude(),location.getLongitude());
-                mMap.addMarker(new MarkerOptions().position(cur)
-                        .title("Marker in Sydney")
-                        .icon(bitmapDescriptorFromVector(MapsActivity.this,R.drawable.ic_directions_bus_black_24dp)));
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(cur));
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
 
-                userDatabaseReference.child("lat").setValue(cur.latitude);
-                userDatabaseReference.child("lng").setValue(cur.longitude);
+                LatLng pos=null;
+                String key=null,title=null;
+                Marker tmpMarker;
+                try{
+                     pos = new LatLng(dataSnapshot.child("lat").getValue(Double.class), dataSnapshot.child("lng").getValue(Double.class));
+                     key = dataSnapshot.getKey();
+                     title = dataSnapshot.child("destination").getValue(String.class);
+
+                }
+                catch (Exception e){
+
+                }
+
+                if(pos!=null && key !=null){
+                    tmpMarker= addMark(pos, title);
+                    tmpMarker.showInfoWindow();
+                    markerMap.put(key,tmpMarker);
+                }
 
             }
 
             @Override
-            public void onStatusChanged(String s, int i, Bundle bundle) {
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                LatLng pos=null;
+                Marker tmpMarker;
+
+                String key=dataSnapshot.getKey(),title=null;
+                 if(markerMap.containsKey(key)){
+
+                         pos = new LatLng(dataSnapshot.child("lat").getValue(Double.class), dataSnapshot.child("lng").getValue(Double.class));
+                         markerMap.get(key).setPosition(pos);
+                 }
+
+                 else {
+
+                     try{
+                         pos = new LatLng(dataSnapshot.child("lat").getValue(Double.class), dataSnapshot.child("lng").getValue(Double.class));
+                         key = dataSnapshot.getKey();
+                         title = dataSnapshot.child("destination").getValue(String.class);
+
+                     }
+                     catch (Exception e){
+
+                     }
+
+                     if(pos!=null && key !=null){
+                         tmpMarker= addMark(pos, title);
+                         tmpMarker.showInfoWindow();
+                         markerMap.put(key,tmpMarker);
+                     }
+
+                 }
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+                String key=dataSnapshot.getKey();
+                if(markerMap.containsKey(key)){
+                    markerMap.get(key).remove();
+                }
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
 
             }
 
             @Override
-            public void onProviderEnabled(String s) {
-
-            }
-
-            @Override
-            public void onProviderDisabled(String s) {
+            public void onCancelled(@NonNull DatabaseError databaseError) {
 
             }
         };
+        databaseReference.child("alive").addChildEventListener(childEventListener);
+
+    }
+
+    public Marker addMark(LatLng cur,String title){
 
 
-        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        try{
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,MIN_TIME,MIN_DIST,locationListener );
-        }
-        catch (SecurityException e){
-            Snackbar.make(findViewById(R.id.maps_activity),e.getMessage(),Snackbar.LENGTH_SHORT).show();
-        }
+        Marker marker=mMap.addMarker(new MarkerOptions().position(cur)
+                .title(title)
+                .icon(bitmapDescriptorFromVector(MapsActivity.this,R.drawable.ic_directions_bus_black_24dp)));
 
+        return marker;
     }
 
     private BitmapDescriptor bitmapDescriptorFromVector(MapsActivity context, int vectorResId){
@@ -156,7 +204,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onClick(View view) {
         int i = view.getId();
         if(i == R.id.locate_me_btn){
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(cur));
+            //mMap.moveCamera(CameraUpdateFactory.newLatLng(cur));
         }
     }
 
@@ -167,10 +215,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
             Toast.makeText(this, "press back again to exit", Toast.LENGTH_SHORT).show();
             if(ok){
-                locationManager.removeUpdates(locationListener);
-                locationManager = null;
-                databaseReference = null;
+
+                databaseReference.child("alive").removeEventListener(childEventListener);
+                databaseReference=null;
                 userDatabaseReference = null;
+                markerMap.clear();
                 finish();
             }
             ok = true;

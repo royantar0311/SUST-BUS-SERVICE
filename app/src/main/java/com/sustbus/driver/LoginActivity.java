@@ -98,8 +98,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             finish();
                         }
                         else{
+
                             progressDialog.hide();
-                            passwordEt.setHelperText("Wrong Email id or Password");
+                            passwordEt.setHelperText(task.getException().getMessage());
                             passwordEt.setHelperTextColor(ContextCompat.getColor(com.sustbus.driver.LoginActivity.this, R.color.A400red));
                         }
                     }
