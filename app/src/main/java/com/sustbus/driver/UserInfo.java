@@ -15,17 +15,24 @@ public  class UserInfo {
     Double lat;
     Double lang;
 
+    private static  UserInfo theInfo=new UserInfo();
+
+    public static UserInfo getInstance(){
+        return theInfo;
+    }
+
     public UserInfo() {
     }
 
     private UserInfo(Builder builder) {
-        this.email = builder.email;
-        this.password = builder.password;
-        this.userName = builder.userName;
-        this.isDriver = builder.isDriver;
-        this.lat = builder.lat;
-        this.lang = builder.lang;
+        theInfo.email=this.email = builder.email;
+        theInfo.password=this.password = builder.password;
+        theInfo.userName=this.userName = builder.userName;
+        theInfo.isDriver=this.isDriver = builder.isDriver;
+        theInfo.lat=this.lat = builder.lat;
+        theInfo.lang=this.lang = builder.lang;
     }
+
     public static Builder getBuilder(){
         return new Builder();
     }
@@ -38,6 +45,7 @@ public  class UserInfo {
         Double lat;
         Double lang;
         Builder(){}
+
         public Builder setEmail(String email) {
             this.email = email;
             return this;

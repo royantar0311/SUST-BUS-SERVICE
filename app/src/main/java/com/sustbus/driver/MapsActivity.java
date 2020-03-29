@@ -81,24 +81,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             finish();
         }
         else{
-            userDatabaseReference=databaseReference.child("users").child(mAuth.getCurrentUser().getUid());
-
-
-            userDatabaseReference.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    userInfo = UserInfo.getBuilder()
-                            .setUserName(dataSnapshot.child("userName").getValue(String.class))
-                            .setPassword(dataSnapshot.child("password").getValue(String.class))
-                            .setEmail(dataSnapshot.child("email").getValue(String.class))
-                            .setDriver(dataSnapshot.child("isDriver").getValue(Boolean.class))
-                            .build();
-                }
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                }
-            });
+            userInfo=UserInfo.getInstance();
+           // Toast.makeText(this,userInfo.getUserName(),Toast.LENGTH_SHORT).show();
         }
     }
 
