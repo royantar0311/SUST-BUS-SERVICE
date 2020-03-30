@@ -96,6 +96,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        //mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(24.9192, 91.8319)));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(24.9192, 91.8319), 18.0f));
+        mMap.setTrafficEnabled(true);
+
+        mMap.setBuildingsEnabled(true);
         markerMap=new HashMap<>();
 
          childEventListener =new ChildEventListener() {
@@ -185,7 +190,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Marker marker=mMap.addMarker(new MarkerOptions().position(cur)
                 .title(title)
                 .icon(bitmapDescriptorFromVector(MapsActivity.this,R.drawable.ic_directions_bus_black_24dp)));
-
         return marker;
     }
 

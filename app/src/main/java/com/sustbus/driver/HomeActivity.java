@@ -7,6 +7,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -87,6 +88,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             userLocationData=databaseReference.child("alive").child(mAuth.getCurrentUser().getUid());
 
             userDatabaseReference.addValueEventListener(new ValueEventListener() {
+
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     userInfo = UserInfo.getBuilder()
