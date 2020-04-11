@@ -32,6 +32,7 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -100,8 +101,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        LatLngBounds latLngBounds=new LatLngBounds.Builder().include(new LatLng(24.910837,91.888013))
+                                                         .include(new LatLng(24.861436,91.825502)).build();
+
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(),13f),100,null);
+
+
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(24.9192, 91.8319)));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(24.9192, 91.8319), 18.0f));
+        //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(24.9192, 91.8319), 18.0f));
         mMap.setTrafficEnabled(true);
 
         mMap.setBuildingsEnabled(true);
