@@ -176,7 +176,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         };
 
 
-
         try{
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,MIN_TIME,MIN_DIST,locationListener );
         }
