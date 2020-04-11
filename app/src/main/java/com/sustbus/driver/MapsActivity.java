@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
@@ -43,12 +44,15 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.maps.DirectionsApi;
+import com.google.maps.GeoApiContext;
+import com.google.maps.model.DirectionsResult;
 
 import java.util.HashMap;
 import java.util.Map;
 
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, View.OnClickListener {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, View.OnClickListener, GoogleMap.OnMarkerClickListener {
     private static final String TAG = "MapsActivity";
 
     private GoogleMap mMap;
@@ -118,6 +122,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if(pos!=null && key !=null){
                     tmpMarker= addMark(pos, title);
                     tmpMarker.showInfoWindow();
+                    tmpMarker.setTag(key);
                     markerMap.put(key,tmpMarker);
                 }
 
@@ -151,6 +156,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                      if(pos!=null && key !=null){
                          tmpMarker= addMark(pos, title);
                          tmpMarker.showInfoWindow();
+                         tmpMarker.setTag(key);
                          markerMap.put(key,tmpMarker);
                      }
 
@@ -175,11 +181,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
         };
+
         databaseReference.child("alive").addChildEventListener(childEventListener);
+
 
     }
 
-    public Marker addMark(LatLng cur,String title){
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+
+
+
+
+
+
+
+
+
+        return false;
+    }
+
+    public Marker addMark(LatLng cur, String title){
 
 
         Marker marker=mMap.addMarker(new MarkerOptions().position(cur)
@@ -228,4 +250,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         return super.onKeyDown(keyCode, event);
     }
+
 }

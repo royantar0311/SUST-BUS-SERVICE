@@ -1,6 +1,7 @@
 package com.sustbus.driver;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
@@ -18,6 +19,9 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Looper;
+import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ScrollView;
@@ -47,10 +51,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private DatabaseReference databaseReference,userDatabaseReference,userLocationData;
     private FirebaseAuth mAuth;
     private ImageView rideShareIndicatorIV;
-    private boolean isRideShareOn=false;
+    private boolean isRideShareOn=false,quit=false;
     private LocationManager locationManager;
     private LocationListener locationListener;
-
+    private String userUid;
+    private MapUtil mapUtil;
     UserInfo userInfo;
     Intent intent ;
     @Override
@@ -82,9 +87,10 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             finish();
         }
         else{
-            userDatabaseReference=databaseReference.child("users").child(mAuth.getCurrentUser().getUid());
+            userUid=mAuth.getCurrentUser().getUid();
+            userDatabaseReference=databaseReference.child("users").child(userUid);
 
-            userLocationData=databaseReference.child("alive").child(mAuth.getCurrentUser().getUid());
+            userLocationData=databaseReference.child("alive");
 
             userDatabaseReference.addValueEventListener(new ValueEventListener() {
                 @Override
@@ -113,22 +119,42 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             });
         }
 
+
+        mapUtil=MapUtil.getInstance();
     }
 
 
 
     public void turnOnRideShare(){
 
+
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        boolean isGps=false;
+        try {
+            isGps=locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        }
+        catch (Exception e){
+
+        }
+
+        if(!isGps){
+            mapUtil.enableGPS(getApplicationContext(),this,101);
+            locationManager=null;
+            return;
+        }
+
+
         isRideShareOn=true;
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.end_ride));
-        userLocationData.child("destination").setValue("To Campus");
+
+        userLocationData.child(userUid).child("destination").setValue("To Campus");
 
         locationListener = new LocationListener() {
 
             @Override
             public void onLocationChanged(Location location) {
-                userLocationData.child("lat").setValue(location.getLatitude());
-                userLocationData.child("lng").setValue(location.getLongitude());
+                userLocationData.child(userUid).child("lat").setValue(location.getLatitude());
+                userLocationData.child(userUid).child("lng").setValue(location.getLongitude());
 
             }
 
@@ -144,12 +170,13 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public void onProviderDisabled(String s) {
-
+                mapUtil.enableGPS(getApplicationContext(),getActivity(),101);
+                turnOffRideShare();
             }
         };
 
 
-        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
         try{
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,MIN_TIME,MIN_DIST,locationListener );
         }
@@ -159,12 +186,17 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    public Activity getActivity(){
+        return (Activity)this;
+    }
+
     public void turnOffRideShare(){
+
         isRideShareOn=false;
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.start_ride));
         locationManager.removeUpdates(locationListener);
         locationListener=null;
-        userLocationData.setValue(null);
+        userLocationData.child(userUid).setValue(null);
     }
 
 
@@ -187,6 +219,15 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         else  if(i==R.id.track_buses_cv){
             startActivity(new Intent(HomeActivity.this,MapsActivity.class));
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode==101){
+            if(resultCode==Activity.RESULT_OK)turnOnRideShare();
+        }
+
     }
 
     private boolean requestLocationPermission() {
@@ -226,7 +267,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         if(isRideShareOn) {
             locationManager.removeUpdates(locationListener);
             locationListener=null;
-            userLocationData.removeValue();
+            userLocationData.child(userUid).removeValue();
         }
     }
 }
