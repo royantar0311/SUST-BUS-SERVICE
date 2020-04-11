@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.IntentSender;
 import android.content.res.Resources;
 import android.os.CountDownTimer;
+import android.util.Log;
 
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -22,8 +23,11 @@ import com.google.android.gms.tasks.Task;
 import com.google.maps.GeoApiContext;
 import com.google.maps.model.LatLng;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
@@ -78,6 +82,10 @@ public class MapUtil {
 
     }
 
+    public static GeoApiContext getGeoApiContext() {
+        return geoApiContext;
+    }
+
     public void enableGPS(final Context context, final Activity activity, final int RequestCode){
 
         LocationRequest locationRequest=LocationRequest.create()
@@ -127,10 +135,85 @@ public class MapUtil {
     }
 
 
+    public PathInformation stringToPath(String path){
+
+        PathInformation pathInformation=new PathInformation();
+
+        String latlng=null;
+
+        for (int i=0,j=0; j<path.length() ;i++) {
+
+
+            for (int k = j; j < path.length(); j++) {
+                if (path.charAt(j) == ';') {
+                     latlng=path.substring(k,j);
+                     j++;
+                    break;
+                }
+            }
+
+            Log.d("MAPUTIL:",latlng+";");
+            if (i > 1) {
+                    pathInformation.addWayPoint(latLngMap.get(latlng));
+            }
+            else if (i == 0) pathInformation.setSrc(latLngMap.get(latlng));
+            else {
+                pathInformation.setDest(latLngMap.get(latlng));
+                pathInformation.setDestText(latlng);
+            }
+        }
+
+
+
+        return pathInformation;
+    }
+
     public static MapUtil mapUtil=new MapUtil();
 
     public static MapUtil getInstance(){
         return mapUtil;
     }
+
+
+    class PathInformation{
+        private LatLng src;
+        private LatLng dest;
+        private String destText;
+
+        public void setDestText(String destText) {
+            this.destText = destText;
+        }
+
+        public String getDestText() {
+            return destText;
+        }
+
+        public LatLng getDest() {
+            return dest;
+        }
+
+        public LatLng getSrc() {
+            return src;
+        }
+
+        public void setDest(LatLng dest) {
+            this.dest = dest;
+        }
+
+        public void setSrc(LatLng src) {
+            this.src = src;
+        }
+
+        private List<LatLng>wayPoints=new ArrayList<>();
+        public void addWayPoint(LatLng latLng){
+            wayPoints.add(latLng);
+        }
+
+        public List<LatLng> getWayPoints() {
+            return wayPoints;
+        }
+
+    }
+
 
 }

@@ -7,49 +7,42 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.VectorDrawable;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.material.snackbar.Snackbar;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.maps.DirectionsApi;
-import com.google.maps.GeoApiContext;
+import com.google.maps.DirectionsApiRequest;
 import com.google.maps.model.DirectionsResult;
+import com.google.maps.model.TravelMode;
 
+import java.io.PrintStream;
+import java.io.StringWriter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -65,7 +58,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private DatabaseReference databaseReference;
     private ChildEventListener childEventListener;
     private Map<String,Marker> markerMap;
-
+    private MapUtil mapUtil;
     UserInfo userInfo;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,9 +85,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         else{
             userInfo=UserInfo.getInstance();
-            userDatabaseReference=databaseReference.child("alive").child(mAuth.getCurrentUser().getUid());
+            //
+            //
+            // userDatabaseReference=databaseReference.child("alive").child(mAuth.getCurrentUser().getUid());
            // Toast.makeText(this,userInfo.getUserName(),Toast.LENGTH_SHORT).show();
         }
+        mapUtil=MapUtil.getInstance();
     }
 
     @Override
@@ -119,22 +115,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
 
                 LatLng pos=null;
-                String key=null,title=null;
+                String key=null,path=null;
                 Marker tmpMarker;
                 try{
                      pos = new LatLng(dataSnapshot.child("lat").getValue(Double.class), dataSnapshot.child("lng").getValue(Double.class));
                      key = dataSnapshot.getKey();
-                     title = dataSnapshot.child("destination").getValue(String.class);
+                     path = dataSnapshot.child("destination").getValue(String.class);
 
                 }
+
                 catch (Exception e){
 
                 }
 
-                if(pos!=null && key !=null){
-                    tmpMarker= addMark(pos, title);
+                if(pos!=null && key !=null && path!=null){
+                    MapUtil.PathInformation pathInformation=mapUtil.stringToPath(path);
+                    tmpMarker= addMark(pos, pathInformation.getDestText());
                     tmpMarker.showInfoWindow();
-                    tmpMarker.setTag(key);
+                    tmpMarker.setTag(pathInformation);
                     markerMap.put(key,tmpMarker);
                 }
 
@@ -146,7 +144,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 LatLng pos=null;
                 Marker tmpMarker;
 
-                String key=dataSnapshot.getKey(),title=null;
+                String key=dataSnapshot.getKey(),path=null;
                  if(markerMap.containsKey(key)){
 
                          pos = new LatLng(dataSnapshot.child("lat").getValue(Double.class), dataSnapshot.child("lng").getValue(Double.class));
@@ -158,17 +156,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                      try{
                          pos = new LatLng(dataSnapshot.child("lat").getValue(Double.class), dataSnapshot.child("lng").getValue(Double.class));
                          key = dataSnapshot.getKey();
-                         title = dataSnapshot.child("destination").getValue(String.class);
+                         path= dataSnapshot.child("destination").getValue(String.class);
 
                      }
                      catch (Exception e){
 
                      }
 
-                     if(pos!=null && key !=null){
-                         tmpMarker= addMark(pos, title);
+                     if(pos!=null && key !=null && path!=null){
+                         MapUtil.PathInformation pathInformation=mapUtil.stringToPath(path);
+                         tmpMarker= addMark(pos, pathInformation.getDestText());
                          tmpMarker.showInfoWindow();
-                         tmpMarker.setTag(key);
+                         tmpMarker.setTag(pathInformation);
                          markerMap.put(key,tmpMarker);
                      }
 
@@ -196,11 +195,53 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         databaseReference.child("alive").addChildEventListener(childEventListener);
 
-
+       mMap.setOnMarkerClickListener(this);
     }
 
     @Override
     public boolean onMarkerClick(Marker marker) {
+
+        MapUtil.PathInformation pathInformation=(MapUtil.PathInformation)marker.getTag();
+        Log.d("PATH:" ,""+pathInformation.getSrc());
+        DirectionsResult result;
+
+        Toast.makeText(this,"markerClicked",Toast.LENGTH_SHORT).show();
+
+        try{
+            assert pathInformation != null;
+            result=DirectionsApi.newRequest(mapUtil.getGeoApiContext())
+                    .mode(TravelMode.TRANSIT)
+                    .origin(pathInformation.getSrc())
+                    .destination(pathInformation.getDest())
+                    .alternatives(false)
+                    .await();
+
+
+            List<com.google.maps.model.LatLng> decodedPath=result.routes[0].overviewPolyline.decodePath();
+
+            PolylineOptions polylineOptions=new PolylineOptions();
+
+            for (com.google.maps.model.LatLng x:decodedPath){
+                LatLng tmp=new LatLng(x.lat,x.lng);
+                polylineOptions.add(tmp);
+            }
+
+            mMap.addPolyline(polylineOptions);
+
+        }
+        catch (Exception e){
+            Toast.makeText(this,e.getMessage(),Toast.LENGTH_LONG).show();
+            Log.d("marker: ",e.getMessage());
+
+            StackTraceElement arr[]=new StackTraceElement[e.getStackTrace().length];
+            arr=e.getStackTrace();
+            for (int i=0;i<arr.length;i++) {
+
+                Log.d("error: ", arr[i].getClassName()+"\n"+arr[i].getMethodName()+"\n"+arr[i].getLineNumber());
+            }
+        }
+
+
 
 
 
@@ -219,6 +260,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Marker marker=mMap.addMarker(new MarkerOptions().position(cur)
                 .title(title)
                 .icon(bitmapDescriptorFromVector(MapsActivity.this,R.drawable.ic_directions_bus_black_24dp)));
+
         return marker;
     }
 

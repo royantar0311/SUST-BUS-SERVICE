@@ -149,7 +149,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         isRideShareOn=true;
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.end_ride));
 
-        userLocationData.child(userUid).child("destination").setValue(mapUtil.AMBORKHANA);
+        userLocationData.child(userUid).child("destination").setValue(mapUtil.CAMPUS+";"+mapUtil.AMBORKHANA+";");
 
         locationListener = new LocationListener() {
 
