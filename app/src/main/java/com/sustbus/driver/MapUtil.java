@@ -153,13 +153,13 @@ public class MapUtil {
             }
 
             Log.d("MAPUTIL:",latlng+";");
-            if (i > 1) {
-                    pathInformation.addWayPoint(latLngMap.get(latlng));
+
+            if(j==path.length()){
+                pathInformation.setDest(latLngMap.get(latlng));
             }
             else if (i == 0) pathInformation.setSrc(latLngMap.get(latlng));
             else {
-                pathInformation.setDest(latLngMap.get(latlng));
-                pathInformation.setDestText(latlng);
+                pathInformation.addWayPoint(latLngMap.get(latlng));
             }
         }
 
@@ -178,15 +178,7 @@ public class MapUtil {
     class PathInformation{
         private LatLng src;
         private LatLng dest;
-        private String destText;
 
-        public void setDestText(String destText) {
-            this.destText = destText;
-        }
-
-        public String getDestText() {
-            return destText;
-        }
 
         public LatLng getDest() {
             return dest;

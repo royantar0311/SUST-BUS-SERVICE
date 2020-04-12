@@ -49,7 +49,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private CardView openMapBtn;
     private CardView scheduleBtn;
     private CardView shareRideTv;
-    private DatabaseReference databaseReference,userDatabaseReference,userLocationData;
+    private DatabaseReference databaseReference,userDatabaseReference,userLocationData,userPathReference;
     private FirebaseAuth mAuth;
     private ImageView rideShareIndicatorIV;
     private boolean isRideShareOn=false,quit=false;
@@ -91,8 +91,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             userUid=mAuth.getCurrentUser().getUid();
             userDatabaseReference=databaseReference.child("users").child(userUid);
 
-            userLocationData=databaseReference.child("alive");
-
+            userLocationData=databaseReference.child("alive").child(userUid);
+            userPathReference=databaseReference.child("destinations").child(userUid).child("path");
             userDatabaseReference.addValueEventListener(new ValueEventListener() {
 
                 @Override
@@ -121,7 +121,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             });
         }
 
-
         mapUtil=MapUtil.getInstance();
     }
 
@@ -149,14 +148,17 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         isRideShareOn=true;
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.end_ride));
 
-        userLocationData.child(userUid).child("destination").setValue(mapUtil.CAMPUS+";"+mapUtil.AMBORKHANA+";");
+        userPathReference.setValue(mapUtil.CAMPUS+";"+mapUtil.AMBORKHANA+";"+mapUtil.EIDGAH+";"+mapUtil.KUMARPARA+";"+mapUtil.TILAGOR+";"+mapUtil.BALUCHAR+";"
+                                   +mapUtil.CAMPUS+";");
+
+        userLocationData.child("title").setValue("Campus-Tilagor-Campus");
 
         locationListener = new LocationListener() {
 
             @Override
             public void onLocationChanged(Location location) {
-                userLocationData.child(userUid).child("lat").setValue(location.getLatitude());
-                userLocationData.child(userUid).child("lng").setValue(location.getLongitude());
+                userLocationData.child("lat").setValue(location.getLatitude());
+                userLocationData.child("lng").setValue(location.getLongitude());
 
             }
 
@@ -197,7 +199,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.start_ride));
         locationManager.removeUpdates(locationListener);
         locationListener=null;
-        userLocationData.child(userUid).setValue(null);
+        userLocationData.setValue(null);
+        userPathReference.setValue(null);
     }
 
 
@@ -268,7 +271,9 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         if(isRideShareOn) {
             locationManager.removeUpdates(locationListener);
             locationListener=null;
-            userLocationData.child(userUid).removeValue();
+            userLocationData.removeValue();
+            userPathReference.setValue(null);
+
         }
     }
 }

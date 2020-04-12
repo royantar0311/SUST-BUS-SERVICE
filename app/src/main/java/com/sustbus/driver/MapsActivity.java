@@ -56,10 +56,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private FirebaseAuth mAuth;
     private DatabaseReference userDatabaseReference;
     private DatabaseReference databaseReference;
-    private ChildEventListener childEventListener;
+    private ChildEventListener childEventListener,pathChangeListner;
     private Map<String,Marker> markerMap;
     private MapUtil mapUtil;
     UserInfo userInfo;
+    private Map<String,String> pathInformationMap;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,12 +101,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         LatLngBounds latLngBounds=new LatLngBounds.Builder().include(new LatLng(24.910837,91.888013))
                                                          .include(new LatLng(24.861436,91.825502)).build();
-
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(),13f),100,null);
-
-
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(24.9192, 91.8319)));
-        //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(24.9192, 91.8319), 18.0f));
         mMap.setTrafficEnabled(true);
 
         mMap.setBuildingsEnabled(true);
@@ -115,25 +112,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
 
                 LatLng pos=null;
-                String key=null,path=null;
+                String key=null,title=null;
+
                 Marker tmpMarker;
                 try{
                      pos = new LatLng(dataSnapshot.child("lat").getValue(Double.class), dataSnapshot.child("lng").getValue(Double.class));
                      key = dataSnapshot.getKey();
-                     path = dataSnapshot.child("destination").getValue(String.class);
-
+                     title=dataSnapshot.child("title").getValue(String.class);
                 }
 
                 catch (Exception e){
 
                 }
 
-                if(pos!=null && key !=null && path!=null){
-                    MapUtil.PathInformation pathInformation=mapUtil.stringToPath(path);
-                    tmpMarker= addMark(pos, pathInformation.getDestText());
+                if(pos!=null && key !=null){
+                    tmpMarker= addMark(pos,title);
                     tmpMarker.showInfoWindow();
-                    tmpMarker.setTag(pathInformation);
+                    tmpMarker.setTag(key);
                     markerMap.put(key,tmpMarker);
+
                 }
 
             }
@@ -144,9 +141,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 LatLng pos=null;
                 Marker tmpMarker;
 
-                String key=dataSnapshot.getKey(),path=null;
+                String key=dataSnapshot.getKey(),title=null;
                  if(markerMap.containsKey(key)){
-
                          pos = new LatLng(dataSnapshot.child("lat").getValue(Double.class), dataSnapshot.child("lng").getValue(Double.class));
                          markerMap.get(key).setPosition(pos);
                  }
@@ -156,18 +152,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                      try{
                          pos = new LatLng(dataSnapshot.child("lat").getValue(Double.class), dataSnapshot.child("lng").getValue(Double.class));
                          key = dataSnapshot.getKey();
-                         path= dataSnapshot.child("destination").getValue(String.class);
+                         title=dataSnapshot.child("title").getValue(String.class);
+
 
                      }
                      catch (Exception e){
 
                      }
 
-                     if(pos!=null && key !=null && path!=null){
-                         MapUtil.PathInformation pathInformation=mapUtil.stringToPath(path);
-                         tmpMarker= addMark(pos, pathInformation.getDestText());
+                     if(pos!=null && key !=null){
+
+                         tmpMarker= addMark(pos,title);
                          tmpMarker.showInfoWindow();
-                         tmpMarker.setTag(pathInformation);
+                         tmpMarker.setTag(key);
                          markerMap.put(key,tmpMarker);
                      }
 
@@ -193,7 +190,40 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         };
 
+         pathInformationMap=new HashMap<>();
+
+
+         pathChangeListner=new ChildEventListener() {
+             @Override
+             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                         pathInformationMap.put( dataSnapshot.getKey(), dataSnapshot.child("path").getValue(String.class));
+             }
+
+             @Override
+             public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                 String key=dataSnapshot.getKey();
+                 pathInformationMap.remove(key);
+                 pathInformationMap.put(key,dataSnapshot.child("path").getValue(String.class));
+             }
+
+             @Override
+             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+                 pathInformationMap.remove(dataSnapshot.getKey());
+             }
+
+             @Override
+             public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+             }
+
+             @Override
+             public void onCancelled(@NonNull DatabaseError databaseError) {
+
+             }
+         };
+
         databaseReference.child("alive").addChildEventListener(childEventListener);
+        databaseReference.child("destinations").addChildEventListener(pathChangeListner);
 
        mMap.setOnMarkerClickListener(this);
     }
@@ -201,14 +231,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public boolean onMarkerClick(Marker marker) {
 
-        MapUtil.PathInformation pathInformation=(MapUtil.PathInformation)marker.getTag();
+        MapUtil.PathInformation pathInformation=mapUtil.stringToPath(pathInformationMap.get((String)marker.getTag()));
+
         Log.d("PATH:" ,""+pathInformation.getSrc());
         DirectionsResult result;
 
         Toast.makeText(this,"markerClicked",Toast.LENGTH_SHORT).show();
 
         try{
-            assert pathInformation != null;
+
             result=DirectionsApi.newRequest(mapUtil.getGeoApiContext())
                     .mode(TravelMode.TRANSIT)
                     .origin(pathInformation.getSrc())
@@ -236,29 +267,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             StackTraceElement arr[]=new StackTraceElement[e.getStackTrace().length];
             arr=e.getStackTrace();
             for (int i=0;i<arr.length;i++) {
-
                 Log.d("error: ", arr[i].getClassName()+"\n"+arr[i].getMethodName()+"\n"+arr[i].getLineNumber());
             }
         }
 
 
 
-
-
-
-
-
-
-
-
         return false;
     }
 
-    public Marker addMark(LatLng cur, String title){
+    public Marker addMark(LatLng cur,String title){
 
 
-        Marker marker=mMap.addMarker(new MarkerOptions().position(cur)
-                .title(title)
+        Marker marker=mMap.addMarker(new MarkerOptions().position(cur).title(title)
                 .icon(bitmapDescriptorFromVector(MapsActivity.this,R.drawable.ic_directions_bus_black_24dp)));
 
         return marker;
@@ -292,9 +313,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             if(ok){
 
                 databaseReference.child("alive").removeEventListener(childEventListener);
+                databaseReference.child("destinations").removeEventListener(pathChangeListner);
                 databaseReference=null;
                 userDatabaseReference = null;
                 markerMap.clear();
+                pathInformationMap.clear();
                 finish();
             }
             ok = true;
