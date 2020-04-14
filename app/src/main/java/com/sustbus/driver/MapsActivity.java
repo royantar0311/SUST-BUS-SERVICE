@@ -3,6 +3,7 @@ package com.sustbus.driver;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.view.menu.ShowableListMenu;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
@@ -27,31 +28,41 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.maps.DirectionsApi;
-import com.google.maps.DirectionsApiRequest;
-import com.google.maps.model.DirectionsResult;
-import com.google.maps.model.TravelMode;
+import com.here.sdk.core.GeoBox;
+import com.here.sdk.core.GeoCoordinates;
+import com.here.sdk.core.errors.InstantiationErrorException;
+import com.here.sdk.routing.CalculateRouteCallback;
+import com.here.sdk.routing.OptimizationMode;
+import com.here.sdk.routing.Route;
+import com.here.sdk.routing.RouteOptions;
+import com.here.sdk.routing.RouteRestrictions;
+import com.here.sdk.routing.RoutingEngine;
+import com.here.sdk.routing.RoutingError;
+import com.here.sdk.routing.Waypoint;
 
-import java.io.PrintStream;
-import java.io.StringWriter;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, View.OnClickListener, GoogleMap.OnMarkerClickListener {
-    private static final String TAG = "MapsActivity";
-
-    private GoogleMap mMap;
     public static final int MIN_TIME = 1000;
     public static final int MIN_DIST = 5;
+    private static final String TAG = "MapsActivity";
+    UserInfo userInfo;
+    private GoogleMap mMap;
     private ImageButton locateMeBtn;
     private FirebaseAuth mAuth;
     private DatabaseReference userDatabaseReference;
@@ -59,8 +70,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private ChildEventListener childEventListener,pathChangeListner;
     private Map<String,Marker> markerMap;
     private MapUtil mapUtil;
-    UserInfo userInfo;
+    private RoutingEngine routingEngine;
     private Map<String,String> pathInformationMap;
+    private boolean ok = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,8 +165,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                          pos = new LatLng(dataSnapshot.child("lat").getValue(Double.class), dataSnapshot.child("lng").getValue(Double.class));
                          key = dataSnapshot.getKey();
                          title=dataSnapshot.child("title").getValue(String.class);
-
-
                      }
                      catch (Exception e){
 
@@ -230,58 +240,78 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public boolean onMarkerClick(Marker marker) {
+        String path=pathInformationMap.get((String)marker.getTag());
 
-        MapUtil.PathInformation pathInformation=mapUtil.stringToPath(pathInformationMap.get((String)marker.getTag()));
+        if(path=="NA;" || path==null){
+            Snackbar.make(findViewById(R.id.maps_activity),"Sorry, Currently Route is not availavle for this bus",Snackbar.LENGTH_LONG).show();
+            return false;
+        }
 
-        Log.d("PATH:" ,""+pathInformation.getSrc());
-        DirectionsResult result;
+        MapUtil.PathInformation pathInformation=mapUtil.stringToPath(path);
 
-        Toast.makeText(this,"markerClicked",Toast.LENGTH_SHORT).show();
+        Waypoint starWaypoint=new Waypoint(new GeoCoordinates(marker.getPosition().latitude,marker.getPosition().longitude));
+        List<Waypoint> waypoints=pathInformation.getWayPoints();
 
-        try{
-
-            result=DirectionsApi.newRequest(mapUtil.getGeoApiContext())
-                    .mode(TravelMode.TRANSIT)
-                    .origin(pathInformation.getSrc())
-                    .destination(pathInformation.getDest())
-                    .alternatives(false)
-                    .await();
+        waypoints.add(0,starWaypoint);
 
 
-            List<com.google.maps.model.LatLng> decodedPath=result.routes[0].overviewPolyline.decodePath();
 
-            PolylineOptions polylineOptions=new PolylineOptions();
-
-            for (com.google.maps.model.LatLng x:decodedPath){
-                LatLng tmp=new LatLng(x.lat,x.lng);
-                polylineOptions.add(tmp);
-            }
-
-            mMap.addPolyline(polylineOptions);
+        try {
+            routingEngine=new RoutingEngine();
 
         }
-        catch (Exception e){
-            Toast.makeText(this,e.getMessage(),Toast.LENGTH_LONG).show();
-            Log.d("marker: ",e.getMessage());
-
-            StackTraceElement arr[]=new StackTraceElement[e.getStackTrace().length];
-            arr=e.getStackTrace();
-            for (int i=0;i<arr.length;i++) {
-                Log.d("error: ", arr[i].getClassName()+"\n"+arr[i].getMethodName()+"\n"+arr[i].getLineNumber());
-            }
+        catch (InstantiationErrorException e){
+            new RuntimeException(e.error.name());
+            return false;
         }
+
+
+        RoutingEngine.CarOptions carOptions=new RoutingEngine.CarOptions();
+        carOptions.routeOptions=new RouteOptions.Builder().setAlternatives(0).setOptimizationMode(OptimizationMode.SHORTEST).build();
+        carOptions.restrictions=new RouteRestrictions();
+        carOptions.restrictions.avoidAreas=mapUtil.restrictionList;
+
+    routingEngine.calculateRoute(waypoints, carOptions, new CalculateRouteCallback() {
+           @Override
+           public void onRouteCalculated(@Nullable RoutingError routingError, @Nullable List<Route> list) {
+
+               if(routingError==null){
+                   Route route=list.get(0);
+                   showRoute(route);
+               }
+               else{
+                   Snackbar.make(findViewById(R.id.maps_activity),routingError.toString(),Snackbar.LENGTH_LONG);
+               }
+
+           }
+       });
 
 
 
         return false;
+
+    }
+
+    public void showRoute(Route route){
+
+        List<GeoCoordinates> poly=route.getPolyline();
+
+
+        PolylineOptions polylineOptions=new PolylineOptions();
+
+        for(GeoCoordinates g:poly){
+            LatLng tmp=new LatLng(g.latitude,g.longitude);
+            polylineOptions.add(tmp);
+        }
+
+
+        Polyline polyline=mMap.addPolyline(polylineOptions);
+
     }
 
     public Marker addMark(LatLng cur,String title){
-
-
         Marker marker=mMap.addMarker(new MarkerOptions().position(cur).title(title)
                 .icon(bitmapDescriptorFromVector(MapsActivity.this,R.drawable.ic_directions_bus_black_24dp)));
-
         return marker;
     }
 
@@ -303,8 +333,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             //mMap.moveCamera(CameraUpdateFactory.newLatLng(cur));
         }
     }
-
-    private boolean ok = false;
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)  {

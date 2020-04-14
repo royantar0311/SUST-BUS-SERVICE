@@ -1,38 +1,33 @@
 package com.sustbus.driver;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.IntentSender;
-import android.content.res.Resources;
-import android.os.CountDownTimer;
-import android.util.Log;
-
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
-import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
-import com.google.android.gms.location.SettingsApi;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.maps.GeoApiContext;
-import com.google.maps.model.LatLng;
+import com.here.sdk.core.GeoBox;
+import com.here.sdk.core.GeoCoordinates;
+import com.here.sdk.routing.Waypoint;
+import com.here.sdk.routing.WaypointType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
-
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 public class MapUtil {
 
@@ -48,43 +43,32 @@ public class MapUtil {
     public static final String TILAGOR="Tilagor";
     public static final String BALUCHAR="Baluchar";
     public static final String LAKKATURA="Lakkatura";
+    public static final String CAMPUS_GATE="Gate";
 
 
-    public static Map<String, LatLng>latLngMap=new HashMap<>();
-
-    private static GeoApiContext geoApiContext;
+    public static Map<String, GeoCoordinates>GeoCoordinatesMap=new HashMap<>();
+    public static List<GeoBox> restrictionList=new ArrayList<>();
 
     static {
+         GeoCoordinatesMap.put(CAMPUS_GATE,new GeoCoordinates(24.911127,91.832222));
+         GeoCoordinatesMap.put(CAMPUS,new GeoCoordinates(24.920856,91.832484));
+         GeoCoordinatesMap.put(MODINA_MARKET,new GeoCoordinates(24.910599,91.848425));
+         GeoCoordinatesMap.put(SUBID_BAZAR,new GeoCoordinates(24.907898,91.859542));
+         GeoCoordinatesMap.put(AMBORKHANA,new GeoCoordinates(24.905023,91.869917));
+         GeoCoordinatesMap.put(RIKABI_BAZAR,new GeoCoordinates(24.899122,91.862674));
+         GeoCoordinatesMap.put(CHOWHATTA,new GeoCoordinates(24.899424,91.868818));
+         GeoCoordinatesMap.put(NAIORPUL,new GeoCoordinates(24.894753,91.878688));
+         GeoCoordinatesMap.put(KUMARPARA,new GeoCoordinates(24.899373,91.879114));
+         GeoCoordinatesMap.put(EIDGAH,new GeoCoordinates(24.906465,91.880405));
+         GeoCoordinatesMap.put(TILAGOR,new GeoCoordinates(24.896190,91.900370));
+         GeoCoordinatesMap.put(BALUCHAR,new GeoCoordinates(24.903055,91.895983));
+         GeoCoordinatesMap.put(LAKKATURA,new GeoCoordinates(24.923850,91.872001));
 
-         latLngMap.put(CAMPUS,new LatLng(24.917326,91.831946));
-         latLngMap.put(MODINA_MARKET,new LatLng(24.910599,91.848425));
-         latLngMap.put(SUBID_BAZAR,new LatLng(24.907898,91.859542));
-         latLngMap.put(AMBORKHANA,new LatLng(24.905023,91.869917));
-         latLngMap.put(RIKABI_BAZAR,new LatLng(24.899122,91.862674));
-         latLngMap.put(CHOWHATTA,new LatLng(24.899424,91.868818));
-         latLngMap.put(NAIORPUL,new LatLng(24.894753,91.878688));
-         latLngMap.put(KUMARPARA,new LatLng(24.899373,91.879114));
-         latLngMap.put(EIDGAH,new LatLng(24.906465,91.880405));
-         latLngMap.put(TILAGOR,new LatLng(24.896190,91.900370));
-         latLngMap.put(BALUCHAR,new LatLng(24.903055,91.895983));
-         latLngMap.put(LAKKATURA,new LatLng(24.923850,91.872001));
+         restrictionList.add(new GeoBox(new GeoCoordinates(24.921759,91.82511),new GeoCoordinates(24.925740,91.83950)));
 
-         String key="AIzaSyAJsyecW4eYPOQzuC5VonO9IyAJjNx2_XQ";
-
-         geoApiContext=new GeoApiContext.Builder()
-                 .apiKey(key)
-                 .queryRateLimit(2)
-                 .maxRetries(2)
-                 .retryTimeout(2,TimeUnit.SECONDS)
-                 .readTimeout(1, TimeUnit.SECONDS)
-                 .writeTimeout(1,TimeUnit.SECONDS)
-                 .build();
 
     }
 
-    public static GeoApiContext getGeoApiContext() {
-        return geoApiContext;
-    }
 
     public void enableGPS(final Context context, final Activity activity, final int RequestCode){
 
@@ -139,6 +123,10 @@ public class MapUtil {
 
         PathInformation pathInformation=new PathInformation();
 
+        if(path==null){
+            pathInformation.isRouteAvailable=false;
+            return pathInformation;
+        }
         String latlng=null;
 
         for (int i=0,j=0; j<path.length() ;i++) {
@@ -152,14 +140,17 @@ public class MapUtil {
                 }
             }
 
-            Log.d("MAPUTIL:",latlng+";");
+            //Log.d("MAPUTIL:",GeoCoordinates+";");
 
-            if(j==path.length()){
-                pathInformation.setDest(latLngMap.get(latlng));
+            if (i == 0){
+                if(latlng=="NA")pathInformation.isRouteAvailable=false;
+                else pathInformation.addWayPoint(GeoCoordinatesMap.get(latlng));
             }
-            else if (i == 0) pathInformation.setSrc(latLngMap.get(latlng));
+            else if(j==path.length()){
+                pathInformation.setDest(GeoCoordinatesMap.get(latlng));
+            }
             else {
-                pathInformation.addWayPoint(latLngMap.get(latlng));
+                pathInformation.addWayPoint(GeoCoordinatesMap.get(latlng));
             }
         }
 
@@ -176,36 +167,112 @@ public class MapUtil {
 
 
     class PathInformation{
-        private LatLng src;
-        private LatLng dest;
 
+        private Waypoint dest;
+        public boolean isRouteAvailable=true;
+        
 
-        public LatLng getDest() {
+        public void setDest(GeoCoordinates gdest) {
+            dest=new Waypoint(gdest);
+            dest.type=WaypointType.STOPOVER;
+            wayPoints.add(dest);
+        }
+
+        public Waypoint getDest() {
             return dest;
         }
 
-        public LatLng getSrc() {
-            return src;
+        private List<Waypoint>wayPoints=new ArrayList<>();
+        public void addWayPoint(GeoCoordinates geoCoordinates){
+            Waypoint tmp=new Waypoint(geoCoordinates);
+            tmp.type= WaypointType.STOPOVER;
+            wayPoints.add(tmp);
         }
 
-        public void setDest(LatLng dest) {
-            this.dest = dest;
-        }
-
-        public void setSrc(LatLng src) {
-            this.src = src;
-        }
-
-        private List<LatLng>wayPoints=new ArrayList<>();
-        public void addWayPoint(LatLng latLng){
-            wayPoints.add(latLng);
-        }
-
-        public List<LatLng> getWayPoints() {
+        public List<Waypoint> getWayPoints() {
             return wayPoints;
         }
+
+        public void kill(){wayPoints.clear();}
 
     }
 
 
+}
+
+class PermissionsRequestor {
+
+    private static final int PERMISSIONS_REQUEST_CODE = 42;
+    private ResultListener resultListener;
+    private final Activity activity;
+
+    public PermissionsRequestor(Activity activity) {
+        this.activity = activity;
+    }
+
+    public interface ResultListener {
+        void permissionsGranted();
+        void permissionsDenied();
+    }
+
+    public void request(ResultListener resultListener) {
+        this.resultListener = resultListener;
+
+        String[] missingPermissions = getPermissionsToRequest();
+        if (missingPermissions.length == 0) {
+            resultListener.permissionsGranted();
+        } else {
+            ActivityCompat.requestPermissions(activity, missingPermissions, PERMISSIONS_REQUEST_CODE);
+        }
+    }
+
+    private String[] getPermissionsToRequest() {
+        ArrayList<String> permissionList = new ArrayList<>();
+        try {
+            PackageInfo packageInfo = activity.getPackageManager().getPackageInfo(
+                    activity.getPackageName(), PackageManager.GET_PERMISSIONS);
+            if (packageInfo.requestedPermissions != null) {
+                for (String permission : packageInfo.requestedPermissions) {
+                    if (ContextCompat.checkSelfPermission(
+                            activity, permission) != PackageManager.PERMISSION_GRANTED) {
+                        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M &&
+                                permission.equals(Manifest.permission.CHANGE_NETWORK_STATE)) {
+                            // Exclude CHANGE_NETWORK_STATE as it does not require explicit user approval.
+                            // This workaround is needed for devices running Android 6.0.0,
+                            // see https://issuetracker.google.com/issues/37067994
+                            continue;
+                        }
+                        permissionList.add(permission);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return permissionList.toArray(new String[0]);
+    }
+
+    public void onRequestPermissionsResult(int requestCode, @NonNull int[] grantResults) {
+        if (resultListener == null) {
+            return;
+        }
+
+        if (grantResults.length == 0) {
+            // Request was cancelled.
+            return;
+        }
+
+        if (requestCode == PERMISSIONS_REQUEST_CODE) {
+            boolean allGranted = true;
+            for (int result : grantResults) {
+                allGranted &= result == PackageManager.PERMISSION_GRANTED;
+            }
+
+            if (allGranted) {
+                resultListener.permissionsGranted();
+            } else {
+                resultListener.permissionsDenied();
+            }
+        }
+    }
 }

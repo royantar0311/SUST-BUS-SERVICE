@@ -20,6 +20,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
@@ -29,6 +30,9 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -36,10 +40,24 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.here.sdk.core.GeoCoordinates;
+import com.here.sdk.*;
+import com.here.sdk.core.GeoPolyline;
+import com.here.sdk.mapviewlite.MapViewLite;
+import com.here.sdk.routing.CalculateRouteCallback;
+import com.here.sdk.routing.Route;
+import com.here.sdk.routing.RoutingEngine;
+import com.here.sdk.routing.RoutingError;
+import com.here.sdk.routing.Waypoint;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static com.sustbus.driver.MapsActivity.MIN_DIST;
 import static com.sustbus.driver.MapsActivity.MIN_TIME;
 import static com.sustbus.driver.UserInfo.*;
+
 
 public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "HomeActivity";
@@ -57,8 +75,14 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private LocationListener locationListener;
     private String userUid;
     private MapUtil mapUtil;
+    private PermissionsRequestor permissionsRequestor;
+    private List<String> pathString;
+    private boolean pathOk;
+    private int determineCallCount;
+    private GeoCoordinates previousPosition,currentPosition;
+    
     UserInfo userInfo;
-    Intent intent ;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -124,7 +148,23 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         mapUtil=MapUtil.getInstance();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        permissionsRequestor=new PermissionsRequestor(this);
+        permissionsRequestor.request(new PermissionsRequestor.ResultListener() {
+            @Override
+            public void permissionsGranted() {
 
+            }
+
+            @Override
+            public void permissionsDenied() {
+                Snackbar.make(findViewById(R.id.home_scrollview),"Please grant all Permissions",Snackbar.LENGTH_LONG).show();
+            }
+        });
+
+    }
 
     public void turnOnRideShare(){
 
@@ -145,11 +185,12 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         }
 
 
+
+
         isRideShareOn=true;
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.end_ride));
 
-        userPathReference.setValue(mapUtil.CAMPUS+";"+mapUtil.AMBORKHANA+";"+mapUtil.EIDGAH+";"+mapUtil.KUMARPARA+";"+mapUtil.TILAGOR+";"+mapUtil.BALUCHAR+";"
-                                   +mapUtil.CAMPUS+";");
+        initializePath();
 
         userLocationData.child("title").setValue("Campus-Tilagor-Campus");
 
@@ -159,6 +200,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             public void onLocationChanged(Location location) {
                 userLocationData.child("lat").setValue(location.getLatitude());
                 userLocationData.child("lng").setValue(location.getLongitude());
+                handlePath(new GeoCoordinates(location.getLatitude(),location.getLongitude()));
 
             }
 
@@ -184,11 +226,97 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,MIN_TIME,MIN_DIST,locationListener );
         }
         catch (SecurityException e){
-            Snackbar.make(findViewById(R.id.maps_activity),e.getMessage(),Snackbar.LENGTH_SHORT).show();
+            Snackbar.make(findViewById(R.id.home_scrollview),e.getMessage(),Snackbar.LENGTH_SHORT).show();
         }
 
     }
+    
+    public void determineCurrentLocation(GeoCoordinates latLng){
+        
+        if(determineCallCount==0)previousPosition=latLng;
+        else if(latLng.distanceTo(previousPosition)>=5){
+            currentPosition=latLng;
+            int rem=0;
+            for (int i=0;i+1<pathString.size();i++){
+                GeoCoordinates co1=mapUtil.GeoCoordinatesMap.get(pathString.get(i));
+                GeoCoordinates co2=mapUtil.GeoCoordinatesMap.get(pathString.get(i+1));
 
+                if(Math.abs(currentPosition.distanceTo(co2)+previousPosition.distanceTo(co2)-previousPosition.distanceTo(currentPosition))<=1){
+
+                    if(co1.distanceTo(previousPosition)<co1.distanceTo(currentPosition)){
+                        rem=i+2;
+                        break;
+                    }
+                    
+                }
+                else if(Math.abs(currentPosition.distanceTo(co1)+previousPosition.distanceTo(co1)-previousPosition.distanceTo(currentPosition))<=1){
+
+                    if(co2.distanceTo(previousPosition)>co2.distanceTo(currentPosition)){
+                        rem=i+1;
+                        break;
+                    }
+
+                }
+                else if(co1.distanceTo(previousPosition)<co1.distanceTo(currentPosition) && co2.distanceTo(previousPosition)>co2.distanceTo(currentPosition)){
+                    rem=i+1;
+                    break;
+
+                }
+
+                
+            }
+
+            if(rem==0){
+               determineCallCount=0;
+               return;
+            }
+            else{
+                for (int i=0;i<rem;i++)pathString.remove(0);
+                pathOk=true;
+                updatePath();
+            }
+        }
+        
+        determineCallCount=1;
+        
+    }
+    
+    
+
+    public void handlePath(GeoCoordinates newLatLng){
+
+        if(pathString.size()==1)return;
+        
+        if(!pathOk){
+            determineCurrentLocation(newLatLng);
+            return;
+        }
+        
+        
+        GeoCoordinates toCheck=mapUtil.GeoCoordinatesMap.get(pathString.get(0));
+
+        if(newLatLng.distanceTo(toCheck)<=100){
+            pathString.remove(0);
+            updatePath();
+        }
+
+
+    }
+
+    public void initializePath(){
+
+        pathString=new ArrayList<>(Arrays.asList(mapUtil.CAMPUS,mapUtil.CAMPUS_GATE,mapUtil.MODINA_MARKET,mapUtil.SUBID_BAZAR,mapUtil.AMBORKHANA,mapUtil.EIDGAH,mapUtil.KUMARPARA,mapUtil.TILAGOR,mapUtil.BALUCHAR, mapUtil.CAMPUS));
+        userPathReference.setValue("NA;");
+        pathOk=false;
+        determineCallCount=0;
+        
+    }
+
+  public  void updatePath(){
+      String path=new String();
+      for (String s:pathString)path+=(s+";");
+      userPathReference.setValue(path);
+  }
     public Activity getActivity(){
         return (Activity)this;
     }
@@ -205,14 +333,12 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
-
     @Override
     public void onClick(View view) {
         int i = view.getId();
 
         if(i==R.id.ride_on_cv){
-            if(userInfo.isDriver && (ContextCompat.checkSelfPermission(HomeActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
-                    PackageManager.PERMISSION_GRANTED || requestLocationPermission()) ) {
+            if(userInfo.isDriver) {
                 if(!isRideShareOn)turnOnRideShare();
                 else turnOffRideShare();
             }
@@ -231,38 +357,13 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         if(requestCode==101){
             if(resultCode==Activity.RESULT_OK)turnOnRideShare();
         }
-
     }
 
-    private boolean requestLocationPermission() {
-        if(ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.ACCESS_FINE_LOCATION)){
-            new AlertDialog.Builder(this)
-                    .setTitle("Permission Needed")
-                    .setMessage("This Permission is Needed Share Your Location")
-                    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            ActivityCompat.requestPermissions(HomeActivity.this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION},LOCATION_PERMISSION_CODE);
-                            shareRideTv.callOnClick();
-                        }
-                    })
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            dialogInterface.dismiss();
-                        }
-                    }).create().show();
-        }
-        else {
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION},LOCATION_PERMISSION_CODE);
-        }
-        if(ContextCompat.checkSelfPermission(HomeActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
-                PackageManager.PERMISSION_GRANTED){
-            return true;
-        }
-        else return false;
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        permissionsRequestor.onRequestPermissionsResult(requestCode,grantResults);
     }
-
 
     @Override
     protected void onDestroy() {

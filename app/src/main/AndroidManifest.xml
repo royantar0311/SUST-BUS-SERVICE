@@ -10,6 +10,11 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+
 
     <application
         android:allowBackup="true"
@@ -30,6 +35,9 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyA07M8wmJw3BT8fboNcg0hIij_mY8fbwno" />
+
+        <meta-data android:name="com.here.sdk.access_key_id" android:value="cDXWAHzb3yvM4TaJFYIyLQ" />
+        <meta-data android:name="com.here.sdk.access_key_secret" android:value="LQVs9ybHjp9coRGlG4FiExBMgdLb7BlHfaA3q8nUyjAM529uup_ACFVudtoknh0667HgrwFtst9aC-85-dM6lw" />
 
         <activity
             android:name=".MapsActivity"
