@@ -3,6 +3,7 @@
     <string name="app_name">Driver</string>
     <string name="title_activity_maps">Map</string>
     <string name="hello"></string>
+    <string name="upload_text">Upload</string>
 
 
 </resources>

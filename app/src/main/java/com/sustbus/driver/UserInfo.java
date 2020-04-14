@@ -1,49 +1,68 @@
 package com.sustbus.driver;
 
-import android.widget.Button;
-
-import com.google.android.gms.maps.model.LatLng;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public  class UserInfo {
-    String email;
-    boolean isStudentPermitted;
-    String userName;
+public class UserInfo {
+    private String email;
+    private boolean isStudentPermitted;
+    private String userName;
     boolean isDriver;
-    Double lat;
-    Double lang;
-
-    private static  UserInfo theInfo=new UserInfo();
+    private Double lat;
+    private Double lang;
+    private DatabaseReference databaseReference;
+    private DatabaseReference userDatabaseReference;
+    private DatabaseReference userLocationData;
+    private FirebaseAuth mAuth;
+    private String uId;
+    private static UserInfo instance;
 
     public static UserInfo getInstance(){
-        return theInfo;
+        if(instance == null){
+            instance = new UserInfo();
+        }
+        return instance;
     }
 
     public UserInfo() {
     }
 
-    private UserInfo(Builder builder) {
-        theInfo.email=this.email = builder.email;
-        theInfo.isStudentPermitted=this.isStudentPermitted = builder.isStudentPermitted;
-        theInfo.userName=this.userName = builder.userName;
-        theInfo.isDriver=this.isDriver = builder.isDriver;
-        theInfo.lat=this.lat = builder.lat;
-        theInfo.lang=this.lang = builder.lang;
+    /**Private method needed for the builder
+     * class to store them on the main userinfo
+     * object after getting all the data*/
+
+    UserInfo userInfo(Builder builder) {
+        instance.email = builder.email;
+        instance.isStudentPermitted = builder.isStudentPermitted;
+        instance.userName = builder.userName;
+        instance.isDriver = builder.isDriver;
+        instance.lat = builder.lat;
+        instance.lang = builder.lang;
+        instance.uId = builder.uId;
+        return this;
     }
 
-    public static Builder getBuilder(){
+    /**This method creates a object of the inner Builder class */
+
+    public  Builder getBuilder(){
         return new Builder();
     }
 
-    public static class Builder{
+    /**Builder pattern to build a Userinfo*/
+
+    public class Builder{
         String email;
         boolean isStudentPermitted;
         String userName;
         boolean isDriver;
         Double lat;
         Double lang;
+        String uId;
+
         Builder(){}
 
         public Builder setEmail(String email) {
@@ -75,8 +94,13 @@ public  class UserInfo {
             this.lang = lang;
             return this;
         }
+        public Builder setUId(String uId) {
+            this.uId = uId;
+            return this;
+        }
+
         public UserInfo build(){
-            return new UserInfo(this);
+            return userInfo(this);
         }
     }
 
@@ -89,6 +113,14 @@ public  class UserInfo {
         map.put("lat",lat);
         map.put("lang",lang);
         return map;
+    }
+
+    public String getUId() {
+        return uId;
+    }
+
+    public void setUId(String uId) {
+        this.uId = uId;
     }
 
     public String getEmail() {
@@ -138,8 +170,10 @@ public  class UserInfo {
     public void setLang(Double lang) {
         this.lang = lang;
     }
+
     public void setLatLang(Double Lat, Double Lang){
         this.lat = lat;
         this.lang = lang;
     }
+
 }

@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="match_parent"
+    tools:context=".ProfileActivity">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="50dp"
+        >
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageView
+                android:id="@+id/profile_user_image_ev"
+                android:layout_width="125dp"
+                android:layout_height="125dp"
+                android:src="@drawable/user_not_available_image" />
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical|center_horizontal"
+                android:layout_marginTop="20dp"
+                >
+            <Button
+                android:id="@+id/dp_upload_button"
+                android:layout_width="105dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center"
+                android:visibility="invisible"
+                android:textColor="@color/white"
+                android:text="Choose"
+                android:background="@drawable/custom_button"
+                android:textSize="14sp" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_horizontal|center_vertical"
+                    >
+                    <ImageButton
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:background="@drawable/transparent_button"
+                        android:src="@drawable/ic_file_upload_green_50dp" />
+                    <ImageButton
+                        android:layout_marginLeft="10dp"
+                        android:layout_width="45dp"
+                        android:layout_height="45dp"
+                        android:layout_gravity="center_vertical|center_horizontal"
+                        android:background="@drawable/transparent_button"
+                        android:src="@drawable/ic_cancel_red_50dp" />
+                </LinearLayout>
+
+            </RelativeLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:layout_marginTop="20dp"
+        android:id="@+id/edit_texts_holder">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center">
+            <studio.carbonylgroup.textfieldboxes.TextFieldBoxes
+                android:layout_width="1dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                app:hasFocus="true"
+                app:enabled="true"
+                app:hasClearButton="true"
+                android:visibility="visible"
+                app:primaryColor="@color/white">
+
+                <studio.carbonylgroup.textfieldboxes.ExtendedEditText
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionNext"
+                    android:singleLine="true"
+                    android:text="N/A"
+                    tools:layout_conversion_absoluteHeight="20dp"
+                    tools:layout_conversion_absoluteWidth="14dp"
+                    tools:layout_editor_absoluteX="100dp"
+                    tools:layout_editor_absoluteY="206dp" />
+
+            </studio.carbonylgroup.textfieldboxes.TextFieldBoxes>
+            <studio.carbonylgroup.textfieldboxes.TextFieldBoxes
+                android:id="@+id/profile_username_tf"
+                android:layout_width="266dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                app:hasFocus="false"
+                app:hasClearButton="true"
+                app:helperText="tap to edit"
+                app:labelText="Full Name"
+                app:primaryColor="@color/A400red">
+
+                <studio.carbonylgroup.textfieldboxes.ExtendedEditText
+                    android:id="@+id/profile_username_et"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionNext"
+                    android:singleLine="true"
+                    android:textColorHint="@color/black"
+                    tools:layout_conversion_absoluteHeight="20dp"
+                    tools:layout_conversion_absoluteWidth="14dp"
+                    tools:layout_editor_absoluteX="100dp"
+                    tools:layout_editor_absoluteY="206dp" />
+
+            </studio.carbonylgroup.textfieldboxes.TextFieldBoxes>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center">
+            <studio.carbonylgroup.textfieldboxes.TextFieldBoxes
+                android:id="@+id/profile_regino_tf"
+                android:layout_width="266dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                app:enabled="true"
+                app:hasFocus="false"
+                app:hasClearButton="true"
+                app:helperText="tap to edit"
+                app:labelText="Registration No:"
+                app:primaryColor="@color/A400red">
+
+                <studio.carbonylgroup.textfieldboxes.ExtendedEditText
+                    android:id="@+id/profile_regino_et"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionNext"
+                    android:singleLine="true"
+                    android:inputType="number"
+                    tools:layout_conversion_absoluteHeight="20dp"
+                    tools:layout_conversion_absoluteWidth="14dp"
+                    tools:layout_editor_absoluteX="100dp"
+                    tools:layout_editor_absoluteY="206dp" />
+
+            </studio.carbonylgroup.textfieldboxes.TextFieldBoxes>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="center_vertical"
+        android:layout_marginLeft="75dp">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ID not Detected"
+            android:textSize="20dp"
+            android:textColor="@color/black"/>
+        </LinearLayout>
+
+            <Button
+                android:id="@+id/id_upload_button"
+                android:layout_width="80dp"
+                android:layout_marginLeft="20dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center"
+                android:textColor="@color/white"
+                android:text="Choose"
+                android:background="@drawable/custom_button"
+                android:textSize="10sp" />
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="80dp"
+        android:layout_gravity="center_horizontal|center_vertical"
+        >
+        <TextView
+            android:id="@+id/complete_profile_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/A400red"
+            android:layout_gravity="center"
+            android:textSize="10sp"
+            android:text="complete your profile and ask for permission"/>
+        <Button
+            android:layout_width="266dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_button"
+            android:textColor="@color/white"
+
+            android:text="Save Profile"/>
+    </LinearLayout>
+
+</LinearLayout>

@@ -6,7 +6,9 @@ import androidx.core.content.ContextCompat;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.ShortcutManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.view.Window;
@@ -16,12 +18,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,7 +54,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Boolean isDriver;
     private FirebaseAuth mAuth;
     private DatabaseReference databaseReference;
-    UserInfo userInfo;
+    private FirebaseFirestore db;
+    private UserInfo userInfo;
 
     private ProgressDialog progressDialog;
 
@@ -90,6 +97,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         signUpBtn.setOnClickListener(this);
         signInTv.setOnClickListener(this);
 
+        userInfo = UserInfo.getInstance();
+
 
     }
 
@@ -99,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     protected void onStart(){
         super.onStart();
+        db = FirebaseFirestore.getInstance();
         databaseReference= FirebaseDatabase.getInstance().getReference().child("users");
         mAuth=FirebaseAuth.getInstance();
 
@@ -133,14 +143,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         if(task.isSuccessful()) {
                             progressDialog.hide();
-                            String uid=mAuth.getCurrentUser().getUid();
+//
+//                            DatabaseReference childDb=databaseReference.child(mAuth.getCurrentUser().getUid());
+//
+//                            childDb.child("email").setValue(email);
+//                            childDb.child("isStudentPermitted").setValue(false);
+//                            childDb.child("isDriver").setValue(false);
+//                            childDb.child("userName").setValue(userName);
+                            userInfo.getBuilder()
+                                    .setDriver(false)
+                                    .setIsStudentPermitted(false)
+                                    .setEmail(email)
+                                    .setUId(mAuth.getCurrentUser().getUid())
+                                    .build();
 
-                            DatabaseReference childDb=databaseReference.child(uid);
 
-                            childDb.child("email").setValue(email);
-                            childDb.child("isStudentPermitted").setValue(false);
-                            childDb.child("isDriver").setValue(false);
-                            childDb.child("userName").setValue(userName);
+                            db.collection("users").document(userInfo.getUId())
+                                    .set(userInfo.toMap());
+
 
                             Intent intent=new Intent(MainActivity.this,HomeActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

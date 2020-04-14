@@ -29,13 +29,23 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ThrowOnExtraProperties;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.sustbus.driver.MapsActivity.MIN_DIST;
 import static com.sustbus.driver.MapsActivity.MIN_TIME;
@@ -49,7 +59,9 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private CardView openMapBtn;
     private CardView scheduleBtn;
     private CardView shareRideTv;
-    private DatabaseReference databaseReference,userDatabaseReference,userLocationData;
+    private CardView profileCv;
+    private DatabaseReference databaseReference,userDatabaseReference,userLocationData,firestoreDb;
+    private FirebaseFirestore db;
     private FirebaseAuth mAuth;
     private ImageView rideShareIndicatorIV;
     private boolean isRideShareOn=false,quit=false;
@@ -70,16 +82,22 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         scheduleBtn = findViewById(R.id.bus_schedule_cv);
         userNameTv =  findViewById(R.id.user_name_tv);
         driverOrStudent = findViewById(R.id.driver_or_student_tv);
+        profileCv = findViewById(R.id.profile_cv);
 
         openMapBtn.setOnClickListener(this);
         scheduleBtn.setOnClickListener(this);
         shareRideTv.setOnClickListener(this);
-
+        profileCv.setOnClickListener(this);
         shareRideTv.setEnabled(false);
 
         databaseReference= FirebaseDatabase.getInstance().getReference();
         mAuth=FirebaseAuth.getInstance();
 
+
+
+        /**
+         * Database initialization
+         * */
 
         if(mAuth.getCurrentUser()==null){
             Intent intent=new Intent(HomeActivity.this,LoginActivity.class);
@@ -89,43 +107,72 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         }
         else{
             userUid=mAuth.getCurrentUser().getUid();
-            userDatabaseReference=databaseReference.child("users").child(userUid);
+            db = FirebaseFirestore.getInstance();
+            userInfo = UserInfo.getInstance();
+            db.collection("users")
+                    .document(userUid)
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            if(task.isSuccessful()){
+                                DocumentSnapshot document = task.getResult();
+                                if(document.exists()){
+                                    userInfo.getBuilder()
+                                            .setIsStudentPermitted( document.getBoolean("isStudentPermitted"))
+                                            .setEmail(document.getString("email"))
+                                            .setDriver(document.getBoolean("isDriver"))
+                                            .setUserName(document.getString("userName"))
+                                            .build();
+                                    userNameTv.setText(userInfo.getUserName());
+                                    if(userInfo.isDriver){
+                                        driverOrStudent.setText("Driver");
+                                        shareRideTv.setEnabled(true);
+                                    }
+                                    else {
+                                        driverOrStudent.setText("Student");
+                                    }
+                                    Log.d(TAG, "onComplete: " + userInfo.toMap());
+                                }
+                            }
+                        }
+                    });
+
+
+//            userDatabaseReference=databaseReference.child("users").child(userUid);
 
             userLocationData=databaseReference.child("alive");
 
-            userDatabaseReference.addValueEventListener(new ValueEventListener() {
-
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    userInfo = UserInfo.getBuilder()
-                            .setUserName(dataSnapshot.child("userName").getValue(String.class))
-                            .setIsStudentPermitted(dataSnapshot.child("isStudentPermitted").getValue(Boolean.class))
-                            .setEmail(dataSnapshot.child("email").getValue(String.class))
-                            .setDriver(dataSnapshot.child("isDriver").getValue(Boolean.class))
-                            .build();
-
-                    userNameTv.setText(userInfo.getUserName());
-                    if(userInfo.isDriver){
-                        driverOrStudent.setText("Driver");
-                        shareRideTv.setEnabled(true);
-                    }
-                    else {
-                        driverOrStudent.setText("Student");
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                }
-            });
+//            userDatabaseReference.addValueEventListener(new ValueEventListener() {
+//
+//                @Override
+//                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                    userInfo.getBuilder()
+//                            .setIsStudentPermitted(dataSnapshot.child("isStudentPermitted").getValue(Boolean.class))
+//                            .setEmail(dataSnapshot.child("email").getValue(String.class))
+//                            .setDriver(dataSnapshot.child("isDriver").getValue(Boolean.class))
+//                            .build();
+//
+//                    userNameTv.setText(userInfo.getUserName());
+//                    if(userInfo.isDriver){
+//                        driverOrStudent.setText("Driver");
+//                        shareRideTv.setEnabled(true);
+//                    }
+//                    else {
+//                        driverOrStudent.setText("Student");
+//                    }
+//                }
+//
+//                @Override
+//                public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                }
+//            });
         }
 
 
         mapUtil=MapUtil.getInstance();
     }
-
-
 
     public void turnOnRideShare(){
 
@@ -157,7 +204,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             public void onLocationChanged(Location location) {
                 userLocationData.child(userUid).child("lat").setValue(location.getLatitude());
                 userLocationData.child(userUid).child("lng").setValue(location.getLongitude());
-
             }
 
             @Override
@@ -219,6 +265,9 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         }
         else  if(i==R.id.track_buses_cv){
             startActivity(new Intent(HomeActivity.this,MapsActivity.class));
+        }
+        else if(i==R.id.profile_cv){
+            startActivity(new Intent(HomeActivity.this,ProfileActivity.class));
         }
     }
 
