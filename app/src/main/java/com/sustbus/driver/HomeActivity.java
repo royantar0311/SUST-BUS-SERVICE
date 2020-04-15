@@ -20,6 +20,7 @@
 
 package com.sustbus.driver;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
@@ -103,7 +104,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private int determineCallCount;
     private GeoCoordinates previousPosition,currentPosition;
 
-    UserInfo userInfo;
+    UserInfo userInfo=null;
     Intent intent ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,7 +148,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             databaseReference= FirebaseDatabase.getInstance().getReference();
             userUid=mAuth.getCurrentUser().getUid();
             firestoreDb = FirebaseFirestore.getInstance();
-            userInfo = UserInfo.getInstance();
             userLocationData=databaseReference.child("alive").child(userUid);
             userPathReference=databaseReference.child("destinations").child(userUid).child("path");
 
@@ -164,7 +164,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
                     if (documentSnapshot != null && documentSnapshot.exists()) {
 
-                        userInfo = documentSnapshot.toObject(UserInfo.class);
+                        UserInfo.setInstance(documentSnapshot.toObject(UserInfo.class));
+                        userInfo=UserInfo.getInstance();
 
 
                         Log.d(TAG, "Current data: " + documentSnapshot.getData());
@@ -448,7 +449,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         else  if(i==R.id.track_buses_cv){
             startActivity(new Intent(HomeActivity.this,MapsActivity.class));
         }
-        else if(i==R.id.profile_cv){
+        else if(i==R.id.profile_cv && userInfo!=null){
             startActivity(new Intent(HomeActivity.this,ProfileActivity.class));
         }
     }

@@ -2,6 +2,7 @@ package com.sustbus.driver;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.firestore.auth.User;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,7 +11,7 @@ public class UserInfo {
     public static final int STUDENT_PERMITTED= 1;
     public static final int STUDENT_NOT_PERMITTED= 0;
     public static final int PERMISSION_PENDING=-1;
-    private static UserInfo instance = new UserInfo();
+    private static UserInfo instance=new UserInfo();
 
     private String email;
     private long isStudentPermitted;
@@ -27,10 +28,11 @@ public class UserInfo {
     private String regiNo;
 
     public static UserInfo getInstance(){
-//        if(instance == null){
-//            instance = new UserInfo();
-//        }
         return instance;
+    }
+
+    public static void setInstance(UserInfo i){
+        instance=i;
     }
 
     public UserInfo() {

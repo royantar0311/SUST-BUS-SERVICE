@@ -261,7 +261,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public boolean onMarkerClick(Marker marker) {
         String path=pathInformationMap.get((String)marker.getTag());
 
-        if(path=="NA;" || path==null){
+        if(path==null || path.equals((String)"NA;")){
             Snackbar.make(findViewById(R.id.maps_activity),"Sorry, Currently Route is not availavle for this bus",Snackbar.LENGTH_LONG).show();
             return false;
         }
@@ -295,8 +295,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
            public void onRouteCalculated(@Nullable RoutingError routingError, @Nullable List<Route> list) {
 
                if(routingError==null){
+                   Log.d("ROUTE","ok");
                    Route route=list.get(0);
                    showRoute(route);
+
                }
                else{
                    Snackbar.make(findViewById(R.id.maps_activity),routingError.toString(),Snackbar.LENGTH_LONG);

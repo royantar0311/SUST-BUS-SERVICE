@@ -158,6 +158,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     .setIsStudentPermitted(UserInfo.STUDENT_NOT_PERMITTED)
                                     .setEmail(email)
                                     .setuId(mAuth.getCurrentUser().getUid())
+                                    .setUserName(userName)
                                     .build();
 
 
