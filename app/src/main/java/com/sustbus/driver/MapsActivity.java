@@ -50,8 +50,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final String TAG = "MapsActivity";
 
     private GoogleMap mMap;
-    public static final int MIN_TIME = 1000;
-    public static final int MIN_DIST = 5;
+    public static final int MIN_TIME = 0;
+    public static final int MIN_DIST = 0;
     private ImageButton locateMeBtn;
     private FirebaseAuth mAuth;
     private DatabaseReference userDatabaseReference;

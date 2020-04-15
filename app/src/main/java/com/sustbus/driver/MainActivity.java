@@ -28,6 +28,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.auth.User;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -97,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         signUpBtn.setOnClickListener(this);
         signInTv.setOnClickListener(this);
 
+
         userInfo = UserInfo.getInstance();
 
 
@@ -128,7 +130,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
-        } else if (i == R.id.signup_btn) {
+        }
+        else if (i == R.id.signup_btn) {
 
 
             if (emailOk && userNameOk && passwordOk) {
@@ -152,13 +155,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                            childDb.child("userName").setValue(userName);
                             userInfo.getBuilder()
                                     .setDriver(false)
-                                    .setIsStudentPermitted(false)
+                                    .setIsStudentPermitted(UserInfo.STUDENT_NOT_PERMITTED)
                                     .setEmail(email)
-                                    .setUId(mAuth.getCurrentUser().getUid())
+                                    .setuId(mAuth.getCurrentUser().getUid())
                                     .build();
 
 
-                            db.collection("users").document(userInfo.getUId())
+                            db.collection("users")
+                                    .document(userInfo.getuId())
                                     .set(userInfo.toMap());
 
 

@@ -1,6 +1,5 @@
 package com.sustbus.driver;
 
-import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 
@@ -8,10 +7,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class UserInfo {
+    public static final int STUDENT_PERMITTED= 1;
+    public static final int STUDENT_NOT_PERMITTED= 0;
+    public static final int PERMISSION_PENDING=-1;
+    private static UserInfo instance = new UserInfo();
+
     private String email;
-    private boolean isStudentPermitted;
+    private long isStudentPermitted;
     private String userName;
-    boolean isDriver;
+    private boolean driver;
     private Double lat;
     private Double lang;
     private DatabaseReference databaseReference;
@@ -19,17 +23,20 @@ public class UserInfo {
     private DatabaseReference userLocationData;
     private FirebaseAuth mAuth;
     private String uId;
-    private static UserInfo instance;
+
+    private String regiNo;
 
     public static UserInfo getInstance(){
-        if(instance == null){
-            instance = new UserInfo();
-        }
+//        if(instance == null){
+//            instance = new UserInfo();
+//        }
         return instance;
     }
 
     public UserInfo() {
     }
+
+
 
     /**Private method needed for the builder
      * class to store them on the main userinfo
@@ -39,7 +46,7 @@ public class UserInfo {
         instance.email = builder.email;
         instance.isStudentPermitted = builder.isStudentPermitted;
         instance.userName = builder.userName;
-        instance.isDriver = builder.isDriver;
+        instance.driver = builder.isDriver;
         instance.lat = builder.lat;
         instance.lang = builder.lang;
         instance.uId = builder.uId;
@@ -56,7 +63,7 @@ public class UserInfo {
 
     public class Builder{
         String email;
-        boolean isStudentPermitted;
+        long isStudentPermitted;
         String userName;
         boolean isDriver;
         Double lat;
@@ -70,7 +77,7 @@ public class UserInfo {
             return this;
         }
 
-        public Builder setIsStudentPermitted(boolean isStudentPermitted) {
+        public Builder setIsStudentPermitted(long isStudentPermitted) {
             this.isStudentPermitted = isStudentPermitted;
             return this;
         }
@@ -94,7 +101,7 @@ public class UserInfo {
             this.lang = lang;
             return this;
         }
-        public Builder setUId(String uId) {
+        public Builder setuId(String uId) {
             this.uId = uId;
             return this;
         }
@@ -109,71 +116,75 @@ public class UserInfo {
         map.put("email", email);
         map.put("isStudentPermitted",isStudentPermitted);
         map.put("userName", userName);
-        map.put("isDriver", isDriver);
+        map.put("driver", driver);
         map.put("lat",lat);
         map.put("lang",lang);
+        map.put("uId",uId);
+        map.put("regiNo",regiNo);
         return map;
     }
 
-    public String getUId() {
-        return uId;
+    public String getRegiNo() {
+        return regiNo;
     }
 
-    public void setUId(String uId) {
-        this.uId = uId;
+    public void setRegiNo(String regiNo) {
+        this.regiNo = regiNo;
     }
 
     public String getEmail() {
         return email;
     }
 
-    public boolean getIsStudentPermitted() {
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public long getIsStudentPermitted() {
         return isStudentPermitted;
+    }
+
+    public void setIsStudentPermitted(long isStudentPermitted) {
+        this.isStudentPermitted = isStudentPermitted;
     }
 
     public String getUserName() {
         return userName;
     }
 
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
     public boolean isDriver() {
-        return isDriver;
+        return driver;
+    }
+
+    public void setDriver(boolean driver) {
+        this.driver = driver;
     }
 
     public Double getLat() {
         return lat;
     }
 
-    public Double getLang() {
-        return lang;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setIsStudentPermitted(boolean isStudentPermitted) {
-        this.isStudentPermitted =isStudentPermitted;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public void setDriver(boolean driver) {
-        isDriver = driver;
-    }
-
     public void setLat(Double lat) {
         this.lat = lat;
+    }
+
+    public Double getLang() {
+        return lang;
     }
 
     public void setLang(Double lang) {
         this.lang = lang;
     }
 
-    public void setLatLang(Double Lat, Double Lang){
-        this.lat = lat;
-        this.lang = lang;
+    public String getuId() {
+        return uId;
     }
 
+    public void setuId(String uId) {
+        this.uId = uId;
+    }
 }
