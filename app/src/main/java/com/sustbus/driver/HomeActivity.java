@@ -1,3 +1,23 @@
+/*
+ * Copyright (C) 2019-2020 HERE Europe B.V.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ * License-Filename: LICENSE
+ */
+
+
 package com.sustbus.driver;
 
 import androidx.annotation.Nullable;
@@ -7,20 +27,29 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Looper;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
@@ -29,9 +58,25 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.database.ValueEventListener;
+import com.here.sdk.core.GeoCoordinates;
+import com.here.sdk.*;
+import com.here.sdk.core.GeoPolyline;
+import com.here.sdk.mapviewlite.MapViewLite;
+import com.here.sdk.routing.CalculateRouteCallback;
+import com.here.sdk.routing.Route;
+import com.here.sdk.routing.RoutingEngine;
+import com.here.sdk.routing.RoutingError;
+import com.here.sdk.routing.Waypoint;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static com.sustbus.driver.MapsActivity.MIN_DIST;
 import static com.sustbus.driver.MapsActivity.MIN_TIME;
+import static com.sustbus.driver.UserInfo.*;
+
 
 public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "HomeActivity";
@@ -43,7 +88,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private CardView shareRideTv;
     private CardView profileCv;
     private CardView signOut;
-    private DatabaseReference databaseReference,userDatabaseReference,userLocationData;
+    private DatabaseReference databaseReference,userDatabaseReference,userLocationData,userPathReference;
     private FirebaseFirestore firestoreDb;
     private FirebaseAuth mAuth;
     private ImageView rideShareIndicatorIV;
@@ -52,6 +97,12 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private LocationListener locationListener;
     private String userUid;
     private MapUtil mapUtil;
+    private PermissionsRequestor permissionsRequestor;
+    private List<String> pathString;
+    private boolean pathOk;
+    private int determineCallCount;
+    private GeoCoordinates previousPosition,currentPosition;
+
     UserInfo userInfo;
     Intent intent ;
     @Override
@@ -77,6 +128,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
         shareRideTv.setEnabled(false);
 
+        databaseReference= FirebaseDatabase.getInstance().getReference();
         mAuth=FirebaseAuth.getInstance();
 
 
@@ -96,6 +148,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             userUid=mAuth.getCurrentUser().getUid();
             firestoreDb = FirebaseFirestore.getInstance();
             userInfo = UserInfo.getInstance();
+            userLocationData=databaseReference.child("alive").child(userUid);
+            userPathReference=databaseReference.child("destinations").child(userUid).child("path");
 
             /**
              * getting data from cloud firestore
@@ -139,7 +193,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 }
             });
-            userLocationData=databaseReference.child("alive");
 
             /**
              * previously firebase realtime-database was used;
@@ -176,7 +229,26 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         mapUtil=MapUtil.getInstance();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        permissionsRequestor=new PermissionsRequestor(this);
+        permissionsRequestor.request(new PermissionsRequestor.ResultListener() {
+            @Override
+            public void permissionsGranted() {
+
+            }
+
+            @Override
+            public void permissionsDenied() {
+                Snackbar.make(findViewById(R.id.home_scrollview),"Please grant all Permissions",Snackbar.LENGTH_LONG).show();
+            }
+        });
+
+    }
+
     public void turnOnRideShare(){
+
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         /**
@@ -203,14 +275,18 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         isRideShareOn=true;
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.end_ride));
 
-        userLocationData.child(userUid).child("destination").setValue(mapUtil.CAMPUS+";"+mapUtil.AMBORKHANA+";");
+        initializePath();
+
+        userLocationData.child("title").setValue("Campus-Tilagor-Campus");
 
         locationListener = new LocationListener() {
 
             @Override
             public void onLocationChanged(Location location) {
-                userLocationData.child(userUid).child("lat").setValue(location.getLatitude());
-                userLocationData.child(userUid).child("lng").setValue(location.getLongitude());
+                userLocationData.child("lat").setValue(location.getLatitude());
+                userLocationData.child("lng").setValue(location.getLongitude());
+                handlePath(new GeoCoordinates(location.getLatitude(),location.getLongitude()));
+
             }
 
             @Override
@@ -235,11 +311,97 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,MIN_TIME,MIN_DIST,locationListener );
         }
         catch (SecurityException e){
-            Snackbar.make(findViewById(R.id.maps_activity),e.getMessage(),Snackbar.LENGTH_SHORT).show();
+            Snackbar.make(findViewById(R.id.home_scrollview),e.getMessage(),Snackbar.LENGTH_SHORT).show();
         }
 
     }
 
+    public void determineCurrentLocation(GeoCoordinates latLng){
+
+        if(determineCallCount==0)previousPosition=latLng;
+        else if(latLng.distanceTo(previousPosition)>=5){
+            currentPosition=latLng;
+            int rem=0;
+            for (int i=0;i+1<pathString.size();i++){
+                GeoCoordinates co1=mapUtil.GeoCoordinatesMap.get(pathString.get(i));
+                GeoCoordinates co2=mapUtil.GeoCoordinatesMap.get(pathString.get(i+1));
+
+                if(Math.abs(currentPosition.distanceTo(co2)+previousPosition.distanceTo(co2)-previousPosition.distanceTo(currentPosition))<=1){
+
+                    if(co1.distanceTo(previousPosition)<co1.distanceTo(currentPosition)){
+                        rem=i+2;
+                        break;
+                    }
+
+                }
+                else if(Math.abs(currentPosition.distanceTo(co1)+previousPosition.distanceTo(co1)-previousPosition.distanceTo(currentPosition))<=1){
+
+                    if(co2.distanceTo(previousPosition)>co2.distanceTo(currentPosition)){
+                        rem=i+1;
+                        break;
+                    }
+
+                }
+                else if(co1.distanceTo(previousPosition)<co1.distanceTo(currentPosition) && co2.distanceTo(previousPosition)>co2.distanceTo(currentPosition)){
+                    rem=i+1;
+                    break;
+
+                }
+
+
+            }
+
+            if(rem==0){
+               determineCallCount=0;
+               return;
+            }
+            else{
+                for (int i=0;i<rem;i++)pathString.remove(0);
+                pathOk=true;
+                updatePath();
+            }
+        }
+
+        determineCallCount=1;
+
+    }
+
+
+
+    public void handlePath(GeoCoordinates newLatLng){
+
+        if(pathString.size()==1)return;
+
+        if(!pathOk){
+            determineCurrentLocation(newLatLng);
+            return;
+        }
+
+
+        GeoCoordinates toCheck=mapUtil.GeoCoordinatesMap.get(pathString.get(0));
+
+        if(newLatLng.distanceTo(toCheck)<=100){
+            pathString.remove(0);
+            updatePath();
+        }
+
+
+    }
+
+    public void initializePath(){
+
+        pathString=new ArrayList<>(Arrays.asList(mapUtil.CAMPUS,mapUtil.CAMPUS_GATE,mapUtil.MODINA_MARKET,mapUtil.SUBID_BAZAR,mapUtil.AMBORKHANA,mapUtil.EIDGAH,mapUtil.KUMARPARA,mapUtil.TILAGOR,mapUtil.BALUCHAR, mapUtil.CAMPUS));
+        userPathReference.setValue("NA;");
+        pathOk=false;
+        determineCallCount=0;
+
+    }
+
+  public  void updatePath(){
+      String path=new String();
+      for (String s:pathString)path+=(s+";");
+      userPathReference.setValue(path);
+  }
     public Activity getActivity(){
         return (Activity)this;
     }
@@ -250,7 +412,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.start_ride));
         locationManager.removeUpdates(locationListener);
         locationListener=null;
-        userLocationData.child(userUid).setValue(null);
+        userLocationData.setValue(null);
+        userPathReference.setValue(null);
     }
 
 
@@ -265,12 +428,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             /**
              * check for permission to use location service
              * */
-            if(userInfo.isDriver() && (ContextCompat.checkSelfPermission(HomeActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
-                    PackageManager.PERMISSION_GRANTED || requestLocationPermission()) ) {
+            if(userInfo.isDriver() ) {
                 if(!isRideShareOn)turnOnRideShare();
                 else turnOffRideShare();
             }
-            else if(!userInfo.isDriver()){
+            else{
                 Snackbar.make(findViewById(R.id.home_scrollview), "You're not a Driver!", Snackbar.LENGTH_SHORT).show();
             }
         }
@@ -300,43 +462,23 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private boolean requestLocationPermission() {
-        if(ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.ACCESS_FINE_LOCATION)){
-            new AlertDialog.Builder(this)
-                    .setTitle("Permission Needed")
-                    .setMessage("This Permission is Needed Share Your Location")
-                    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            ActivityCompat.requestPermissions(HomeActivity.this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION},LOCATION_PERMISSION_CODE);
-                            shareRideTv.callOnClick();
-                        }
-                    })
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            dialogInterface.dismiss();
-                        }
-                    }).create().show();
-        }
-        else {
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION},LOCATION_PERMISSION_CODE);
-        }
-        if(ContextCompat.checkSelfPermission(HomeActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
-                PackageManager.PERMISSION_GRANTED){
-            return true;
-        }
-        else return false;
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        permissionsRequestor.onRequestPermissionsResult(requestCode,grantResults);
     }
 
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
         if(isRideShareOn) {
             locationManager.removeUpdates(locationListener);
             locationListener=null;
-            userLocationData.child(userUid).removeValue();
+            userLocationData.removeValue();
+            userPathReference.setValue(null);
+
         }
     }
 }
