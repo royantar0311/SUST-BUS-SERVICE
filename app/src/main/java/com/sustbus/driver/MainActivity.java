@@ -50,11 +50,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     boolean userNameOk = false;
     boolean emailOk = false;
     boolean passwordOk = false;
-    private Intent intent;
-    private Bundle bundle;
-    private Boolean isDriver;
     private FirebaseAuth mAuth;
-    private DatabaseReference databaseReference;
     private FirebaseFirestore db;
     private UserInfo userInfo;
 
@@ -111,9 +107,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onStart(){
         super.onStart();
         db = FirebaseFirestore.getInstance();
-        databaseReference= FirebaseDatabase.getInstance().getReference().child("users");
         mAuth=FirebaseAuth.getInstance();
-
     }
 
 
@@ -153,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                            childDb.child("isStudentPermitted").setValue(false);
 //                            childDb.child("isDriver").setValue(false);
 //                            childDb.child("userName").setValue(userName);
-                            userInfo.getBuilder()
+                            UserInfo.getBuilder()
                                     .setDriver(false)
                                     .setIsStudentPermitted(UserInfo.STUDENT_NOT_PERMITTED)
                                     .setEmail(email)

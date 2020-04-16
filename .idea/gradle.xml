@@ -12,6 +12,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/heresdk-lite-android-4.2.0.0.1296" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

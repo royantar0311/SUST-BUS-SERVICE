@@ -12,6 +12,7 @@ public class UserInfo {
     public static final int STUDENT_NOT_PERMITTED= 0;
     public static final int PERMISSION_PENDING=-1;
     private static UserInfo instance=new UserInfo();
+    public static Builder builder = new Builder();
 
     private String email;
     private long isStudentPermitted;
@@ -19,12 +20,7 @@ public class UserInfo {
     private boolean driver;
     private Double lat;
     private Double lang;
-    private DatabaseReference databaseReference;
-    private DatabaseReference userDatabaseReference;
-    private DatabaseReference userLocationData;
-    private FirebaseAuth mAuth;
     private String uId;
-
     private String regiNo;
 
     public static UserInfo getInstance(){
@@ -44,7 +40,7 @@ public class UserInfo {
      * class to store them on the main userinfo
      * object after getting all the data*/
 
-    UserInfo userInfo(Builder builder) {
+     static UserInfo userInfo(Builder builder) {
         instance.email = builder.email;
         instance.isStudentPermitted = builder.isStudentPermitted;
         instance.userName = builder.userName;
@@ -52,18 +48,18 @@ public class UserInfo {
         instance.lat = builder.lat;
         instance.lang = builder.lang;
         instance.uId = builder.uId;
-        return this;
+        return instance;
     }
 
     /**This method creates a object of the inner Builder class */
 
-    public  Builder getBuilder(){
-        return new Builder();
+    static Builder getBuilder(){
+        return builder;
     }
 
     /**Builder pattern to build a Userinfo*/
 
-    public class Builder{
+    public static class Builder{
         String email;
         long isStudentPermitted;
         String userName;
@@ -71,6 +67,7 @@ public class UserInfo {
         Double lat;
         Double lang;
         String uId;
+        String regiNo;
 
         Builder(){}
 
@@ -108,8 +105,13 @@ public class UserInfo {
             return this;
         }
 
+        public Builder setRegiNo(String regiNo) {
+            this.regiNo = regiNo;
+            return this;
+        }
+
         public UserInfo build(){
-            return userInfo(this);
+            return userInfo(builder );
         }
     }
 
@@ -119,8 +121,6 @@ public class UserInfo {
         map.put("isStudentPermitted",isStudentPermitted);
         map.put("userName", userName);
         map.put("driver", driver);
-        map.put("lat",lat);
-        map.put("lang",lang);
         map.put("uId",uId);
         map.put("regiNo",regiNo);
         return map;
