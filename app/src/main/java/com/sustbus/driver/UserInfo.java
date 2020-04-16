@@ -22,6 +22,7 @@ public class UserInfo {
     private Double lang;
     private String uId;
     private String regiNo;
+    private String url;
 
     public static UserInfo getInstance(){
         return instance;
@@ -68,6 +69,7 @@ public class UserInfo {
         Double lang;
         String uId;
         String regiNo;
+        String url;
 
         Builder(){}
 
@@ -110,6 +112,11 @@ public class UserInfo {
             return this;
         }
 
+        public Builder setUrl(String url) {
+            this.url = url;
+            return this;
+        }
+
         public UserInfo build(){
             return userInfo(builder );
         }
@@ -123,7 +130,16 @@ public class UserInfo {
         map.put("driver", driver);
         map.put("uId",uId);
         map.put("regiNo",regiNo);
+        map.put("url",url);
         return map;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     public String getRegiNo() {

@@ -37,6 +37,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
@@ -65,6 +66,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private CardView shareRideTv;
     private CardView profileCv;
     private CardView signOut;
+    private ImageView dpEv;
     private DatabaseReference databaseReference,userDatabaseReference,userLocationData,userPathReference;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
@@ -95,6 +97,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         driverOrStudent = findViewById(R.id.driver_or_student_tv);
         profileCv = findViewById(R.id.profile_cv);
         signOut = findViewById(R.id.help_center_cv);
+        dpEv = findViewById(R.id.home_user_image_ev);
 
 
         openMapBtn.setOnClickListener(this);
@@ -145,16 +148,22 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                         userInfo=UserInfo.getInstance();
 
 
-                        Log.d(TAG, "Current data: " + documentSnapshot.getData());
+                        Log.d(TAG, "Current data on Changed: on HomeActivty" + documentSnapshot.getData());
                         Log.d(TAG, "userInfo new datas"
                                     + "\nisDriver " + userInfo.isDriver()
                                     + "\nuid " + userInfo.getuId()
                                     + "\nispermitted " + userInfo.getIsStudentPermitted()
                                     + "\nemail " + userInfo.getEmail()
+                                    + "\nurl " + userInfo.getUrl()
                         );
                         /**
                          * setting up dashboard for user (driver/student)
                          * */
+                        if(userInfo.getUrl() != null){
+                            Glide.with(HomeActivity.this)
+                                    .load(userInfo.getUrl())
+                                    .into(dpEv);
+                        }
                         userNameTv.setText(userInfo.getUserName());
                         if(userInfo.isDriver()){
                             Log.d(TAG, "onEvent: " + " ashena?");
@@ -421,8 +430,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             FirebaseAuth.getInstance().signOut();
             Intent intent=new Intent(HomeActivity.this,LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
             startActivity(intent);
+
             finish();
 
         }
@@ -453,7 +462,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
         if(isRideShareOn) {
             locationManager.removeUpdates(locationListener);
             locationListener=null;
