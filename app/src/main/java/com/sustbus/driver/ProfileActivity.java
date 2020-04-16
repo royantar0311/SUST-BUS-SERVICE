@@ -1,5 +1,6 @@
 package com.sustbus.driver;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
@@ -7,9 +8,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.dd.CircularProgressButton;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 
 import studio.carbonylgroup.textfieldboxes.SimpleTextChangedWatcher;
 import studio.carbonylgroup.textfieldboxes.TextFieldBoxes;
@@ -21,8 +26,10 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     private Button updateProfileBtn;
     private TextFieldBoxes userNameTf;
     private TextFieldBoxes regiNoTf;
+    private String userName=null,regiNo=null;
     private boolean userNameOk;
     private boolean regiNoOk;
+    private FirebaseFirestore db;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,8 +63,18 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         });
         updateProfileBtn.setOnClickListener(this);
 
+        db = FirebaseFirestore.getInstance();
 
 
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(userInfo.getuId()+"/isStudentPermitted")
         if(userInfo.getIsStudentPermitted() == UserInfo.STUDENT_NOT_PERMITTED){
             updateProfileBtn.setText("Request Permission");
         }
@@ -84,7 +101,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             userNameTf.setCounterTextColor(ContextCompat.getColor(ProfileActivity.this, R.color.sust));
             userNameTf.setPrimaryColor(ContextCompat.getColor(ProfileActivity.this, R.color.sust));
             userNameOk = true;
-            userInfo.setUserName(theNewText);
+            userName = theNewText;
         }
     }
     private void regiNoValidator(String theNewText) {
@@ -98,7 +115,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             regiNoTf.setHelperText("");
             regiNoTf.setCounterTextColor(ContextCompat.getColor(ProfileActivity.this, R.color.sust));
             regiNoTf.setPrimaryColor(ContextCompat.getColor(ProfileActivity.this, R.color.sust));
-            userInfo.setRegiNo(theNewText);
+            regiNo = theNewText;
             regiNoOk = true;
         }
     }
@@ -107,23 +124,28 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     public void onClick(View view) {
         int i = view.getId();
         if(i == R.id.update_profile_btn){
-
-            if(userInfo.getIsStudentPermitted() == UserInfo.STUDENT_NOT_PERMITTED){
-                Log.d(TAG, "asking for permission");
-                requstAccess();
-            }
-            else if(userInfo.getIsStudentPermitted() == UserInfo.STUDENT_PERMITTED){
-                if(userNameOk && regiNoOk) {
-                    Log.d(TAG, "onClick: all ok");
-                    FirebaseFirestore.getInstance()
-                            .collection("users")
-                            .document()
-                            .update(userInfo.toMap());
+            if(userNameOk && regiNoOk) {
+                if (userInfo.getIsStudentPermitted() == UserInfo.STUDENT_NOT_PERMITTED) {
+                    Log.d(TAG, "onClick: update_profile_button -> asking for permission");
+                    userInfo.setIsStudentPermitted(UserInfo.PERMISSION_PENDING);
+                    updateProfileBtn.setEnabled(false);
+                    updateProfileBtn.setBackgroundColor();
+                } else {
+                    Log.d(TAG, "onClick: update_profile_button -> updating profile");
                 }
+
+                userInfo.setUserName(userName);
+                userInfo.setRegiNo(regiNo);
+
+                FirebaseFirestore.getInstance()
+                        .collection("users")
+                        .document(userInfo.getuId())
+                        .update(userInfo.toMap());
+            }
+            else {
+                Toast.makeText(ProfileActivity.this, "enter all fields correctly", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    private void requstAccess() {
-    }
 }

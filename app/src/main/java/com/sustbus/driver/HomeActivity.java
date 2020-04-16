@@ -24,33 +24,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
-import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.CountDownTimer;
-import android.os.Looper;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
@@ -59,16 +44,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.database.ValueEventListener;
 import com.here.sdk.core.GeoCoordinates;
-import com.here.sdk.*;
-import com.here.sdk.core.GeoPolyline;
-import com.here.sdk.mapviewlite.MapViewLite;
-import com.here.sdk.routing.CalculateRouteCallback;
-import com.here.sdk.routing.Route;
-import com.here.sdk.routing.RoutingEngine;
-import com.here.sdk.routing.RoutingError;
-import com.here.sdk.routing.Waypoint;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,7 +52,6 @@ import java.util.List;
 
 import static com.sustbus.driver.MapsActivity.MIN_DIST;
 import static com.sustbus.driver.MapsActivity.MIN_TIME;
-import static com.sustbus.driver.UserInfo.*;
 
 
 public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
@@ -90,7 +65,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private CardView profileCv;
     private CardView signOut;
     private DatabaseReference databaseReference,userDatabaseReference,userLocationData,userPathReference;
-    private FirebaseFirestore firestoreDb;
+    private FirebaseFirestore db;
     private FirebaseAuth mAuth;
     private ImageView rideShareIndicatorIV;
     private boolean isRideShareOn=false,quit=false;
@@ -139,6 +114,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
          * */
 
         if(mAuth.getCurrentUser()==null){
+            Log.d(TAG, "onCreate: " + "mAuth gets null" );
             Intent intent=new Intent(HomeActivity.this,LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
@@ -147,14 +123,14 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         else{
             databaseReference= FirebaseDatabase.getInstance().getReference();
             userUid=mAuth.getCurrentUser().getUid();
-            firestoreDb = FirebaseFirestore.getInstance();
+            db = FirebaseFirestore.getInstance();
             userLocationData=databaseReference.child("alive").child(userUid);
             userPathReference=databaseReference.child("destinations").child(userUid).child("path");
 
             /**
              * getting data from cloud firestore
              * */
-            firestoreDb.collection("users").document(userUid).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            db.collection("users").document(userUid).addSnapshotListener(new EventListener<DocumentSnapshot>() {
                 @Override
                 public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
                     if (e != null) {
@@ -190,6 +166,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                         }
                     }
                     else {
+
                         Log.d(TAG, "Current data: null");
                     }
                 }
