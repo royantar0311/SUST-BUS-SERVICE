@@ -74,7 +74,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         super.onStart();
         FirebaseFirestore.getInstance()
                 .collection("users")
-                .document(userInfo.getuId()+"/isStudentPermitted")
+                .document(userInfo.getuId()+"/isStudentPermitted");
         if(userInfo.getIsStudentPermitted() == UserInfo.STUDENT_NOT_PERMITTED){
             updateProfileBtn.setText("Request Permission");
         }
@@ -129,7 +129,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                     Log.d(TAG, "onClick: update_profile_button -> asking for permission");
                     userInfo.setIsStudentPermitted(UserInfo.PERMISSION_PENDING);
                     updateProfileBtn.setEnabled(false);
-                    updateProfileBtn.setBackgroundColor();
+                    updateProfileBtn.setBackgroundColor(ContextCompat.getColor(this,R.color.A400red));
                 } else {
                     Log.d(TAG, "onClick: update_profile_button -> updating profile");
                 }

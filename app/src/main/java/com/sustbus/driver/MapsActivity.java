@@ -464,7 +464,6 @@ public void showUserLocation() {
     }
 
 
-
     locationListener = new LocationListener() {
 
         @Override
