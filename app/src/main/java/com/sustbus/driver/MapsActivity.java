@@ -30,25 +30,35 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
+import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Cap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.maps.model.RoundCap;
+import com.google.android.gms.maps.model.SquareCap;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
@@ -58,6 +68,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.here.sdk.core.GeoBox;
 import com.here.sdk.core.GeoCoordinates;
+import com.here.sdk.core.GeoPolyline;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.routing.CalculateRouteCallback;
 import com.here.sdk.routing.OptimizationMode;
@@ -92,7 +103,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private RoutingEngine routingEngine;
     private Map<String,String> pathInformationMap;
     private boolean ok = false;
-
+    private Polyline polyline=null;
+    private List<Waypoint> waypoints=null;
+    private List<GeoCoordinates> geoCoordinatesOfPolyLine=null;
+    private RoutingEngine.CarOptions carOptions;
+    private boolean routeSelected=false;
+    private TextView informationTv;
+    private boolean freeLocateMeButton=true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,6 +122,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         locateMeBtn = findViewById(R.id.locate_me_btn);
 
         locateMeBtn.setOnClickListener(this);
+        informationTv=findViewById(R.id.information_tv);
 
         databaseReference= FirebaseDatabase.getInstance().getReference();
         mAuth=FirebaseAuth.getInstance();
@@ -134,8 +152,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                                          .include(new LatLng(24.861436,91.825502)).build();
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(),13f),100,null);
         mMap.setTrafficEnabled(true);
-
         mMap.setBuildingsEnabled(true);
+
+        try {
+            routingEngine=new RoutingEngine();
+
+        }
+        catch (InstantiationErrorException e){
+            new RuntimeException(e.error.name());
+
+        }
+
+        carOptions=new RoutingEngine.CarOptions();
+        carOptions.routeOptions=new RouteOptions.Builder().setAlternatives(0).setOptimizationMode(OptimizationMode.SHORTEST).build();
+        carOptions.restrictions=new RouteRestrictions();
+        carOptions.restrictions.avoidAreas=mapUtil.restrictionList;
+
+
         markerMap=new HashMap<>();
 
          childEventListener =new ChildEventListener() {
@@ -269,35 +302,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         MapUtil.PathInformation pathInformation=mapUtil.stringToPath(path);
 
         Waypoint starWaypoint=new Waypoint(new GeoCoordinates(marker.getPosition().latitude,marker.getPosition().longitude));
-        List<Waypoint> waypoints=pathInformation.getWayPoints();
+        waypoints=pathInformation.getWayPoints();
 
         waypoints.add(0,starWaypoint);
-
-
-
-        try {
-            routingEngine=new RoutingEngine();
-
-        }
-        catch (InstantiationErrorException e){
-            new RuntimeException(e.error.name());
-            return false;
-        }
-
-
-        RoutingEngine.CarOptions carOptions=new RoutingEngine.CarOptions();
-        carOptions.routeOptions=new RouteOptions.Builder().setAlternatives(0).setOptimizationMode(OptimizationMode.SHORTEST).build();
-        carOptions.restrictions=new RouteRestrictions();
-        carOptions.restrictions.avoidAreas=mapUtil.restrictionList;
 
     routingEngine.calculateRoute(waypoints, carOptions, new CalculateRouteCallback() {
            @Override
            public void onRouteCalculated(@Nullable RoutingError routingError, @Nullable List<Route> list) {
 
                if(routingError==null){
-                   Log.d("ROUTE","ok");
                    Route route=list.get(0);
-                   showRoute(route);
+                   showRoute(route,R.color.blue2);
+                   routeSelected=true;
 
                }
                else{
@@ -313,20 +329,89 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    public void showRoute(Route route){
+    public void showRoute(Route route,int color){
 
-        List<GeoCoordinates> poly=route.getPolyline();
+        if (polyline!=null)polyline.remove();
 
-
+        geoCoordinatesOfPolyLine=route.getPolyline();
         PolylineOptions polylineOptions=new PolylineOptions();
 
-        for(GeoCoordinates g:poly){
+        for(GeoCoordinates g:geoCoordinatesOfPolyLine){
             LatLng tmp=new LatLng(g.latitude,g.longitude);
             polylineOptions.add(tmp);
         }
+        polylineOptions.width(14);
+        polylineOptions.color(ContextCompat.getColor(this,color));
+
+        long time=route.getDurationInSeconds();
+
+        int hour= (int) (time/3600);
+        int minute= (int)(time%3600)/60;
+        polylineOptions.endCap(new SquareCap());
 
 
-        Polyline polyline=mMap.addPolyline(polylineOptions);
+        polyline=mMap.addPolyline(polylineOptions);
+        informationTv.setText("Estimated time: "+hour+" hour "+minute+" minutes");
+    }
+
+    public void getEstimatedTime(Location location){
+
+        if(!routeSelected){
+            Snackbar.make(findViewById(R.id.maps_activity),"Please Select a Bus First",Snackbar.LENGTH_LONG).show();
+            return;
+        }
+
+
+
+        if(location==null){
+            Snackbar.make(findViewById(R.id.maps_activity),"Something Went Wrong!",Snackbar.LENGTH_LONG).show();
+            return;
+        }
+
+        GeoCoordinates myPos=new GeoCoordinates(location.getLatitude(),location.getLongitude());
+        int lim=0;
+        for(int i=0;i+1<geoCoordinatesOfPolyLine.size();i++){
+            Double distv1v2=geoCoordinatesOfPolyLine.get(i).distanceTo(geoCoordinatesOfPolyLine.get(i+1));
+
+            double distv1pos=myPos.distanceTo(geoCoordinatesOfPolyLine.get(i));
+            double distv2pos=myPos.distanceTo(geoCoordinatesOfPolyLine.get(i+1));
+
+            if(distv2pos+distv1pos-distv1v2<=10){
+                lim=i+1;
+                break;
+            }
+        }
+
+        if(lim==0){
+            Snackbar.make(findViewById(R.id.maps_activity),"You are not on the route of the bus",Snackbar.LENGTH_LONG).show();
+            return;
+        }
+
+        List<Waypoint> waypointsForUserRoute=new ArrayList<>();
+
+        for (int i=0,j=0;i<lim;i++){
+
+            if(geoCoordinatesOfPolyLine.get(i).equals(waypoints.get(j).coordinates)){
+                waypointsForUserRoute.add(waypoints.get(j));
+                j++;
+            }
+        }
+
+        waypoints.add(0,new Waypoint(geoCoordinatesOfPolyLine.get(0)));
+        waypoints.add(new Waypoint(myPos));
+
+        routingEngine.calculateRoute(waypointsForUserRoute, carOptions, new CalculateRouteCallback() {
+            @Override
+            public void onRouteCalculated(@Nullable RoutingError routingError, @Nullable List<Route> list) {
+                if(routingError==null){
+                    showRoute(list.get(0),R.color.orange4);
+                }
+                else{
+                    Snackbar.make(findViewById(R.id.maps_activity),"Please try Again",Snackbar.LENGTH_LONG).show();
+                }
+            }
+        });
+
 
     }
 
@@ -350,8 +435,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onClick(View view) {
         int i = view.getId();
-        if(i == R.id.locate_me_btn){
-            //mMap.moveCamera(CameraUpdateFactory.newLatLng(cur));
+        if(i == R.id.locate_me_btn && freeLocateMeButton){
+            LocationServices.getFusedLocationProviderClient(this).getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                @Override
+                public void onSuccess(Location location) {
+                      if(location!=null)getEstimatedTime(location);
+                      freeLocateMeButton=true;
+                }
+            });
+            freeLocateMeButton=false;
         }
     }
 

@@ -248,6 +248,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    @SuppressLint("MissingPermission")
     public void turnOnRideShare(){
 
 
@@ -314,6 +315,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         catch (SecurityException e){
             Snackbar.make(findViewById(R.id.home_scrollview),e.getMessage(),Snackbar.LENGTH_SHORT).show();
         }
+
 
     }
 
