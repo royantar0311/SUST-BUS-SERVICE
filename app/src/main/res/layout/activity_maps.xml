@@ -26,14 +26,15 @@
         android:layout_marginLeft="20dp"
         android:layout_marginBottom="50dp"
         android:src="@drawable/ic_transfer_within_a_station_black_24dp"
-        map:backgroundTint="#EDE3E3" />
+
+        map:backgroundTint="#FBFBFB" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/information_tv_cardview"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_margin="20dp"
-        map:cardCornerRadius="15dp"
+        map:cardCornerRadius="0dp"
         map:cardElevation="10dp">
 
         <TextView

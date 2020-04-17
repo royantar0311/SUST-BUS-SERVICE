@@ -130,7 +130,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             db = FirebaseFirestore.getInstance();
             userLocationData=databaseReference.child("alive").child(userUid);
             userPathReference=databaseReference.child("destinations").child(userUid).child("path");
-
+            userLocationData.onDisconnect().setValue(null);
+            userPathReference.onDisconnect().setValue(null);
             /**
              * getting data from cloud firestore
              * */

@@ -86,13 +86,12 @@ public class MapUtil {
          GeoCoordinatesMap.put(LAKKATURA,new GeoCoordinates(24.925066,91.871258));
 
          restrictionList.add(new GeoBox(new GeoCoordinates(24.921759,91.82511),new GeoCoordinates(24.925740,91.83950)));
-
-
     }
 
 
     public void enableGPS(final Context context, final Activity activity, final int RequestCode){
 
+        
         LocationRequest locationRequest=LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(2*1000)
@@ -129,14 +128,9 @@ public class MapUtil {
                               break;
 
                       }
-
-
                   }
-
-
             }
         });
-
     }
 
 

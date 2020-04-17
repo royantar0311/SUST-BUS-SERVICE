@@ -20,7 +20,12 @@
 package com.sustbus.driver;
 
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -32,6 +37,7 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.animation.Animation;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -72,8 +78,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import androidx.annotation.AnimatorRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
@@ -103,7 +111,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LocationManager locationManager;
     private LocationListener locationListener;
     private String userUid;
-
+    private boolean isCalculatingBusRout=false;
+    private CardView informationCard;
+    private float cardConerRadius;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -114,7 +124,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
 
         locateMeBtn = findViewById(R.id.locate_me_btn);
-
+        informationCard=findViewById(R.id.information_tv_cardview);
+        cardConerRadius=informationCard.getRadius();
         locateMeBtn.setOnClickListener(this);
         informationTv=findViewById(R.id.information_tv);
 
@@ -131,6 +142,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         else userUid=mAuth.getCurrentUser().getUid();
 
         mapUtil=MapUtil.getInstance();
+
     }
 
     @Override
@@ -302,7 +314,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public boolean onMarkerClick(Marker marker) {
 
         if(marker.equals(myLocationMarker)){
-            informationTv.setText("This is you");
+            greenSignal("This is you");
             return false ;
         }
 
@@ -310,9 +322,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         String path=pathInformationMap.get((String)marker.getTag());
 
         if(path==null || path.equals((String)"NA;")){
-            Snackbar.make(findViewById(R.id.maps_activity),"Sorry, Currently Route is not availavle for this bus",Snackbar.LENGTH_LONG).show();
+            blinkRed("Sorry, Currently Route is not availavle for this bus");
             return false;
         }
+
+        if(isCalculatingBusRout){
+           blinkRed(null);
+           return false;
+        }
+        isCalculatingBusRout=true;
+        informationTv.setText("Please wait, Getting bus route...");
 
         MapUtil.PathInformation pathInformation=mapUtil.stringToPath(path);
 
@@ -331,8 +350,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                    geoCoordinatesOfPolyLine=showRoute(route,R.color.blue2);
                }
                else{
-                   Snackbar.make(findViewById(R.id.maps_activity),routingError.toString(),Snackbar.LENGTH_LONG);
+                   blinkRed("Try Again");
                }
+               isCalculatingBusRout=false;
 
            }
        });
@@ -363,27 +383,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         currentPolylineOnMap=mMap.addPolyline(polylineOptions);
-        informationTv.setText("Estimated time: "+hour+" hour "+minute+" minutes");
+        greenSignal("Estimated time: "+hour+" hour "+minute+" minutes");
         return tmpList;
     }
 
     public void getEstimatedTime(){
 
         if(geoCoordinatesOfPolyLine==null || waypoints==null){
-            Snackbar.make(findViewById(R.id.maps_activity),"Please Select a Bus First",Snackbar.LENGTH_LONG).show();
+            blinkRed("Please Select a Bus First");
             freeLocateMeButton=true;
             return;
         }
 
         if(mapUtil.rideShareStatus){
-            Snackbar.make(findViewById(R.id.maps_activity),"You are on this bus",Snackbar.LENGTH_LONG);
+            greenSignal("You are on this bus");
             if(markerMap.containsKey(userUid))mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(markerMap.get(userUid).getPosition(),20));
             freeLocateMeButton=true;
             return;
         }
 
         if(myLocationMarker==null){
-            Snackbar.make(findViewById(R.id.maps_activity),"Please check your Location Setting!",Snackbar.LENGTH_LONG).show();
+            blinkRed("Please check your Location Setting!");
             freeLocateMeButton=true;
             return;
         }
@@ -403,7 +423,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         if(lim==0){
-            Snackbar.make(findViewById(R.id.maps_activity),"You are not on the route of the bus",Snackbar.LENGTH_LONG).show();
+            blinkRed("You are not on the route of the bus");
             freeLocateMeButton=true;
             return;
         }
@@ -432,7 +452,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     showRoute(list.get(0),R.color.orange4);
                 }
                 else{
-                    Snackbar.make(findViewById(R.id.maps_activity),"Please try Again",Snackbar.LENGTH_LONG).show();
+                    blinkRed("Please try Again");
                 }
                 freeLocateMeButton=true;
             }
@@ -442,7 +462,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onClick(View view) {
         int i = view.getId();
-        if(i == R.id.locate_me_btn && freeLocateMeButton){
+        if(i == R.id.locate_me_btn){
+            if(!freeLocateMeButton){
+                blinkRed("Please wait, already getting a route for you");
+                return;
+            }
+
             freeLocateMeButton=false;
             getEstimatedTime();
         }
@@ -532,6 +557,47 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
+    private void blinkRed(String mes){
+        if(mes!=null){
+            informationTv.setText(mes);
+        }
+        ObjectAnimator objectAnimator=ObjectAnimator.ofInt(informationCard, "backgroundColor",
+                ContextCompat.getColor(this,R.color.white),
+                ContextCompat.getColor(this,R.color.A400red),
+                ContextCompat.getColor(this,R.color.white));
+
+        objectAnimator.setEvaluator(new ArgbEvaluator());
+        objectAnimator.setDuration(300);
+        objectAnimator.setRepeatMode(ObjectAnimator.REVERSE);
+        objectAnimator.setRepeatCount(1);
+        objectAnimator.start();
+        objectAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                informationCard.setRadius(cardConerRadius);
+            }
+        });
+    }
+
+    private void greenSignal(String mes){
+
+        informationTv.setText(mes);
+        informationCard.setBackgroundColor(ContextCompat.getColor(this,R.color.greenSignal));
+        new CountDownTimer(1000,1000){
+            @Override
+            public void onTick(long millisUntilFinished) {
+
+            }
+
+            @Override
+            public void onFinish() {
+                informationCard.setBackgroundColor(ContextCompat.getColor(getApplicationContext(),R.color.white));
+                informationCard.setRadius(cardConerRadius);
+            }
+        }.start();
+
+    }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)  {
