@@ -46,6 +46,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -63,6 +64,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.RoundCap;
 import com.google.android.gms.maps.model.SquareCap;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
@@ -97,11 +99,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public static final int MIN_TIME = 1000;
     public static final int MIN_DIST = 5;
     private static final String TAG = "MapsActivity";
-    UserInfo userInfo;
+
     private GoogleMap mMap;
-    private ImageButton locateMeBtn;
+    private FloatingActionButton locateMeBtn;
     private FirebaseAuth mAuth;
-    private DatabaseReference userDatabaseReference;
     private DatabaseReference databaseReference;
     private ChildEventListener childEventListener,pathChangeListner;
     private Map<String,Marker> markerMap;
@@ -109,16 +110,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private RoutingEngine routingEngine;
     private Map<String,String> pathInformationMap;
     private boolean ok = false;
-    private Polyline polyline=null;
+    private Polyline currentPolylineOnMap=null;
     private List<Waypoint> waypoints=null;
     private List<GeoCoordinates> geoCoordinatesOfPolyLine=null;
     private RoutingEngine.CarOptions carOptions;
-    private boolean routeSelected=false;
     private TextView informationTv;
     private boolean freeLocateMeButton=true;
     private Marker myLocationMarker;
     private LocationManager locationManager;
     private LocationListener locationListener;
+    private String userUid;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -143,13 +145,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             startActivity(intent);
             finish();
         }
-        else{
-            userInfo=UserInfo.getInstance();
-            //
-            //
-            // userDatabaseReference=databaseReference.child("alive").child(mAuth.getCurrentUser().getUid());
-           // Toast.makeText(this,userInfo.getUserName(),Toast.LENGTH_SHORT).show();
-        }
+        else userUid=mAuth.getCurrentUser().getUid();
+
         mapUtil=MapUtil.getInstance();
     }
 
@@ -162,6 +159,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(),13f),100,null);
         mMap.setTrafficEnabled(true);
         mMap.setBuildingsEnabled(true);
+        markerMap=new HashMap<>();
+
 
         try {
             routingEngine=new RoutingEngine();
@@ -176,10 +175,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         carOptions.routeOptions=new RouteOptions.Builder().setAlternatives(0).setOptimizationMode(OptimizationMode.SHORTEST).build();
         carOptions.restrictions=new RouteRestrictions();
         carOptions.restrictions.avoidAreas=mapUtil.restrictionList;
-        showUserLocation();
+        if(!mapUtil.rideShareStatus)showUserLocation();
+        else{
+            new CountDownTimer(60000*5,2000){
+                @Override
+                public void onFinish() {
 
+                }
 
-        markerMap=new HashMap<>();
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    if(markerMap.containsKey(userUid)){
+                        markerMap.get(userUid).
+                        setIcon(bitmapDescriptorFromVector(R.drawable.ic_blue_bus_for_user));
+                        this.cancel();
+                    }
+
+                }
+            }.start();
+        }
 
          childEventListener =new ChildEventListener() {
             @Override
@@ -203,6 +217,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     tmpMarker= addMark(pos,title);
                     tmpMarker.showInfoWindow();
                     tmpMarker.setTag(key);
+                    tmpMarker.setFlat(true);
                     markerMap.put(key,tmpMarker);
 
                 }
@@ -237,6 +252,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                          tmpMarker= addMark(pos,title);
                          tmpMarker.showInfoWindow();
                          tmpMarker.setTag(key);
+                         tmpMarker.setFlat(true);
                          markerMap.put(key,tmpMarker);
                      }
 
@@ -263,7 +279,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         };
 
          pathInformationMap=new HashMap<>();
-
 
          pathChangeListner=new ChildEventListener() {
              @Override
@@ -308,6 +323,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return false ;
         }
 
+
         String path=pathInformationMap.get((String)marker.getTag());
 
         if(path==null || path.equals((String)"NA;")){
@@ -318,19 +334,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         MapUtil.PathInformation pathInformation=mapUtil.stringToPath(path);
 
         Waypoint starWaypoint=new Waypoint(new GeoCoordinates(marker.getPosition().latitude,marker.getPosition().longitude));
+
         waypoints=pathInformation.getWayPoints();
 
         waypoints.add(0,starWaypoint);
 
-    routingEngine.calculateRoute(waypoints, carOptions, new CalculateRouteCallback() {
+        routingEngine.calculateRoute(waypoints, carOptions, new CalculateRouteCallback() {
            @Override
            public void onRouteCalculated(@Nullable RoutingError routingError, @Nullable List<Route> list) {
 
                if(routingError==null){
                    Route route=list.get(0);
-                   showRoute(route,R.color.blue2);
-                   routeSelected=true;
-
+                   geoCoordinatesOfPolyLine=showRoute(route,R.color.blue2);
                }
                else{
                    Snackbar.make(findViewById(R.id.maps_activity),routingError.toString(),Snackbar.LENGTH_LONG);
@@ -343,43 +358,49 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    public void showRoute(Route route,int color){
+    public List<GeoCoordinates> showRoute(Route route,int color){
 
-        if (polyline!=null)polyline.remove();
+        if (currentPolylineOnMap!=null)currentPolylineOnMap.remove();
 
-        geoCoordinatesOfPolyLine=route.getPolyline();
+        List<GeoCoordinates> tmpList=route.getPolyline();
         PolylineOptions polylineOptions=new PolylineOptions();
 
-        for(GeoCoordinates g:geoCoordinatesOfPolyLine){
+        for(GeoCoordinates g:tmpList){
             LatLng tmp=new LatLng(g.latitude,g.longitude);
             polylineOptions.add(tmp);
         }
         polylineOptions.width(14);
         polylineOptions.color(ContextCompat.getColor(this,color));
 
-        long time=route.getDurationInSeconds();
+        long time=route.getDurationInSeconds()+route.getTrafficDelayInSeconds();
 
         int hour= (int) (time/3600);
         int minute= (int)(time%3600)/60;
         polylineOptions.endCap(new ButtCap());
 
 
-        polyline=mMap.addPolyline(polylineOptions);
+        currentPolylineOnMap=mMap.addPolyline(polylineOptions);
         informationTv.setText("Estimated time: "+hour+" hour "+minute+" minutes");
+        return tmpList;
     }
 
     public void getEstimatedTime(){
 
-        if(!routeSelected){
+        if(geoCoordinatesOfPolyLine==null || waypoints==null){
             Snackbar.make(findViewById(R.id.maps_activity),"Please Select a Bus First",Snackbar.LENGTH_LONG).show();
             freeLocateMeButton=true;
             return;
         }
 
-
+        if(mapUtil.rideShareStatus){
+            Snackbar.make(findViewById(R.id.maps_activity),"You are on this bus",Snackbar.LENGTH_LONG);
+            if(markerMap.containsKey(userUid))mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(markerMap.get(userUid).getPosition(),20));
+            freeLocateMeButton=true;
+            return;
+        }
 
         if(myLocationMarker==null){
-            Snackbar.make(findViewById(R.id.maps_activity),"Something Went Wrong!",Snackbar.LENGTH_LONG).show();
+            Snackbar.make(findViewById(R.id.maps_activity),"Please check your Location Setting!",Snackbar.LENGTH_LONG).show();
             freeLocateMeButton=true;
             return;
         }
@@ -433,8 +454,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 freeLocateMeButton=true;
             }
         });
-
-     routeSelected=false;
     }
 
     @Override
@@ -446,7 +465,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-public void showUserLocation() {
+    public void showUserLocation() {
 
     locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
@@ -468,7 +487,9 @@ public void showUserLocation() {
 
         @Override
         public void onLocationChanged(Location location) {
-                if(myLocationMarker==null)myLocationMarker=mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(),location.getLongitude())));
+                if(myLocationMarker==null)myLocationMarker=mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(),location.getLongitude()))
+                                                                                             .icon(bitmapDescriptorFromVector(R.drawable.ic_radio_button))
+                                                                                             .flat(true));
                 else myLocationMarker.setPosition(new LatLng(location.getLatitude(),location.getLongitude()));
         }
 
@@ -510,13 +531,15 @@ public void showUserLocation() {
   }
 
     public Marker addMark(LatLng cur,String title){
+
         Marker marker=mMap.addMarker(new MarkerOptions().position(cur).title(title)
-                .icon(bitmapDescriptorFromVector(MapsActivity.this,R.drawable.ic_directions_bus_black_24dp)));
+                .icon(bitmapDescriptorFromVector(R.drawable.ic_directions_bus_black_24dp)));
         return marker;
+
     }
 
-    private BitmapDescriptor bitmapDescriptorFromVector(MapsActivity context, int vectorResId){
-        Drawable vectorDrawable = ContextCompat.getDrawable(context,vectorResId);
+    private BitmapDescriptor bitmapDescriptorFromVector(int vectorResId){
+        Drawable vectorDrawable = ContextCompat.getDrawable(this,vectorResId);
         vectorDrawable.setBounds(0,0,vectorDrawable.getIntrinsicWidth(),
                 vectorDrawable.getIntrinsicHeight());
         Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(),vectorDrawable.getIntrinsicHeight(),
@@ -536,8 +559,7 @@ public void showUserLocation() {
                 databaseReference.child("alive").removeEventListener(childEventListener);
                 databaseReference.child("destinations").removeEventListener(pathChangeListner);
                 databaseReference=null;
-                userDatabaseReference = null;
-                locationManager.removeUpdates(locationListener);
+                if(locationManager!=null)locationManager.removeUpdates(locationListener);
                 locationManager=null;
                 locationListener=null;
                 markerMap.clear();

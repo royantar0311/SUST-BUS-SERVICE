@@ -260,13 +260,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         /**
          * gps is enabled and location updates will be shown on the map and pushed to database
          * */
-
+        mapUtil.rideShareStatus=true;
         isRideShareOn=true;
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.end_ride));
 
         initializePath();
-
-        userLocationData.child("title").setValue("Campus-Tilagor-Campus");
 
         locationListener = new LocationListener() {
 
@@ -356,8 +354,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-
-
     public void handlePath(GeoCoordinates newLatLng){
 
         if(pathString.size()==1)return;
@@ -380,6 +376,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     public void initializePath(){
 
+        userLocationData.child("title").setValue("Campus-Tilagor-Campus");
         pathString=new ArrayList<>(Arrays.asList(mapUtil.CAMPUS,mapUtil.CAMPUS_GATE,mapUtil.MODINA_MARKET,mapUtil.SUBID_BAZAR,mapUtil.AMBORKHANA,mapUtil.EIDGAH,mapUtil.KUMARPARA,mapUtil.TILAGOR,mapUtil.BALUCHAR, mapUtil.CAMPUS));
         userPathReference.setValue("NA;");
         pathOk=false;
@@ -387,7 +384,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-  public  void updatePath(){
+    public  void updatePath(){
       String path=new String();
       for (String s:pathString)path+=(s+";");
       userPathReference.setValue(path);
@@ -398,7 +395,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     public void turnOffRideShare(){
 
-        isRideShareOn=false;
+        mapUtil.rideShareStatus=isRideShareOn=false;
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.start_ride));
         locationManager.removeUpdates(locationListener);
         locationListener=null;
@@ -436,6 +433,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
         }
         else  if(i==R.id.track_buses_cv){
+
             startActivity(new Intent(HomeActivity.this,MapsActivity.class));
         }
         else if(i==R.id.profile_cv && userInfo!=null){
@@ -458,16 +456,15 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         permissionsRequestor.onRequestPermissionsResult(requestCode,grantResults);
     }
 
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
         if(isRideShareOn) {
+            mapUtil.rideShareStatus=false;
             locationManager.removeUpdates(locationListener);
             locationListener=null;
             userLocationData.removeValue();
             userPathReference.setValue(null);
-
         }
     }
 }

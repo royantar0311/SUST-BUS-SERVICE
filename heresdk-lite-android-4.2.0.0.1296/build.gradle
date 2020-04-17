@@ -1,2 +1,0 @@
-configurations.maybeCreate("default")
-artifacts.add("default", file('heresdk-lite-android-4.2.0.0.1296.aar'))
