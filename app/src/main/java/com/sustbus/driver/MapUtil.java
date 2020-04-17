@@ -26,6 +26,7 @@ import android.content.IntentSender;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
+
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.LocationRequest;
@@ -44,6 +45,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -69,19 +71,19 @@ public class MapUtil {
     public static List<GeoBox> restrictionList=new ArrayList<>();
 
     static {
-         GeoCoordinatesMap.put(CAMPUS_GATE,new GeoCoordinates(24.911127,91.832222));
+         GeoCoordinatesMap.put(CAMPUS_GATE,new GeoCoordinates(24.911103,91.832213));
          GeoCoordinatesMap.put(CAMPUS,new GeoCoordinates(24.920856,91.832484));
-         GeoCoordinatesMap.put(MODINA_MARKET,new GeoCoordinates(24.910599,91.848425));
-         GeoCoordinatesMap.put(SUBID_BAZAR,new GeoCoordinates(24.907898,91.859542));
-         GeoCoordinatesMap.put(AMBORKHANA,new GeoCoordinates(24.905023,91.869917));
-         GeoCoordinatesMap.put(RIKABI_BAZAR,new GeoCoordinates(24.899122,91.862674));
-         GeoCoordinatesMap.put(CHOWHATTA,new GeoCoordinates(24.899424,91.868818));
-         GeoCoordinatesMap.put(NAIORPUL,new GeoCoordinates(24.894753,91.878688));
-         GeoCoordinatesMap.put(KUMARPARA,new GeoCoordinates(24.899373,91.879114));
-         GeoCoordinatesMap.put(EIDGAH,new GeoCoordinates(24.906465,91.880405));
-         GeoCoordinatesMap.put(TILAGOR,new GeoCoordinates(24.896190,91.900370));
-         GeoCoordinatesMap.put(BALUCHAR,new GeoCoordinates(24.903055,91.895983));
-         GeoCoordinatesMap.put(LAKKATURA,new GeoCoordinates(24.923850,91.872001));
+         GeoCoordinatesMap.put(MODINA_MARKET,new GeoCoordinates(24.910313,91.848312));
+         GeoCoordinatesMap.put(SUBID_BAZAR,new GeoCoordinates(24.907229,91.860850));
+         GeoCoordinatesMap.put(AMBORKHANA,new GeoCoordinates(24.905059,91.869903));
+         GeoCoordinatesMap.put(RIKABI_BAZAR,new GeoCoordinates(24.899174,91.862412));
+         GeoCoordinatesMap.put(CHOWHATTA,new GeoCoordinates(24.899423,91.868813));
+         GeoCoordinatesMap.put(NAIORPUL,new GeoCoordinates(24.894782,91.878659));
+         GeoCoordinatesMap.put(KUMARPARA,new GeoCoordinates(24.899368,91.879104));
+         GeoCoordinatesMap.put(EIDGAH,new GeoCoordinates(24.906645,91.879974));
+         GeoCoordinatesMap.put(TILAGOR,new GeoCoordinates(24.896180,91.900212));
+         GeoCoordinatesMap.put(BALUCHAR,new GeoCoordinates(24.903014,91.895963));
+         GeoCoordinatesMap.put(LAKKATURA,new GeoCoordinates(24.925066,91.871258));
 
          restrictionList.add(new GeoBox(new GeoCoordinates(24.921759,91.82511),new GeoCoordinates(24.925740,91.83950)));
 
