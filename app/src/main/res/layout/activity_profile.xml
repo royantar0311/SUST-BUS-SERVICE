@@ -13,6 +13,7 @@
         android:layout_marginStart="20dp"
         android:src="@drawable/ic_arrow_back_red_50dp"
         android:background="@drawable/transparent_button"
+        android:onClick="backButtonPressed"
         />
     <LinearLayout
         android:layout_width="match_parent"
@@ -172,6 +173,7 @@
                 app:hasFocus="false"
                 app:hasClearButton="true"
                 app:helperText="tap to edit"
+                app:maxCharacters="10"
                 app:labelText="Registration No:"
                 app:primaryColor="@color/A400red">
 
@@ -192,24 +194,22 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/id_uploading_area"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:gravity="center_vertical"
         android:layout_marginLeft="75dp">
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+
             <TextView
+                android:id="@+id/profile_id_availability"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="ID not Detected"
             android:textSize="20dp"
             android:textColor="@color/black"/>
-        </LinearLayout>
-
             <Button
-                android:id="@+id/id_upload_button"
+                android:id="@+id/profile_id_chooser_btn"
                 android:layout_width="80dp"
                 android:layout_marginLeft="20dp"
                 android:layout_height="30dp"
@@ -217,7 +217,8 @@
                 android:textColor="@color/white"
                 android:text="Choose"
                 android:background="@drawable/custom_button"
-                android:textSize="10sp" />
+                android:textSize="10sp"
+                android:onClick="idChooserButtonPressed"/>
 
     </LinearLayout>
     <LinearLayout

@@ -7,6 +7,7 @@ public class UserInfo {
     public static final int STUDENT_PERMITTED= 1;
     public static final int STUDENT_NOT_PERMITTED= 0;
     public static final int PERMISSION_PENDING=-1;
+    public static boolean downNeeded = false;
     private static UserInfo instance=new UserInfo();
     public static Builder builder = new Builder();
 
@@ -128,6 +129,17 @@ public class UserInfo {
         map.put("regiNo",regiNo);
         map.put("url",url);
         return map;
+    }
+
+    public String toString(){
+        return "userInfo new datas"
+                + "\nisDriver " + instance.isDriver()
+                + "\nuid " + instance.getuId()
+                + "\nispermitted " + instance.getIsStudentPermitted()
+                + "\nemail " + instance.getEmail()
+                + "\nurl " + instance.getUrl()
+                + "\nregiNO " + instance.regiNo
+                + "\nuserName " + instance.userName;
     }
 
     public String getUrl() {

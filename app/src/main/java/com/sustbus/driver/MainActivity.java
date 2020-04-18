@@ -82,10 +82,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         signUpBtn.setOnClickListener(this);
         signInTv.setOnClickListener(this);
 
-
         userInfo = UserInfo.getInstance();
-
-
     }
 
     /**
@@ -118,6 +115,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (emailOk && userNameOk && passwordOk) {
 
                 progressDialog.setMessage("Register in progress");
+                progressDialog.setCancelable(false);
                 progressDialog.show();
 
                 mAuth.createUserWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -127,13 +125,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         if(task.isSuccessful()) {
                             progressDialog.hide();
-//
-//                            DatabaseReference childDb=databaseReference.child(mAuth.getCurrentUser().getUid());
-//
-//                            childDb.child("email").setValue(email);
-//                            childDb.child("isStudentPermitted").setValue(false);
-//                            childDb.child("isDriver").setValue(false);
-//                            childDb.child("userName").setValue(userName);
                             UserInfo.getBuilder()
                                     .setDriver(false)
                                     .setIsStudentPermitted(UserInfo.STUDENT_NOT_PERMITTED)
@@ -141,18 +132,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     .setuId(mAuth.getCurrentUser().getUid())
                                     .setUserName(userName)
                                     .build();
-
-
                             db.collection("users")
                                     .document(userInfo.getuId())
                                     .set(userInfo.toMap());
-
-
                             Intent intent=new Intent(MainActivity.this,HomeActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             startActivity(intent);
                             finish();
-
                         }
                         else{
                             progressDialog.hide();
