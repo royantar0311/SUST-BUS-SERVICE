@@ -110,7 +110,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mAuth=FirebaseAuth.getInstance();
     }
 
-
     @Override
     public void onClick(View view) {
         int i = view.getId();
