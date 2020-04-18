@@ -15,4 +15,5 @@
     <color name="ash_color">#413C3D</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
+    <color name="greenSignal">#83DC9C</color>
 </resources>

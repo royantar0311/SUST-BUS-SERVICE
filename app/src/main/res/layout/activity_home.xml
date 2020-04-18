@@ -267,19 +267,20 @@
                     android:padding="16dp"
                     android:orientation="vertical"
                     >
+
                     <ImageView
-                        android:contentDescription=""
                         android:layout_width="60dp"
                         android:layout_height="60dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/help_center"/>
+                        android:contentDescription=""
+                          app:srcCompat="@drawable/logout_icon" />
                     <TextView
                         android:layout_gravity="center"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="16sp"
                         android:textColor="@color/black"
-                        android:text="Help Center"
+                        android:text="logout"
                         android:layout_marginTop="12dp"
 
                         />

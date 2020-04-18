@@ -1,6 +1,0 @@
--keep public class com.here.NativeBase { *; }
--keep class com.here.** { *; }
--keep public class com.here.** { *; }
--keep public enum com.here.** { *; }
--keep public interface com.here.** { *; }
--keepattributes Exceptions
