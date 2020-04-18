@@ -33,6 +33,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
@@ -56,7 +58,7 @@ import static com.sustbus.driver.MapsActivity.MIN_DIST;
 import static com.sustbus.driver.MapsActivity.MIN_TIME;
 
 
-public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
+public class HomeActivity extends AppCompatActivity implements View.OnClickListener,FirebaseAuth.AuthStateListener {
     private static final String TAG = "HomeActivity";
     private static final int LOCATION_PERMISSION_CODE = 1;
     private TextView userNameTv;
@@ -86,6 +88,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     Intent intent ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate: called");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         rideShareIndicatorIV=findViewById(R.id.ride_share_iv);
@@ -105,33 +108,44 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         shareRideTv.setOnClickListener(this);
         profileCv.setOnClickListener(this);
         signOut.setOnClickListener(this);
+        FirebaseAuth.getInstance().addAuthStateListener(this);
 
         shareRideTv.setEnabled(false);
-
-        databaseReference= FirebaseDatabase.getInstance().getReference();
+        userInfo = UserInfo.getInstance();
         mAuth=FirebaseAuth.getInstance();
+        mapUtil=MapUtil.getInstance();
 
+        //loadImage();
+    }
 
-
-        /**
-         * Database initialization
-         * */
-
-        if(mAuth.getCurrentUser()==null){
-            Log.d(TAG, "onCreate: " + "mAuth gets null" );
-            Intent intent=new Intent(HomeActivity.this,LoginActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-            finish();
+    private void loadImage() {
+//        if(userInfo != null && userInfo.getUrl() != null){
+//            Glide.with(HomeActivity.this)
+//                    .load(userInfo.getUrl())
+//                    .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.AUTOMATIC))
+//                    .into(dpEv);
+//        }
+        if(userInfo !=null && userInfo.getUrl() != null ){
+            Glide.with(HomeActivity.this)
+                    .load(userInfo.getUrl())
+                    .apply(new RequestOptions()
+                            .diskCacheStrategy((UserInfo.downNeeded)?DiskCacheStrategy.NONE:DiskCacheStrategy.AUTOMATIC))
+                    .into(dpEv);
+            UserInfo.downNeeded = false;
         }
-        else{
+    }
+
+    private void updateDatabase(){
+            /**
+             * Database initialization
+             * */
+            Log.d(TAG, "updateDatabase: called");
             databaseReference= FirebaseDatabase.getInstance().getReference();
             userUid=mAuth.getCurrentUser().getUid();
             db = FirebaseFirestore.getInstance();
             userLocationData=databaseReference.child("alive").child(userUid);
             userPathReference=databaseReference.child("destinations").child(userUid).child("path");
-            userLocationData.onDisconnect().setValue(null);
-            userPathReference.onDisconnect().setValue(null);
+
             /**
              * getting data from cloud firestore
              * */
@@ -142,99 +156,82 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                         Log.w(TAG, "Listen failed.", e);
                         return;
                     }
-
                     if (documentSnapshot != null && documentSnapshot.exists()) {
-
                         UserInfo.setInstance(documentSnapshot.toObject(UserInfo.class));
                         userInfo=UserInfo.getInstance();
-
-
-                        Log.d(TAG, "Current data on Changed: on HomeActivty" + documentSnapshot.getData());
-                        Log.d(TAG, "userInfo new datas"
-                                    + "\nisDriver " + userInfo.isDriver()
-                                    + "\nuid " + userInfo.getuId()
-                                    + "\nispermitted " + userInfo.getIsStudentPermitted()
-                                    + "\nemail " + userInfo.getEmail()
-                                    + "\nurl " + userInfo.getUrl()
-                        );
-                        /**
-                         * setting up dashboard for user (driver/student)
-                         * */
-                        if(userInfo.getUrl() != null){
-                            Glide.with(HomeActivity.this)
-                                    .load(userInfo.getUrl())
-                                    .into(dpEv);
-                        }
-                        userNameTv.setText(userInfo.getUserName());
-                        if(userInfo.isDriver()){
-                            Log.d(TAG, "onEvent: " + " ashena?");
-                            driverOrStudent.setText("Driver");
-                            shareRideTv.setEnabled(true);
-                        }
-                        else {
-                            driverOrStudent.setText("Student");
-                            shareRideTv.setEnabled(false);
-                        }
+                        Log.d(TAG,userInfo.toString());
+                        dashboardSetup();
+                        loadImage();
                     }
                     else {
-
                         Log.d(TAG, "Current data: null");
                     }
                 }
             });
 
+        }
+        private void dashboardSetup() {
+            Log.d(TAG, "dashboardSetup: called");
             /**
-             * previously firebase realtime-database was used;
+             * setting up dashboard for user (driver/student)
              * */
-//            userDatabaseReference=databaseReference.child("users").child(userUid);
-//            userDatabaseReference.addValueEventListener(new ValueEventListener() {
-//
-//                @Override
-//                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                    userInfo.getBuilder()
-//                            .setIsStudentPermitted(dataSnapshot.child("isStudentPermitted").getValue(Boolean.class))
-//                            .setEmail(dataSnapshot.child("email").getValue(String.class))
-//                            .setDriver(dataSnapshot.child("isDriver").getValue(Boolean.class))
-//                            .build();
-//
-//                    userNameTv.setText(userInfo.getUserName());
-//                    if(userInfo.isDriver){
-//                        driverOrStudent.setText("Driver");
-//                        shareRideTv.setEnabled(true);
-//                    }
-//                    else {
-//                        driverOrStudent.setText("Student");
-//                    }
-//                }
-//
-//                @Override
-//                public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//                }
-//            });
+            userNameTv.setText(userInfo.getUserName());
+            if(userInfo.isDriver()){
+                Log.d(TAG, "onEvent: " + " ashena?");
+                driverOrStudent.setText("Driver");
+                shareRideTv.setEnabled(true);
+            }
+            else {
+                driverOrStudent.setText("Student");
+                shareRideTv.setEnabled(false);
+            }
+
+        }
+    @Override
+    protected void onStart() {
+            super.onStart();
+        Log.d(TAG, "onStart: ");
+            permissionsRequestor = new PermissionsRequestor(this);
+            permissionsRequestor.request(new PermissionsRequestor.ResultListener() {
+                @Override
+                public void permissionsGranted() {
+                }
+                @Override
+                public void permissionsDenied() {
+                    Snackbar.make(findViewById(R.id.home_scrollview), "Please grant all Permissions", Snackbar.LENGTH_LONG).show();
+                }
+            });
+
         }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume: ");
 
-        mapUtil=MapUtil.getInstance();
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        permissionsRequestor=new PermissionsRequestor(this);
-        permissionsRequestor.request(new PermissionsRequestor.ResultListener() {
-            @Override
-            public void permissionsGranted() {
-
-            }
-
-            @Override
-            public void permissionsDenied() {
-                Snackbar.make(findViewById(R.id.home_scrollview),"Please grant all Permissions",Snackbar.LENGTH_LONG).show();
-            }
-        });
-
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop: ");
     }
+
+    @Override
+    public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+        Log.d(TAG, "onAuthStateChanged: fired");
+        if (firebaseAuth.getCurrentUser() == null) {
+            Log.d(TAG, "onAuthStateChanged: " + "mAuth gets null");
+            Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
+        } else {
+            Log.d(TAG, "onAuthStateChanged: " + "id found");
+            updateDatabase();
+        }
+    }
+
 
     @SuppressLint("MissingPermission")
     public void turnOnRideShare(){
@@ -274,17 +271,12 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 userLocationData.child("lat").setValue(location.getLatitude());
                 userLocationData.child("lng").setValue(location.getLongitude());
                 handlePath(new GeoCoordinates(location.getLatitude(),location.getLongitude()));
-
             }
-
             @Override
             public void onStatusChanged(String s, int i, Bundle bundle) {
-
             }
-
             @Override
             public void onProviderEnabled(String s) {
-
             }
 
             @Override
@@ -301,8 +293,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         catch (SecurityException e){
             Snackbar.make(findViewById(R.id.home_scrollview),e.getMessage(),Snackbar.LENGTH_SHORT).show();
         }
-
-
     }
 
     public void determineCurrentLocation(GeoCoordinates latLng){
@@ -345,7 +335,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                return;
             }
             else{
-                for (int i=0;i<rem;i++)pathString.remove(0);
+                for(int i=0;i<rem;i++)pathString.remove(0);
                 pathOk=true;
                 updatePath();
             }
@@ -354,6 +344,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         determineCallCount=1;
 
     }
+
+
 
     public void handlePath(GeoCoordinates newLatLng){
 
@@ -365,7 +357,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         }
 
 
-        GeoCoordinates toCheck=mapUtil.GeoCoordinatesMap.get(pathString.get(0));
+        GeoCoordinates toCheck=MapUtil.GeoCoordinatesMap.get(pathString.get(0));
 
         if(newLatLng.distanceTo(toCheck)<=100){
             pathString.remove(0);
@@ -377,7 +369,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     public void initializePath(){
 
-        userLocationData.child("title").setValue("Campus-Tilagor-Campus");
         pathString=new ArrayList<>(Arrays.asList(mapUtil.CAMPUS,mapUtil.CAMPUS_GATE,mapUtil.MODINA_MARKET,mapUtil.SUBID_BAZAR,mapUtil.AMBORKHANA,mapUtil.EIDGAH,mapUtil.KUMARPARA,mapUtil.TILAGOR,mapUtil.BALUCHAR, mapUtil.CAMPUS));
         userPathReference.setValue("NA;");
         pathOk=false;
@@ -385,9 +376,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    public  void updatePath(){
-      String path=new String();
-      for (String s:pathString)path+=(s+";");
+  public  void updatePath(){
+      String path = "";
+      for (String s:pathString){
+          path += (s + ";" );
+      }
       userPathReference.setValue(path);
   }
     public Activity getActivity(){
@@ -434,7 +427,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
         }
         else  if(i==R.id.track_buses_cv){
-
             startActivity(new Intent(HomeActivity.this,MapsActivity.class));
         }
         else if(i==R.id.profile_cv && userInfo!=null){
@@ -457,8 +449,10 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         permissionsRequestor.onRequestPermissionsResult(requestCode,grantResults);
     }
 
+
     @Override
     protected void onDestroy() {
+        Log.d(TAG, "onDestroy: ");
         super.onDestroy();
         if(isRideShareOn) {
             mapUtil.rideShareStatus=false;
@@ -467,5 +461,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             userLocationData.removeValue();
             userPathReference.setValue(null);
         }
+        FirebaseAuth.getInstance().removeAuthStateListener(this);
     }
 }
