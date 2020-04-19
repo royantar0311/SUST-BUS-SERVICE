@@ -47,7 +47,6 @@
         app:primaryColor="@color/A400red">
 
         <studio.carbonylgroup.textfieldboxes.ExtendedEditText
-            android:id="@+id/email_et"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:imeOptions="actionNext"
@@ -78,7 +77,6 @@
         app:primaryColor="@color/A400red">
 
         <studio.carbonylgroup.textfieldboxes.ExtendedEditText
-            android:id="@+id/username_et"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:imeOptions="actionNext"
@@ -109,7 +107,6 @@
         >
 
         <studio.carbonylgroup.textfieldboxes.ExtendedEditText
-            android:id="@+id/password_et"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:imeOptions="actionNext"

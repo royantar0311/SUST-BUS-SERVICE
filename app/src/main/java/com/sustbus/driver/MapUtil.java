@@ -73,8 +73,8 @@ public class MapUtil {
     static {
          GeoCoordinatesMap.put(CAMPUS_GATE,new GeoCoordinates(24.911103,91.832213));
          GeoCoordinatesMap.put(CAMPUS,new GeoCoordinates(24.920856,91.832484));
-         GeoCoordinatesMap.put(MODINA_MARKET,new GeoCoordinates(24.910313,91.848312));
-         GeoCoordinatesMap.put(SUBID_BAZAR,new GeoCoordinates(24.907229,91.860850));
+         GeoCoordinatesMap.put(MODINA_MARKET,new GeoCoordinates(24.910353,91.847973));
+         GeoCoordinatesMap.put(SUBID_BAZAR,new GeoCoordinates(24.907373,91.860607));
          GeoCoordinatesMap.put(AMBORKHANA,new GeoCoordinates(24.905059,91.869903));
          GeoCoordinatesMap.put(RIKABI_BAZAR,new GeoCoordinates(24.899174,91.862412));
          GeoCoordinatesMap.put(CHOWHATTA,new GeoCoordinates(24.899423,91.868813));
@@ -91,7 +91,7 @@ public class MapUtil {
 
     public void enableGPS(final Context context, final Activity activity, final int RequestCode){
 
-        
+
         LocationRequest locationRequest=LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(2*1000)

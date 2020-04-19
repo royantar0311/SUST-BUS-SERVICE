@@ -20,12 +20,7 @@
 package com.sustbus.driver;
 
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.ArgbEvaluator;
-import android.animation.ObjectAnimator;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -37,6 +32,7 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -113,7 +109,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private String userUid;
     private boolean isCalculatingBusRout=false;
     private CardView informationCard;
-    private float cardConerRadius;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -125,7 +120,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         locateMeBtn = findViewById(R.id.locate_me_btn);
         informationCard=findViewById(R.id.information_tv_cardview);
-        cardConerRadius=informationCard.getRadius();
         locateMeBtn.setOnClickListener(this);
         informationTv=findViewById(R.id.information_tv);
 
@@ -152,8 +146,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         LatLngBounds latLngBounds=new LatLngBounds.Builder().include(new LatLng(24.910837,91.888013))
                                                          .include(new LatLng(24.861436,91.825502)).build();
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(),13f),100,null);
-        mMap.setTrafficEnabled(true);
-        mMap.setBuildingsEnabled(true);
+
         markerMap=new HashMap<>();
 
 
@@ -229,8 +222,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                  if(markerMap.containsKey(key)){
                          pos = new LatLng(dataSnapshot.child("lat").getValue(Double.class), dataSnapshot.child("lng").getValue(Double.class));
                          markerMap.get(key).setPosition(pos);
+                         markerMap.get(key).setRotation(dataSnapshot.child("rotation").getValue(Float.class));
                  }
-
                  else {
 
                      try{
@@ -252,6 +245,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                      }
 
                  }
+
             }
 
             @Override
@@ -259,6 +253,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 String key=dataSnapshot.getKey();
                 if(markerMap.containsKey(key)){
                     markerMap.get(key).remove();
+                    markerMap.remove(key);
                 }
             }
 
@@ -347,7 +342,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                if(routingError==null){
                    Route route=list.get(0);
-                   geoCoordinatesOfPolyLine=showRoute(route,R.color.blue2);
+                   geoCoordinatesOfPolyLine=showRoute(route,R.color.black);
                }
                else{
                    blinkRed("Try Again");
@@ -361,7 +356,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    public List<GeoCoordinates> showRoute(Route route,int color){
+    public List<GeoCoordinates> showRoute(Route route,int color) {
 
         if (currentPolylineOnMap!=null)currentPolylineOnMap.remove();
 
@@ -379,11 +374,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         int hour= (int) (time/3600);
         int minute= (int)(time%3600)/60;
+        int second= (int)(time%(3600))%60;
         polylineOptions.endCap(new ButtCap());
 
+        String tmp=new String();
+        if(hour!=0)tmp=hour+" hour ";
+        if(minute!=0)tmp+= minute +" minute ";
+        if (second!=0)tmp+=second +" seconds";
 
         currentPolylineOnMap=mMap.addPolyline(polylineOptions);
-        greenSignal("Estimated time: "+hour+" hour "+minute+" minutes");
+        greenSignal("Estimated time: "+tmp);
         return tmpList;
     }
 
@@ -416,7 +416,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             double distv1pos=myPos.distanceTo(geoCoordinatesOfPolyLine.get(i));
             double distv2pos=myPos.distanceTo(geoCoordinatesOfPolyLine.get(i+1));
 
-            if(distv2pos+distv1pos-distv1v2<=10){
+            if(distv2pos+distv1pos-distv1v2<=100){
                 lim=i+1;
                 break;
             }
@@ -427,6 +427,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             freeLocateMeButton=true;
             return;
         }
+        informationTv.setText("Getting route and time for you...");
 
         List<Waypoint> waypointsForUserRoute=new ArrayList<>();
 
@@ -444,7 +445,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         waypointsForUserRoute.add(0,new Waypoint(geoCoordinatesOfPolyLine.get(0)));
         waypointsForUserRoute.add(new Waypoint(myPos));
-
         routingEngine.calculateRoute(waypointsForUserRoute, carOptions, new CalculateRouteCallback() {
             @Override
             public void onRouteCalculated(@Nullable RoutingError routingError, @Nullable List<Route> list) {
@@ -530,7 +530,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode==101){
-            if(requestCode==RESULT_OK)showUserLocation();
+            if(resultCode==Activity.RESULT_OK)showUserLocation();
         }
     }
 
@@ -540,7 +540,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public Marker addMark(LatLng cur,String title){
 
-        Marker marker=mMap.addMarker(new MarkerOptions().position(cur).title(title)
+        Marker marker=mMap.addMarker(new MarkerOptions().position(cur)
+                .title(title)
+                .anchor(.5f,.5f)
                 .icon(bitmapDescriptorFromVector(R.drawable.ic_directions_bus_black_24dp)));
         return marker;
 
@@ -561,21 +563,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if(mes!=null){
             informationTv.setText(mes);
         }
-        ObjectAnimator objectAnimator=ObjectAnimator.ofInt(informationCard, "backgroundColor",
-                ContextCompat.getColor(this,R.color.white),
-                ContextCompat.getColor(this,R.color.A400red),
-                ContextCompat.getColor(this,R.color.white));
-
-        objectAnimator.setEvaluator(new ArgbEvaluator());
-        objectAnimator.setDuration(300);
-        objectAnimator.setRepeatMode(ObjectAnimator.REVERSE);
-        objectAnimator.setRepeatCount(1);
-        objectAnimator.start();
-        objectAnimator.addListener(new AnimatorListenerAdapter() {
+        AlphaAnimation alphaAnimation=new AlphaAnimation(0,1);
+        alphaAnimation.setDuration(300);
+        alphaAnimation.setRepeatCount(1);
+        alphaAnimation.setRepeatMode(Animation.RESTART);
+        informationCard.setAnimation(alphaAnimation);
+        alphaAnimation.setAnimationListener(new Animation.AnimationListener() {
             @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                informationCard.setRadius(cardConerRadius);
+            public void onAnimationStart(Animation animation) {
+                informationCard.setCardBackgroundColor(ContextCompat.getColor(getApplicationContext(),R.color.cpb_error_state_selector));
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                informationCard.setCardBackgroundColor(ContextCompat.getColor(getApplicationContext(),R.color.white));
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
             }
         });
     }
@@ -583,20 +590,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void greenSignal(String mes){
 
         informationTv.setText(mes);
-        informationCard.setBackgroundColor(ContextCompat.getColor(this,R.color.greenSignal));
-        new CountDownTimer(1000,1000){
-            @Override
-            public void onTick(long millisUntilFinished) {
+        AlphaAnimation alphaAnimation=new AlphaAnimation(0,1);
+        alphaAnimation.setDuration(250);
+        alphaAnimation.setRepeatCount(0);
+        informationCard.setAnimation(alphaAnimation);
 
+        alphaAnimation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                informationCard.setCardBackgroundColor(ContextCompat.getColor(getApplicationContext(),R.color.greenSignal));
             }
 
             @Override
-            public void onFinish() {
-                informationCard.setBackgroundColor(ContextCompat.getColor(getApplicationContext(),R.color.white));
-                informationCard.setRadius(cardConerRadius);
+            public void onAnimationEnd(Animation animation) {
+               informationCard.setCardBackgroundColor(ContextCompat.getColor(getApplicationContext(),R.color.white));
             }
-        }.start();
 
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
     }
 
     @Override

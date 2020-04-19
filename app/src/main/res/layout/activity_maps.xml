@@ -2,7 +2,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:map="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/maps_activity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/edit_round"
@@ -34,7 +33,7 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_margin="20dp"
-        map:cardCornerRadius="0dp"
+        map:cardCornerRadius="10dp"
         map:cardElevation="10dp">
 
         <TextView

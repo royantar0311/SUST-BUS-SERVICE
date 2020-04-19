@@ -83,7 +83,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private boolean pathOk;
     private int determineCallCount;
     private GeoCoordinates previousPosition,currentPosition;
-
+    private Location ridersPreviousLocation=null;
     UserInfo userInfo=null;
     Intent intent ;
     @Override
@@ -145,6 +145,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             db = FirebaseFirestore.getInstance();
             userLocationData=databaseReference.child("alive").child(userUid);
             userPathReference=databaseReference.child("destinations").child(userUid).child("path");
+            userLocationData.onDisconnect().setValue(null);
+            userPathReference.onDisconnect().setValue(null);
 
             /**
              * getting data from cloud firestore
@@ -170,6 +172,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             });
 
         }
+
         private void dashboardSetup() {
             Log.d(TAG, "dashboardSetup: called");
             /**
@@ -270,6 +273,12 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             public void onLocationChanged(Location location) {
                 userLocationData.child("lat").setValue(location.getLatitude());
                 userLocationData.child("lng").setValue(location.getLongitude());
+                float rotation=0;
+                if(ridersPreviousLocation!=null){
+                    rotation=location.bearingTo(ridersPreviousLocation);
+                }
+                ridersPreviousLocation=location;
+                userLocationData.child("rotation").setValue(rotation);
                 handlePath(new GeoCoordinates(location.getLatitude(),location.getLongitude()));
             }
             @Override
@@ -345,8 +354,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-
-
     public void handlePath(GeoCoordinates newLatLng){
 
         if(pathString.size()==1)return;
@@ -376,7 +383,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-  public  void updatePath(){
+    public  void updatePath(){
       String path = "";
       for (String s:pathString){
           path += (s + ";" );
