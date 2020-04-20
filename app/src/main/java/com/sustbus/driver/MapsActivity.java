@@ -18,8 +18,6 @@
  */
 
 package com.sustbus.driver;
-
-
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -74,7 +72,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import androidx.annotation.AnimatorRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
@@ -83,32 +80,32 @@ import androidx.fragment.app.FragmentActivity;
 
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, View.OnClickListener, GoogleMap.OnMarkerClickListener {
+
     public static final int MIN_TIME = 1000;
     public static final int MIN_DIST = 5;
-    private static final String TAG = "MapsActivity";
-
     private GoogleMap mMap;
     private FloatingActionButton locateMeBtn;
     private FirebaseAuth mAuth;
     private DatabaseReference databaseReference;
-    private ChildEventListener childEventListener,pathChangeListner;
-    private Map<String,Marker> markerMap;
+    private ChildEventListener childEventListener, pathChangeListner;
+    private Map<String, Marker> markerMap;
     private MapUtil mapUtil;
     private RoutingEngine routingEngine;
-    private Map<String,String> pathInformationMap;
+    private Map<String, String> pathInformationMap;
     private boolean ok = false;
-    private Polyline currentPolylineOnMap=null;
-    private List<Waypoint> waypoints=null;
-    private List<GeoCoordinates> geoCoordinatesOfPolyLine=null;
+    private Polyline currentPolylineOnMap = null;
+    private List<Waypoint> waypoints = null;
+    private List<GeoCoordinates> geoCoordinatesOfPolyLine = null;
     private RoutingEngine.CarOptions carOptions;
     private TextView informationTv;
-    private boolean freeLocateMeButton=true;
+    private boolean freeLocateMeButton = true;
     private Marker myLocationMarker;
     private LocationManager locationManager;
     private LocationListener locationListener;
     private String userUid;
-    private boolean isCalculatingBusRout=false;
+    private boolean isCalculatingBusRout = false;
     private CardView informationCard;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -119,23 +116,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
 
         locateMeBtn = findViewById(R.id.locate_me_btn);
-        informationCard=findViewById(R.id.information_tv_cardview);
+        informationCard = findViewById(R.id.information_tv_cardview);
         locateMeBtn.setOnClickListener(this);
-        informationTv=findViewById(R.id.information_tv);
+        informationTv = findViewById(R.id.information_tv);
 
-        databaseReference= FirebaseDatabase.getInstance().getReference();
-        mAuth=FirebaseAuth.getInstance();
+        databaseReference = FirebaseDatabase.getInstance().getReference();
+        mAuth = FirebaseAuth.getInstance();
 
 
-        if(mAuth.getCurrentUser()==null){
-            Intent intent=new Intent(MapsActivity.this,LoginActivity.class);
+        if (mAuth.getCurrentUser() == null) {
+            Intent intent = new Intent(MapsActivity.this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
             finish();
-        }
-        else userUid=mAuth.getCurrentUser().getUid();
+        } else userUid = mAuth.getCurrentUser().getUid();
 
-        mapUtil=MapUtil.getInstance();
+        mapUtil = MapUtil.getInstance();
 
     }
 
@@ -143,29 +139,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        LatLngBounds latLngBounds=new LatLngBounds.Builder().include(new LatLng(24.910837,91.888013))
-                                                         .include(new LatLng(24.861436,91.825502)).build();
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(),13f),100,null);
+        LatLngBounds latLngBounds = new LatLngBounds.Builder().include(new LatLng(24.910837, 91.888013))
+                .include(new LatLng(24.861436, 91.825502)).build();
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(), 13f), 100, null);
 
-        markerMap=new HashMap<>();
+        markerMap = new HashMap<>();
 
 
         try {
-            routingEngine=new RoutingEngine();
+            routingEngine = new RoutingEngine();
 
-        }
-        catch (InstantiationErrorException e){
+        } catch (InstantiationErrorException e) {
             new RuntimeException(e.error.name());
 
         }
 
-        carOptions=new RoutingEngine.CarOptions();
-        carOptions.routeOptions=new RouteOptions.Builder().setAlternatives(0).setOptimizationMode(OptimizationMode.SHORTEST).build();
-        carOptions.restrictions=new RouteRestrictions();
-        carOptions.restrictions.avoidAreas=mapUtil.restrictionList;
-        if(!mapUtil.rideShareStatus)showUserLocation();
-        else{
-            new CountDownTimer(60000*5,2000){
+        carOptions = new RoutingEngine.CarOptions();
+        carOptions.routeOptions = new RouteOptions.Builder().setAlternatives(0).setOptimizationMode(OptimizationMode.SHORTEST).build();
+        carOptions.restrictions = new RouteRestrictions();
+        carOptions.restrictions.avoidAreas = mapUtil.restrictionList;
+        if (!mapUtil.rideShareStatus) showUserLocation();
+        else {
+            new CountDownTimer(60000 * 5, 2000) {
                 @Override
                 public void onFinish() {
 
@@ -173,9 +168,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 @Override
                 public void onTick(long millisUntilFinished) {
-                    if(markerMap.containsKey(userUid)){
+                    if (markerMap.containsKey(userUid)) {
                         markerMap.get(userUid).
-                        setIcon(bitmapDescriptorFromVector(R.drawable.ic_blue_bus_for_user));
+                                setIcon(bitmapDescriptorFromVector(R.drawable.ic_blue_bus_for_user));
                         this.cancel();
                     }
 
@@ -183,30 +178,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }.start();
         }
 
-         childEventListener =new ChildEventListener() {
+        childEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
 
-                LatLng pos=null;
-                String key=null,title=null;
+                LatLng pos = null;
+                String key = null, title = null;
 
                 Marker tmpMarker;
-                try{
-                     pos = new LatLng(dataSnapshot.child("lat").getValue(Double.class), dataSnapshot.child("lng").getValue(Double.class));
-                     key = dataSnapshot.getKey();
-                     title=dataSnapshot.child("title").getValue(String.class);
-                }
-
-                catch (Exception e){
+                try {
+                    pos = new LatLng(dataSnapshot.child("lat").getValue(Double.class), dataSnapshot.child("lng").getValue(Double.class));
+                    key = dataSnapshot.getKey();
+                    title = dataSnapshot.child("title").getValue(String.class);
+                } catch (Exception e) {
 
                 }
 
-                if(pos!=null && key !=null){
-                    tmpMarker= addMark(pos,title);
+                if (pos != null && key != null) {
+                    tmpMarker = addMark(pos, title);
                     tmpMarker.showInfoWindow();
                     tmpMarker.setTag(key);
                     tmpMarker.setFlat(true);
-                    markerMap.put(key,tmpMarker);
+                    markerMap.put(key, tmpMarker);
 
                 }
 
@@ -215,43 +208,41 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
 
-                LatLng pos=null;
+                LatLng pos = null;
                 Marker tmpMarker;
 
-                String key=dataSnapshot.getKey(),title=null;
-                 if(markerMap.containsKey(key)){
-                         pos = new LatLng(dataSnapshot.child("lat").getValue(Double.class), dataSnapshot.child("lng").getValue(Double.class));
-                         markerMap.get(key).setPosition(pos);
-                         markerMap.get(key).setRotation(dataSnapshot.child("rotation").getValue(Float.class));
-                 }
-                 else {
+                String key = dataSnapshot.getKey(), title = null;
+                if (markerMap.containsKey(key)) {
+                    pos = new LatLng(dataSnapshot.child("lat").getValue(Double.class), dataSnapshot.child("lng").getValue(Double.class));
+                    markerMap.get(key).setPosition(pos);
+                    markerMap.get(key).setRotation(dataSnapshot.child("rotation").getValue(Float.class));
+                } else {
 
-                     try{
-                         pos = new LatLng(dataSnapshot.child("lat").getValue(Double.class), dataSnapshot.child("lng").getValue(Double.class));
-                         key = dataSnapshot.getKey();
-                         title=dataSnapshot.child("title").getValue(String.class);
-                     }
-                     catch (Exception e){
+                    try {
+                        pos = new LatLng(dataSnapshot.child("lat").getValue(Double.class), dataSnapshot.child("lng").getValue(Double.class));
+                        key = dataSnapshot.getKey();
+                        title = dataSnapshot.child("title").getValue(String.class);
+                    } catch (Exception e) {
 
-                     }
+                    }
 
-                     if(pos!=null && key !=null){
+                    if (pos != null && key != null) {
 
-                         tmpMarker= addMark(pos,title);
-                         tmpMarker.showInfoWindow();
-                         tmpMarker.setTag(key);
-                         tmpMarker.setFlat(true);
-                         markerMap.put(key,tmpMarker);
-                     }
+                        tmpMarker = addMark(pos, title);
+                        tmpMarker.showInfoWindow();
+                        tmpMarker.setTag(key);
+                        tmpMarker.setFlat(true);
+                        markerMap.put(key, tmpMarker);
+                    }
 
-                 }
+                }
 
             }
 
             @Override
             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-                String key=dataSnapshot.getKey();
-                if(markerMap.containsKey(key)){
+                String key = dataSnapshot.getKey();
+                if (markerMap.containsKey(key)) {
                     markerMap.get(key).remove();
                     markerMap.remove(key);
                 }
@@ -268,172 +259,172 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         };
 
-         pathInformationMap=new HashMap<>();
+        pathInformationMap = new HashMap<>();
 
-         pathChangeListner=new ChildEventListener() {
-             @Override
-             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                         pathInformationMap.put( dataSnapshot.getKey(), dataSnapshot.child("path").getValue(String.class));
-             }
+        pathChangeListner = new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                pathInformationMap.put(dataSnapshot.getKey(), dataSnapshot.child("path").getValue(String.class));
+            }
 
-             @Override
-             public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                 String key=dataSnapshot.getKey();
-                 pathInformationMap.remove(key);
-                 pathInformationMap.put(key,dataSnapshot.child("path").getValue(String.class));
-             }
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                String key = dataSnapshot.getKey();
+                pathInformationMap.remove(key);
+                pathInformationMap.put(key, dataSnapshot.child("path").getValue(String.class));
+            }
 
-             @Override
-             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-                 pathInformationMap.remove(dataSnapshot.getKey());
-             }
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+                pathInformationMap.remove(dataSnapshot.getKey());
+            }
 
-             @Override
-             public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
 
-             }
+            }
 
-             @Override
-             public void onCancelled(@NonNull DatabaseError databaseError) {
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-             }
-         };
+            }
+        };
 
         databaseReference.child("alive").addChildEventListener(childEventListener);
         databaseReference.child("destinations").addChildEventListener(pathChangeListner);
 
-       mMap.setOnMarkerClickListener(this);
+        mMap.setOnMarkerClickListener(this);
     }
 
     @Override
     public boolean onMarkerClick(Marker marker) {
 
-        if(marker.equals(myLocationMarker)){
+        if (marker.equals(myLocationMarker)) {
             greenSignal("This is you");
-            return false ;
+            return false;
         }
 
 
-        String path=pathInformationMap.get((String)marker.getTag());
+        String path = pathInformationMap.get((String) marker.getTag());
 
-        if(path==null || path.equals((String)"NA;")){
+        if (path == null || path.equals((String) "NA;")) {
             blinkRed("Sorry, Currently Route is not availavle for this bus");
             return false;
         }
 
-        if(isCalculatingBusRout){
-           blinkRed(null);
-           return false;
+        if (isCalculatingBusRout) {
+            blinkRed(null);
+            return false;
         }
-        isCalculatingBusRout=true;
+        isCalculatingBusRout = true;
         informationTv.setText("Please wait, Getting bus route...");
 
-        MapUtil.PathInformation pathInformation=mapUtil.stringToPath(path);
+        MapUtil.PathInformation pathInformation = mapUtil.stringToPath(path);
 
-        Waypoint starWaypoint=new Waypoint(new GeoCoordinates(marker.getPosition().latitude,marker.getPosition().longitude));
+        Waypoint starWaypoint = new Waypoint(new GeoCoordinates(marker.getPosition().latitude, marker.getPosition().longitude));
 
-        waypoints=pathInformation.getWayPoints();
+        waypoints = pathInformation.getWayPoints();
 
-        waypoints.add(0,starWaypoint);
+        waypoints.add(0, starWaypoint);
 
         routingEngine.calculateRoute(waypoints, carOptions, new CalculateRouteCallback() {
-           @Override
-           public void onRouteCalculated(@Nullable RoutingError routingError, @Nullable List<Route> list) {
+            @Override
+            public void onRouteCalculated(@Nullable RoutingError routingError, @Nullable List<Route> list) {
 
-               if(routingError==null){
-                   Route route=list.get(0);
-                   geoCoordinatesOfPolyLine=showRoute(route,R.color.black);
-               }
-               else{
-                   blinkRed("Try Again");
-               }
-               isCalculatingBusRout=false;
+                if (routingError == null) {
+                    Route route = list.get(0);
+                    geoCoordinatesOfPolyLine = showRoute(route, R.color.black);
+                } else {
+                    blinkRed("Try Again");
+                }
+                isCalculatingBusRout = false;
 
-           }
-       });
+            }
+        });
 
         return false;
 
     }
 
-    public List<GeoCoordinates> showRoute(Route route,int color) {
+    public List<GeoCoordinates> showRoute(Route route, int color) {
 
-        if (currentPolylineOnMap!=null)currentPolylineOnMap.remove();
+        if (currentPolylineOnMap != null) currentPolylineOnMap.remove();
 
-        List<GeoCoordinates> tmpList=route.getPolyline();
-        PolylineOptions polylineOptions=new PolylineOptions();
+        List<GeoCoordinates> tmpList = route.getPolyline();
+        PolylineOptions polylineOptions = new PolylineOptions();
 
-        for(GeoCoordinates g:tmpList){
-            LatLng tmp=new LatLng(g.latitude,g.longitude);
+        for (GeoCoordinates g : tmpList) {
+            LatLng tmp = new LatLng(g.latitude, g.longitude);
             polylineOptions.add(tmp);
         }
         polylineOptions.width(14);
-        polylineOptions.color(ContextCompat.getColor(this,color));
+        polylineOptions.color(ContextCompat.getColor(this, color));
 
-        long time=route.getDurationInSeconds()+route.getTrafficDelayInSeconds();
+        long time = route.getDurationInSeconds() + route.getTrafficDelayInSeconds();
 
-        int hour= (int) (time/3600);
-        int minute= (int)(time%3600)/60;
-        int second= (int)(time%(3600))%60;
+        int hour = (int) (time / 3600);
+        int minute = (int) (time % 3600) / 60;
+        int second = (int) (time % (3600)) % 60;
         polylineOptions.endCap(new ButtCap());
 
-        String tmp=new String();
-        if(hour!=0)tmp=hour+" hour ";
-        if(minute!=0)tmp+= minute +" minute ";
-        if (second!=0)tmp+=second +" seconds";
+        String tmp = new String();
+        if (hour != 0) tmp = hour + " hour ";
+        if (minute != 0) tmp += minute + " minute ";
+        if (second != 0) tmp += second + " seconds";
 
-        currentPolylineOnMap=mMap.addPolyline(polylineOptions);
-        greenSignal("Estimated time: "+tmp);
+        currentPolylineOnMap = mMap.addPolyline(polylineOptions);
+        greenSignal("Estimated time: " + tmp);
         return tmpList;
     }
 
-    public void getEstimatedTime(){
+    public void getEstimatedTime() {
 
-        if(geoCoordinatesOfPolyLine==null || waypoints==null){
+        if (geoCoordinatesOfPolyLine == null || waypoints == null) {
             blinkRed("Please Select a Bus First");
-            freeLocateMeButton=true;
+            freeLocateMeButton = true;
             return;
         }
 
-        if(mapUtil.rideShareStatus){
+        if (mapUtil.rideShareStatus) {
             greenSignal("You are on this bus");
-            if(markerMap.containsKey(userUid))mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(markerMap.get(userUid).getPosition(),20));
-            freeLocateMeButton=true;
+            if (markerMap.containsKey(userUid))
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(markerMap.get(userUid).getPosition(), 20));
+            freeLocateMeButton = true;
             return;
         }
 
-        if(myLocationMarker==null){
+        if (myLocationMarker == null) {
             blinkRed("Please check your Location Setting!");
-            freeLocateMeButton=true;
+            freeLocateMeButton = true;
             return;
         }
 
-        GeoCoordinates myPos=new GeoCoordinates(myLocationMarker.getPosition().latitude,myLocationMarker.getPosition().longitude);
-        int lim=0;
-        for(int i=0;i+1<geoCoordinatesOfPolyLine.size();i++){
-            Double distv1v2=geoCoordinatesOfPolyLine.get(i).distanceTo(geoCoordinatesOfPolyLine.get(i+1));
+        GeoCoordinates myPos = new GeoCoordinates(myLocationMarker.getPosition().latitude, myLocationMarker.getPosition().longitude);
+        int lim = 0;
+        for (int i = 0; i + 1 < geoCoordinatesOfPolyLine.size(); i++) {
+            Double distv1v2 = geoCoordinatesOfPolyLine.get(i).distanceTo(geoCoordinatesOfPolyLine.get(i + 1));
 
-            double distv1pos=myPos.distanceTo(geoCoordinatesOfPolyLine.get(i));
-            double distv2pos=myPos.distanceTo(geoCoordinatesOfPolyLine.get(i+1));
+            double distv1pos = myPos.distanceTo(geoCoordinatesOfPolyLine.get(i));
+            double distv2pos = myPos.distanceTo(geoCoordinatesOfPolyLine.get(i + 1));
 
-            if(distv2pos+distv1pos-distv1v2<=100){
-                lim=i+1;
+            if (distv2pos + distv1pos - distv1v2 <= 100) {
+                lim = i + 1;
                 break;
             }
         }
 
-        if(lim==0){
+        if (lim == 0) {
             blinkRed("You are not on the route of the bus");
-            freeLocateMeButton=true;
+            freeLocateMeButton = true;
             return;
         }
         informationTv.setText("Getting route and time for you...");
 
-        List<Waypoint> waypointsForUserRoute=new ArrayList<>();
+        List<Waypoint> waypointsForUserRoute = new ArrayList<>();
 
-        for(int j=0;j<waypoints.size();j++) {
+        for (int j = 0; j < waypoints.size(); j++) {
             for (int i = 0; i < lim; i++) {
-                double dist=waypoints.get(j).coordinates.distanceTo(geoCoordinatesOfPolyLine.get(i));
+                double dist = waypoints.get(j).coordinates.distanceTo(geoCoordinatesOfPolyLine.get(i));
                 //Log.d("DEB",waypoints.get(j).coordinates+" "+geoCoordinatesOfPolyLine.get(i)+" "+dist);
                 if (dist <= 30) {
                     waypointsForUserRoute.add(waypoints.get(j));
@@ -443,18 +434,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
 
-        waypointsForUserRoute.add(0,new Waypoint(geoCoordinatesOfPolyLine.get(0)));
+        waypointsForUserRoute.add(0, new Waypoint(geoCoordinatesOfPolyLine.get(0)));
         waypointsForUserRoute.add(new Waypoint(myPos));
         routingEngine.calculateRoute(waypointsForUserRoute, carOptions, new CalculateRouteCallback() {
             @Override
             public void onRouteCalculated(@Nullable RoutingError routingError, @Nullable List<Route> list) {
-                if(routingError==null){
-                    showRoute(list.get(0),R.color.orange4);
-                }
-                else{
+                if (routingError == null) {
+                    showRoute(list.get(0), R.color.orange4);
+                } else {
                     blinkRed("Please try Again");
                 }
-                freeLocateMeButton=true;
+                freeLocateMeButton = true;
             }
         });
     }
@@ -462,108 +452,110 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onClick(View view) {
         int i = view.getId();
-        if(i == R.id.locate_me_btn){
-            if(!freeLocateMeButton){
+        if (i == R.id.locate_me_btn) {
+            if (!freeLocateMeButton) {
                 blinkRed("Please wait, already getting a route for you");
                 return;
             }
 
-            freeLocateMeButton=false;
+            freeLocateMeButton = false;
             getEstimatedTime();
         }
     }
 
     public void showUserLocation() {
 
-    locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
-    boolean isGps = false;
-    try {
-        isGps = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-    } catch (Exception e) {
+        boolean isGps = false;
+        try {
+            isGps = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        } catch (Exception e) {
+
+        }
+
+        if (!isGps) {
+            mapUtil.enableGPS(getApplicationContext(), this, 101);
+            locationManager = null;
+            return;
+        }
+
+
+        locationListener = new LocationListener() {
+
+            @Override
+            public void onLocationChanged(Location location) {
+                if (myLocationMarker == null)
+                    myLocationMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude()))
+                            .icon(bitmapDescriptorFromVector(R.drawable.ic_radio_button))
+                            .flat(true));
+                else
+                    myLocationMarker.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
+            }
+
+            @Override
+            public void onStatusChanged(String s, int i, Bundle bundle) {
+
+            }
+
+            @Override
+            public void onProviderEnabled(String s) {
+
+            }
+
+            @Override
+            public void onProviderDisabled(String s) {
+                mapUtil.enableGPS(getApplicationContext(), getActivity(), 101);
+            }
+        };
+
+
+        try {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DIST, locationListener);
+        } catch (SecurityException e) {
+            Snackbar.make(findViewById(R.id.home_scrollview), e.getMessage(), Snackbar.LENGTH_SHORT).show();
+        }
 
     }
-
-    if (!isGps) {
-        mapUtil.enableGPS(getApplicationContext(), this, 101);
-        locationManager = null;
-        return;
-    }
-
-
-    locationListener = new LocationListener() {
-
-        @Override
-        public void onLocationChanged(Location location) {
-                if(myLocationMarker==null)myLocationMarker=mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(),location.getLongitude()))
-                                                                                             .icon(bitmapDescriptorFromVector(R.drawable.ic_radio_button))
-                                                                                             .flat(true));
-                else myLocationMarker.setPosition(new LatLng(location.getLatitude(),location.getLongitude()));
-        }
-
-        @Override
-        public void onStatusChanged(String s, int i, Bundle bundle) {
-
-        }
-
-        @Override
-        public void onProviderEnabled(String s) {
-
-        }
-
-        @Override
-        public void onProviderDisabled(String s) {
-            mapUtil.enableGPS(getApplicationContext(), getActivity(), 101);
-        }
-    };
-
-
-    try {
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DIST, locationListener);
-    } catch (SecurityException e) {
-        Snackbar.make(findViewById(R.id.home_scrollview), e.getMessage(), Snackbar.LENGTH_SHORT).show();
-    }
-
-}
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode==101){
-            if(resultCode==Activity.RESULT_OK)showUserLocation();
+        if (requestCode == 101) {
+            if (resultCode == Activity.RESULT_OK) showUserLocation();
         }
     }
 
-    public Activity getActivity(){
-        return (Activity)this;
-  }
+    public Activity getActivity() {
+        return (Activity) this;
+    }
 
-    public Marker addMark(LatLng cur,String title){
+    public Marker addMark(LatLng cur, String title) {
 
-        Marker marker=mMap.addMarker(new MarkerOptions().position(cur)
+        Marker marker = mMap.addMarker(new MarkerOptions().position(cur)
                 .title(title)
-                .anchor(.5f,.5f)
+                .anchor(.5f, .5f)
                 .icon(bitmapDescriptorFromVector(R.drawable.ic_directions_bus_black_24dp)));
         return marker;
 
     }
 
-    private BitmapDescriptor bitmapDescriptorFromVector(int vectorResId){
-        Drawable vectorDrawable = ContextCompat.getDrawable(this,vectorResId);
-        vectorDrawable.setBounds(0,0,vectorDrawable.getIntrinsicWidth(),
+    private BitmapDescriptor bitmapDescriptorFromVector(int vectorResId) {
+        Drawable vectorDrawable = ContextCompat.getDrawable(this, vectorResId);
+        vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth(),
                 vectorDrawable.getIntrinsicHeight());
-        Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(),vectorDrawable.getIntrinsicHeight(),
+        Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(),
                 Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         vectorDrawable.draw(canvas);
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
-    private void blinkRed(String mes){
-        if(mes!=null){
+    private void blinkRed(String mes) {
+        if (mes != null) {
             informationTv.setText(mes);
         }
-        AlphaAnimation alphaAnimation=new AlphaAnimation(0,1);
+        AlphaAnimation alphaAnimation = new AlphaAnimation(0, 1);
         alphaAnimation.setDuration(300);
         alphaAnimation.setRepeatCount(1);
         alphaAnimation.setRepeatMode(Animation.RESTART);
@@ -571,12 +563,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         alphaAnimation.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
-                informationCard.setCardBackgroundColor(ContextCompat.getColor(getApplicationContext(),R.color.cpb_error_state_selector));
+                informationCard.setCardBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.cpb_error_state_selector));
             }
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                informationCard.setCardBackgroundColor(ContextCompat.getColor(getApplicationContext(),R.color.white));
+                informationCard.setCardBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.white));
 
             }
 
@@ -587,10 +579,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
-    private void greenSignal(String mes){
+    private void greenSignal(String mes) {
 
         informationTv.setText(mes);
-        AlphaAnimation alphaAnimation=new AlphaAnimation(0,1);
+        AlphaAnimation alphaAnimation = new AlphaAnimation(0, 1);
         alphaAnimation.setDuration(250);
         alphaAnimation.setRepeatCount(0);
         informationCard.setAnimation(alphaAnimation);
@@ -598,12 +590,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         alphaAnimation.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
-                informationCard.setCardBackgroundColor(ContextCompat.getColor(getApplicationContext(),R.color.greenSignal));
+                informationCard.setCardBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.greenSignal));
             }
 
             @Override
             public void onAnimationEnd(Animation animation) {
-               informationCard.setCardBackgroundColor(ContextCompat.getColor(getApplicationContext(),R.color.white));
+                informationCard.setCardBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.white));
             }
 
             @Override
@@ -614,17 +606,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event)  {
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
             Toast.makeText(this, "press back again to exit", Toast.LENGTH_SHORT).show();
-            if(ok){
+            if (ok) {
 
                 databaseReference.child("alive").removeEventListener(childEventListener);
                 databaseReference.child("destinations").removeEventListener(pathChangeListner);
-                databaseReference=null;
-                if(locationManager!=null)locationManager.removeUpdates(locationListener);
-                locationManager=null;
-                locationListener=null;
+                databaseReference = null;
+                if (locationManager != null) locationManager.removeUpdates(locationListener);
+                locationManager = null;
+                locationListener = null;
                 markerMap.clear();
                 pathInformationMap.clear();
                 finish();

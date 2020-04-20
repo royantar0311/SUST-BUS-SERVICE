@@ -34,20 +34,20 @@
         android:id="@+id/username_tf"
         android:layout_width="266dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:layout_marginLeft="50dp"
         android:layout_below="@+id/login_tv"
+        android:layout_marginLeft="50dp"
+        android:layout_marginTop="20dp"
 
         android:background="@drawable/edit_round"
         app:hasClearButton="true"
         app:helperText="enter email here"
-        app:primaryColor="@color/A400red"
-        app:labelText="Email"
         app:iconSignifier="@drawable/ic_account_circle_black_24dp"
+        app:labelText="Email"
+        app:manualValidateError="true"
         app:maxCharacters="16"
         app:minCharacters="4"
-        app:manualValidateError="true"
-        >
+        app:primaryColor="@color/A400red">
+
         <studio.carbonylgroup.textfieldboxes.ExtendedEditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -55,7 +55,7 @@
             tools:layout_conversion_absoluteHeight="20dp"
             tools:layout_conversion_absoluteWidth="14dp"
             tools:layout_editor_absoluteX="100dp"
-            tools:layout_editor_absoluteY="206dp"/>
+            tools:layout_editor_absoluteY="206dp" />
     </studio.carbonylgroup.textfieldboxes.TextFieldBoxes>
 
 
@@ -64,9 +64,9 @@
         android:layout_width="266dp"
         android:layout_height="wrap_content"
         android:layout_below="@id/username_tf"
-        android:background="@drawable/edit_round"
-        android:layout_marginTop="20dp"
         android:layout_marginLeft="50dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/edit_round"
 
 
         app:hasClearButton="true"
@@ -100,16 +100,15 @@
 
         android:background="@drawable/custom_button"
         android:text="login" />
+
     <TextView
         android:id="@+id/sign_up_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="don't have an account? \n           register here"
         android:layout_below="@+id/login_btn"
-        android:layout_marginTop="15dp"
         android:layout_centerHorizontal="true"
-        />
-
+        android:layout_marginTop="15dp"
+        android:text="don't have an account? \n           register here" />
 
 
 </RelativeLayout>

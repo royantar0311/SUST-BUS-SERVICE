@@ -27,6 +27,9 @@ import studio.carbonylgroup.textfieldboxes.TextFieldBoxes;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = "MainActivity";
+    boolean userNameOk = false;
+    boolean emailOk = false;
+    boolean passwordOk = false;
     private TextView signInTv;
     private Button signUpBtn;
     private TextFieldBoxes userNameEt;
@@ -35,9 +38,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String userName;
     private String email;
     private String password;
-    boolean userNameOk = false;
-    boolean emailOk = false;
-    boolean passwordOk = false;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
     private UserInfo userInfo;
@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         signUpBtn = findViewById(R.id.signup_btn);
         signInTv = findViewById(R.id.sign_in_tv);
 
-        progressDialog=new ProgressDialog(this);
+        progressDialog = new ProgressDialog(this);
 
         emailEt.setSimpleTextChangeWatcher(new SimpleTextChangedWatcher() {
             @Override
@@ -89,10 +89,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * end of on create
      **/
 
-    protected void onStart(){
+    protected void onStart() {
         super.onStart();
         db = FirebaseFirestore.getInstance();
-        mAuth=FirebaseAuth.getInstance();
+        mAuth = FirebaseAuth.getInstance();
     }
 
     @Override
@@ -100,16 +100,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int i = view.getId();
         if (i == R.id.sign_in_tv) {
 
-            Intent intent=new Intent(MainActivity.this,LoginActivity.class);
+            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
             startActivity(intent);
             finish();
 
 
-
-        }
-        else if (i == R.id.signup_btn) {
+        } else if (i == R.id.signup_btn) {
 
 
             if (emailOk && userNameOk && passwordOk) {
@@ -118,12 +116,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 progressDialog.setCancelable(false);
                 progressDialog.show();
 
-                mAuth.createUserWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
 
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
 
-                        if(task.isSuccessful()) {
+                        if (task.isSuccessful()) {
                             progressDialog.hide();
                             UserInfo.getBuilder()
                                     .setDriver(false)
@@ -135,23 +133,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             db.collection("users")
                                     .document(userInfo.getuId())
                                     .set(userInfo.toMap());
-                            Intent intent=new Intent(MainActivity.this,HomeActivity.class);
+                            Intent intent = new Intent(MainActivity.this, HomeActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             startActivity(intent);
                             finish();
-                        }
-                        else{
+                        } else {
                             progressDialog.hide();
-                            String error=task.getException().getMessage();
+                            String error = task.getException().getMessage();
 
-                            if(error.contains("email")){
+                            if (error.contains("email")) {
                                 emailEt.setHelperText(error);
-                            }
-                            else if(error.contains("password")){
+                            } else if (error.contains("password")) {
                                 passwordEt.setHelperText(error);
-                            }
-                            else{
-                                Toast.makeText(MainActivity.this,error,Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(MainActivity.this, error, Toast.LENGTH_SHORT).show();
                             }
                         }
 
@@ -159,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 });
 
             } else {
-                Snackbar.make(findViewById(R.id.main_relative_layout),"Please enter all the fields correctly",Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(findViewById(R.id.main_relative_layout), "Please enter all the fields correctly", Snackbar.LENGTH_SHORT).show();
             }
         }
     }

@@ -1,9 +1,5 @@
 package com.sustbus.driver;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
@@ -12,7 +8,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,6 +20,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import de.hdodenhof.circleimageview.CircleImageView;
 import studio.carbonylgroup.textfieldboxes.SimpleTextChangedWatcher;
 import studio.carbonylgroup.textfieldboxes.TextFieldBoxes;
@@ -45,12 +43,13 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     private CircleImageView dpEv;
     private TextFieldBoxes userNameTf;
     private TextFieldBoxes regiNoTf;
-    private String userName=null,regiNo=null;
+    private String userName = null, regiNo = null;
     private boolean userNameOk;
     private boolean regiNoOk;
     private DocumentReference db;
     private Uri dpFilePath = null, idFilePath = null;
     private ProgressDialog progressDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,7 +95,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void loadImage() {
-        if(userInfo != null && userInfo.getUrl() != null){
+        if (userInfo != null && userInfo.getUrl() != null) {
             Glide.with(ProfileActivity.this)
                     .load(userInfo.getUrl())
                     .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.AUTOMATIC))
@@ -105,7 +104,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     }
 
 
-    private void userNameValidator(String theNewText)   {
+    private void userNameValidator(String theNewText) {
         userName = theNewText;
         if (theNewText.length() < 4) {
             userNameTf.setHelperText("must contain 6 letters at least");
@@ -120,6 +119,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             userNameOk = true;
         }
     }
+
     private void regiNoValidator(String theNewText) {
         regiNo = theNewText;
         if (theNewText.length() != 10) {
@@ -139,29 +139,29 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     public void onClick(View view) {
         int i = view.getId();
-        if(i == R.id.update_profile_btn){
+        if (i == R.id.update_profile_btn) {
             Log.d(TAG, "onClick: " + "update button clicked ");
             progressDialog.setMessage("Updating Profile");
             progressDialog.setCancelable(false);
             progressDialog.show();
-            if(  userNameOk && regiNoOk &&
-                    (idFilePath != null)  == (userInfo.getIsStudentPermitted()==UserInfo.STUDENT_NOT_PERMITTED)) {
+            if (userNameOk && regiNoOk &&
+                    (idFilePath != null) == (userInfo.getIsStudentPermitted() == UserInfo.STUDENT_NOT_PERMITTED)) {
 
                 if (dpFilePath != null) {
-                        Log.d(TAG, "onClick: filepath not null, file upload initializing");
-                        storageReference.child("dp.jpg").putFile(dpFilePath);
-                        storageReference.child("dp.jpg").getDownloadUrl()
-                                .addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                    @Override
-                                    public void onSuccess(Uri uri) {
-                                        Log.d(TAG, "onSuccess: " + "dp upload successful: " + uri.toString());
-                                        userInfo.setUrl(uri.toString());
-                                        UserInfo.downNeeded = true;
+                    Log.d(TAG, "onClick: filepath not null, file upload initializing");
+                    storageReference.child("dp.jpg").putFile(dpFilePath);
+                    storageReference.child("dp.jpg").getDownloadUrl()
+                            .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(Uri uri) {
+                                    Log.d(TAG, "onSuccess: " + "dp upload successful: " + uri.toString());
+                                    userInfo.setUrl(uri.toString());
+                                    UserInfo.downNeeded = true;
 
-                                    }
-                                });
+                                }
+                            });
                 }
-                if(idFilePath != null) {
+                if (idFilePath != null) {
                     storageReference.child("id.jpg").putFile(idFilePath);
                     storageReference.child("id.jpg").getDownloadUrl()
                             .addOnSuccessListener(new OnSuccessListener<Uri>() {
@@ -172,17 +172,15 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                             });
                 }
                 updateRestOfTheData();
-            }
-            else {
+            } else {
                 progressDialog.hide();
                 Toast.makeText(ProfileActivity.this, "enter all fields correctly", Toast.LENGTH_SHORT).show();
             }
-        }
-        else if(i == R.id.dp_chooser_button){
+        } else if (i == R.id.dp_chooser_button) {
             Intent intent = new Intent();
             intent.setType("image/*");
             intent.setAction(Intent.ACTION_GET_CONTENT);
-            startActivityForResult(Intent.createChooser(intent,"Select Profile Photo"),REQUESTING_DP);
+            startActivityForResult(Intent.createChooser(intent, "Select Profile Photo"), REQUESTING_DP);
         }
     }
 
@@ -197,35 +195,33 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         userInfo.setRegiNo(regiNo);
         Log.d(TAG, userInfo.toString());
         db.update(userInfo.toMap())
-            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    Log.d(TAG, "onSuccess: " + "profile updated");
-                    progressDialog.hide();
-                    if(userInfo.getIsStudentPermitted()==UserInfo.PERMISSION_PENDING){
-                        permissionPending();
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "onSuccess: " + "profile updated");
+                        progressDialog.hide();
+                        if (userInfo.getIsStudentPermitted() == UserInfo.PERMISSION_PENDING) {
+                            permissionPending();
+                        } else if (userInfo.getIsStudentPermitted() == UserInfo.STUDENT_PERMITTED) {
+                            permitted();
+                        }
+                        Toast.makeText(ProfileActivity.this, "Profile Updated Successfully", Toast.LENGTH_SHORT).show();
                     }
-                    else if(userInfo.getIsStudentPermitted() == UserInfo.STUDENT_PERMITTED){
-                        permitted();
-                    }
-                    Toast.makeText(ProfileActivity.this, "Profile Updated Successfully", Toast.LENGTH_SHORT).show();
-                }
-            });
+                });
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode==REQUESTING_DP && resultCode==RESULT_OK &&
-                data != null && data.getData() != null){
+        if (requestCode == REQUESTING_DP && resultCode == RESULT_OK &&
+                data != null && data.getData() != null) {
             Log.d(TAG, "onActivityResult: " + data + "dp fetched");
             dpFilePath = data.getData();
             Glide.with(this)
                     .load(dpFilePath)
                     .into(dpEv);
-        }
-        else if(requestCode==REQUESTING_ID && resultCode==RESULT_OK &&
-                data != null && data.getData() != null){
+        } else if (requestCode == REQUESTING_ID && resultCode == RESULT_OK &&
+                data != null && data.getData() != null) {
             Log.d(TAG, "onActivityResult: " + data + "id fetched");
             idFilePath = data.getData();
         }
@@ -240,16 +236,14 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     protected void onStart() {
         super.onStart();
-        if(userInfo.getIsStudentPermitted() == UserInfo.STUDENT_NOT_PERMITTED){
+        if (userInfo.getIsStudentPermitted() == UserInfo.STUDENT_NOT_PERMITTED) {
             updateProfileBtn.setEnabled(true);
             updateProfileBtn.setText("Request Permission");
             updateProfileBtn.setBackground(ContextCompat.getDrawable(ProfileActivity.this, R.drawable.custom_button));
 
-        }
-        else if(userInfo.getIsStudentPermitted() == UserInfo.PERMISSION_PENDING){
+        } else if (userInfo.getIsStudentPermitted() == UserInfo.PERMISSION_PENDING) {
             permissionPending();
-        }
-        else if(userInfo.getIsStudentPermitted() == UserInfo.STUDENT_PERMITTED){
+        } else if (userInfo.getIsStudentPermitted() == UserInfo.STUDENT_PERMITTED) {
             permitted();
         }
         userName = userInfo.getUserName();
@@ -291,6 +285,6 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent,"Select Profile Photo"),REQUESTING_ID);
+        startActivityForResult(Intent.createChooser(intent, "Select Profile Photo"), REQUESTING_ID);
     }
 }

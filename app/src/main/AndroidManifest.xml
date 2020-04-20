@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.sustbus.driver">
-
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
          Google Maps Android API v2, but you must specify either coarse or fine
          location permissions for the 'MyLocation' functionality.
     -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
-
 
     <application
         android:allowBackup="true"
@@ -23,7 +20,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
+        <activity android:name=".ScheduleActivity"></activity>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -35,16 +32,20 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyA07M8wmJw3BT8fboNcg0hIij_mY8fbwno" />
-
-        <meta-data android:name="com.here.sdk.access_key_id" android:value="cDXWAHzb3yvM4TaJFYIyLQ" />
-        <meta-data android:name="com.here.sdk.access_key_secret" android:value="LQVs9ybHjp9coRGlG4FiExBMgdLb7BlHfaA3q8nUyjAM529uup_ACFVudtoknh0667HgrwFtst9aC-85-dM6lw" />
+        <meta-data
+            android:name="com.here.sdk.access_key_id"
+            android:value="cDXWAHzb3yvM4TaJFYIyLQ" />
+        <meta-data
+            android:name="com.here.sdk.access_key_secret"
+            android:value="LQVs9ybHjp9coRGlG4FiExBMgdLb7BlHfaA3q8nUyjAM529uup_ACFVudtoknh0667HgrwFtst9aC-85-dM6lw" />
 
         <activity
             android:name=".MapsActivity"
-            android:label="@string/title_activity_maps"></activity>
+            android:label="@string/title_activity_maps" />
         <activity android:name=".HomeActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -57,10 +58,8 @@
              You can define the keys for the debug and release targets in src/debug/ and src/release/.
         -->
         <activity android:name=".LoginActivity" />
-        <activity android:name=".MainActivity"></activity>
-        <activity android:name=".ProfileActivity">
-
-    </activity>
+        <activity android:name=".MainActivity" />
+        <activity android:name=".ProfileActivity" />
 
         <meta-data
             android:name="preloaded_fonts"

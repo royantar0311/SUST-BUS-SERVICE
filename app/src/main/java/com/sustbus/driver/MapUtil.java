@@ -52,155 +52,145 @@ import androidx.core.content.ContextCompat;
 
 public class MapUtil {
 
-    public static final String CAMPUS="Campus";
-    public static final String AMBORKHANA="Amborkhana";
-    public static final String SUBID_BAZAR="Subid Bazar";
-    public static final String MODINA_MARKET="Modina Market";
-    public static final String RIKABI_BAZAR="Rikabi Bazar";
-    public static final String  CHOWHATTA="chowhatta";
-    public static final String NAIORPUL="Naiorpul";
-    public static final String  KUMARPARA="Kumarpara";
-    public static final String EIDGAH="Eidgah";
-    public static final String TILAGOR="Tilagor";
-    public static final String BALUCHAR="Baluchar";
-    public static final String LAKKATURA="Lakkatura";
-    public static final String CAMPUS_GATE="Gate";
-    public static boolean rideShareStatus=false;
+    public static final String CAMPUS = "Campus";
+    public static final String AMBORKHANA = "Amborkhana";
+    public static final String SUBID_BAZAR = "Subid Bazar";
+    public static final String MODINA_MARKET = "Modina Market";
+    public static final String RIKABI_BAZAR = "Rikabi Bazar";
+    public static final String CHOWHATTA = "chowhatta";
+    public static final String NAIORPUL = "Naiorpul";
+    public static final String KUMARPARA = "Kumarpara";
+    public static final String EIDGAH = "Eidgah";
+    public static final String TILAGOR = "Tilagor";
+    public static final String BALUCHAR = "Baluchar";
+    public static final String LAKKATURA = "Lakkatura";
+    public static final String CAMPUS_GATE = "Gate";
+    public static boolean rideShareStatus = false;
 
-    public static Map<String, GeoCoordinates>GeoCoordinatesMap=new HashMap<>();
-    public static List<GeoBox> restrictionList=new ArrayList<>();
+    public static Map<String, GeoCoordinates> GeoCoordinatesMap = new HashMap<>();
+    public static List<GeoBox> restrictionList = new ArrayList<>();
+    public static MapUtil mapUtil = new MapUtil();
 
     static {
-         GeoCoordinatesMap.put(CAMPUS_GATE,new GeoCoordinates(24.911103,91.832213));
-         GeoCoordinatesMap.put(CAMPUS,new GeoCoordinates(24.920856,91.832484));
-         GeoCoordinatesMap.put(MODINA_MARKET,new GeoCoordinates(24.910353,91.847973));
-         GeoCoordinatesMap.put(SUBID_BAZAR,new GeoCoordinates(24.907373,91.860607));
-         GeoCoordinatesMap.put(AMBORKHANA,new GeoCoordinates(24.905059,91.869903));
-         GeoCoordinatesMap.put(RIKABI_BAZAR,new GeoCoordinates(24.899174,91.862412));
-         GeoCoordinatesMap.put(CHOWHATTA,new GeoCoordinates(24.899423,91.868813));
-         GeoCoordinatesMap.put(NAIORPUL,new GeoCoordinates(24.894782,91.878659));
-         GeoCoordinatesMap.put(KUMARPARA,new GeoCoordinates(24.899368,91.879104));
-         GeoCoordinatesMap.put(EIDGAH,new GeoCoordinates(24.906645,91.879974));
-         GeoCoordinatesMap.put(TILAGOR,new GeoCoordinates(24.896180,91.900212));
-         GeoCoordinatesMap.put(BALUCHAR,new GeoCoordinates(24.903014,91.895963));
-         GeoCoordinatesMap.put(LAKKATURA,new GeoCoordinates(24.925066,91.871258));
+        GeoCoordinatesMap.put(CAMPUS_GATE, new GeoCoordinates(24.911103, 91.832213));
+        GeoCoordinatesMap.put(CAMPUS, new GeoCoordinates(24.920856, 91.832484));
+        GeoCoordinatesMap.put(MODINA_MARKET, new GeoCoordinates(24.910353, 91.847973));
+        GeoCoordinatesMap.put(SUBID_BAZAR, new GeoCoordinates(24.907373, 91.860607));
+        GeoCoordinatesMap.put(AMBORKHANA, new GeoCoordinates(24.905059, 91.869903));
+        GeoCoordinatesMap.put(RIKABI_BAZAR, new GeoCoordinates(24.899174, 91.862412));
+        GeoCoordinatesMap.put(CHOWHATTA, new GeoCoordinates(24.899423, 91.868813));
+        GeoCoordinatesMap.put(NAIORPUL, new GeoCoordinates(24.894782, 91.878659));
+        GeoCoordinatesMap.put(KUMARPARA, new GeoCoordinates(24.899368, 91.879104));
+        GeoCoordinatesMap.put(EIDGAH, new GeoCoordinates(24.906645, 91.879974));
+        GeoCoordinatesMap.put(TILAGOR, new GeoCoordinates(24.896180, 91.900212));
+        GeoCoordinatesMap.put(BALUCHAR, new GeoCoordinates(24.903014, 91.895963));
+        GeoCoordinatesMap.put(LAKKATURA, new GeoCoordinates(24.925066, 91.871258));
 
-         restrictionList.add(new GeoBox(new GeoCoordinates(24.921759,91.82511),new GeoCoordinates(24.925740,91.83950)));
+        restrictionList.add(new GeoBox(new GeoCoordinates(24.921759, 91.82511), new GeoCoordinates(24.925740, 91.83950)));
     }
 
+    public static MapUtil getInstance() {
+        return mapUtil;
+    }
 
-    public void enableGPS(final Context context, final Activity activity, final int RequestCode){
+    public void enableGPS(final Context context, final Activity activity, final int RequestCode) {
 
 
-        LocationRequest locationRequest=LocationRequest.create()
+        LocationRequest locationRequest = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setInterval(2*1000)
+                .setInterval(2 * 1000)
                 .setFastestInterval(1000);
 
 
-        LocationSettingsRequest locationSettingRequest=new LocationSettingsRequest.Builder()
-                                                    .addLocationRequest(locationRequest)
-                                                   .setAlwaysShow(true).build();
+        LocationSettingsRequest locationSettingRequest = new LocationSettingsRequest.Builder()
+                .addLocationRequest(locationRequest)
+                .setAlwaysShow(true).build();
 
 
-        final Task<LocationSettingsResponse> result= LocationServices.getSettingsClient(context)
-                                               .checkLocationSettings(locationSettingRequest);
+        final Task<LocationSettingsResponse> result = LocationServices.getSettingsClient(context)
+                .checkLocationSettings(locationSettingRequest);
 
         result.addOnCompleteListener(new OnCompleteListener<LocationSettingsResponse>() {
 
             @Override
             public void onComplete(@NonNull Task<LocationSettingsResponse> task) {
 
-                  try{
-                      LocationSettingsResponse response=task.getResult(ApiException.class);
-                  }
-                  catch (ApiException e){
-                      switch (e.getStatusCode()){
-                          case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                              try {
-                                  ResolvableApiException resolvableApiException=(ResolvableApiException)e;
-                                  resolvableApiException.startResolutionForResult(activity,RequestCode);
-                              }
-                              catch (IntentSender.SendIntentException ie){
-                              }
-                              break;
-                          case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                              break;
+                try {
+                    LocationSettingsResponse response = task.getResult(ApiException.class);
+                } catch (ApiException e) {
+                    switch (e.getStatusCode()) {
+                        case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                            try {
+                                ResolvableApiException resolvableApiException = (ResolvableApiException) e;
+                                resolvableApiException.startResolutionForResult(activity, RequestCode);
+                            } catch (IntentSender.SendIntentException ie) {
+                            }
+                            break;
+                        case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                            break;
 
-                      }
-                  }
+                    }
+                }
             }
         });
     }
 
+    public PathInformation stringToPath(String path) {
 
-    public PathInformation stringToPath(String path){
+        PathInformation pathInformation = new PathInformation();
 
-        PathInformation pathInformation=new PathInformation();
-
-        if(path==null){
-            pathInformation.isRouteAvailable=false;
+        if (path == null) {
+            pathInformation.isRouteAvailable = false;
             return pathInformation;
         }
-        String latlng=null;
+        String latlng = null;
 
-        for (int i=0,j=0; j<path.length() ;i++) {
+        for (int i = 0, j = 0; j < path.length(); i++) {
 
 
             for (int k = j; j < path.length(); j++) {
                 if (path.charAt(j) == ';') {
-                     latlng=path.substring(k,j);
-                     j++;
+                    latlng = path.substring(k, j);
+                    j++;
                     break;
                 }
             }
 
             //Log.d("MAPUTIL:",GeoCoordinates+";");
 
-            if (i == 0){
-                if(latlng=="NA")pathInformation.isRouteAvailable=false;
+            if (i == 0) {
+                if (latlng == "NA") pathInformation.isRouteAvailable = false;
                 else pathInformation.addWayPoint(GeoCoordinatesMap.get(latlng));
-            }
-            else if(j==path.length()){
+            } else if (j == path.length()) {
                 pathInformation.setDest(GeoCoordinatesMap.get(latlng));
-            }
-            else {
+            } else {
                 pathInformation.addWayPoint(GeoCoordinatesMap.get(latlng));
             }
         }
 
 
-
         return pathInformation;
     }
 
-    public static MapUtil mapUtil=new MapUtil();
+    class PathInformation {
 
-    public static MapUtil getInstance(){
-        return mapUtil;
-    }
-
-
-    class PathInformation{
-
+        public boolean isRouteAvailable = true;
         private Waypoint dest;
-        public boolean isRouteAvailable=true;
-        
-
-        public void setDest(GeoCoordinates gdest) {
-            dest=new Waypoint(gdest);
-            dest.type=WaypointType.STOPOVER;
-            wayPoints.add(dest);
-        }
+        private List<Waypoint> wayPoints = new ArrayList<>();
 
         public Waypoint getDest() {
             return dest;
         }
 
-        private List<Waypoint>wayPoints=new ArrayList<>();
-        public void addWayPoint(GeoCoordinates geoCoordinates){
-            Waypoint tmp=new Waypoint(geoCoordinates);
-            tmp.type= WaypointType.STOPOVER;
+        public void setDest(GeoCoordinates gdest) {
+            dest = new Waypoint(gdest);
+            dest.type = WaypointType.STOPOVER;
+            wayPoints.add(dest);
+        }
+
+        public void addWayPoint(GeoCoordinates geoCoordinates) {
+            Waypoint tmp = new Waypoint(geoCoordinates);
+            tmp.type = WaypointType.STOPOVER;
             wayPoints.add(tmp);
         }
 
@@ -208,26 +198,22 @@ public class MapUtil {
             return wayPoints;
         }
 
-        public void kill(){wayPoints.clear();}
+        public void kill() {
+            wayPoints.clear();
+        }
 
     }
-
 
 }
 
 class PermissionsRequestor {
 
     private static final int PERMISSIONS_REQUEST_CODE = 42;
-    private ResultListener resultListener;
     private final Activity activity;
+    private ResultListener resultListener;
 
     public PermissionsRequestor(Activity activity) {
         this.activity = activity;
-    }
-
-    public interface ResultListener {
-        void permissionsGranted();
-        void permissionsDenied();
     }
 
     public void request(ResultListener resultListener) {
@@ -289,5 +275,11 @@ class PermissionsRequestor {
                 resultListener.permissionsDenied();
             }
         }
+    }
+
+    public interface ResultListener {
+        void permissionsGranted();
+
+        void permissionsDenied();
     }
 }

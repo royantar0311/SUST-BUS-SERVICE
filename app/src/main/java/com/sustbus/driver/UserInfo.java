@@ -4,13 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class UserInfo {
-    public static final int STUDENT_PERMITTED= 1;
-    public static final int STUDENT_NOT_PERMITTED= 0;
-    public static final int PERMISSION_PENDING=-1;
+    public static final int STUDENT_PERMITTED = 1;
+    public static final int STUDENT_NOT_PERMITTED = 0;
+    public static final int PERMISSION_PENDING = -1;
     public static boolean downNeeded = false;
-    private static UserInfo instance=new UserInfo();
     public static Builder builder = new Builder();
-
+    private static UserInfo instance = new UserInfo();
     private String email;
     private long isStudentPermitted;
     private String userName;
@@ -21,24 +20,24 @@ public class UserInfo {
     private String regiNo;
     private String url;
 
-    public static UserInfo getInstance(){
-        return instance;
-    }
-
-    public static void setInstance(UserInfo i){
-        instance=i;
-    }
-
     public UserInfo() {
     }
 
+    public static UserInfo getInstance() {
+        return instance;
+    }
 
+    public static void setInstance(UserInfo i) {
+        instance = i;
+    }
 
-    /**Private method needed for the builder
+    /**
+     * Private method needed for the builder
      * class to store them on the main userinfo
-     * object after getting all the data*/
+     * object after getting all the data
+     */
 
-     static UserInfo userInfo(Builder builder) {
+    static UserInfo userInfo(Builder builder) {
         instance.email = builder.email;
         instance.isStudentPermitted = builder.isStudentPermitted;
         instance.userName = builder.userName;
@@ -49,89 +48,27 @@ public class UserInfo {
         return instance;
     }
 
-    /**This method creates a object of the inner Builder class */
+    /**
+     * This method creates a object of the inner Builder class
+     */
 
-    static Builder getBuilder(){
+    static Builder getBuilder() {
         return builder;
     }
 
-    /**Builder pattern to build a Userinfo*/
-
-    public static class Builder{
-        String email;
-        long isStudentPermitted;
-        String userName;
-        boolean isDriver;
-        Double lat;
-        Double lang;
-        String uId;
-        String regiNo;
-        String url;
-
-        Builder(){}
-
-        public Builder setEmail(String email) {
-            this.email = email;
-            return this;
-        }
-
-        public Builder setIsStudentPermitted(long isStudentPermitted) {
-            this.isStudentPermitted = isStudentPermitted;
-            return this;
-        }
-
-        public Builder setUserName(String userName) {
-            this.userName = userName;
-            return this;
-        }
-
-        public Builder setDriver(boolean driver) {
-            isDriver = driver;
-            return this;
-        }
-
-        public Builder setLat(Double lat) {
-            this.lat = lat;
-            return this;
-        }
-
-        public Builder setLang(Double lang) {
-            this.lang = lang;
-            return this;
-        }
-        public Builder setuId(String uId) {
-            this.uId = uId;
-            return this;
-        }
-
-        public Builder setRegiNo(String regiNo) {
-            this.regiNo = regiNo;
-            return this;
-        }
-
-        public Builder setUrl(String url) {
-            this.url = url;
-            return this;
-        }
-
-        public UserInfo build(){
-            return userInfo(builder );
-        }
-    }
-
-    public Map<String, Object> toMap(){
-        Map<String, Object>map = new HashMap<>();
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new HashMap<>();
         map.put("email", email);
-        map.put("isStudentPermitted",isStudentPermitted);
+        map.put("isStudentPermitted", isStudentPermitted);
         map.put("userName", userName);
         map.put("driver", driver);
-        map.put("uId",uId);
-        map.put("regiNo",regiNo);
-        map.put("url",url);
+        map.put("uId", uId);
+        map.put("regiNo", regiNo);
+        map.put("url", url);
         return map;
     }
 
-    public String toString(){
+    public String toString() {
         return "userInfo new datas"
                 + "\nisDriver " + instance.isDriver()
                 + "\nuid " + instance.getuId()
@@ -212,5 +149,73 @@ public class UserInfo {
 
     public void setuId(String uId) {
         this.uId = uId;
+    }
+
+    /**
+     * Builder pattern to build a Userinfo
+     */
+
+    public static class Builder {
+        String email;
+        long isStudentPermitted;
+        String userName;
+        boolean isDriver;
+        Double lat;
+        Double lang;
+        String uId;
+        String regiNo;
+        String url;
+
+        Builder() {
+        }
+
+        public Builder setEmail(String email) {
+            this.email = email;
+            return this;
+        }
+
+        public Builder setIsStudentPermitted(long isStudentPermitted) {
+            this.isStudentPermitted = isStudentPermitted;
+            return this;
+        }
+
+        public Builder setUserName(String userName) {
+            this.userName = userName;
+            return this;
+        }
+
+        public Builder setDriver(boolean driver) {
+            isDriver = driver;
+            return this;
+        }
+
+        public Builder setLat(Double lat) {
+            this.lat = lat;
+            return this;
+        }
+
+        public Builder setLang(Double lang) {
+            this.lang = lang;
+            return this;
+        }
+
+        public Builder setuId(String uId) {
+            this.uId = uId;
+            return this;
+        }
+
+        public Builder setRegiNo(String regiNo) {
+            this.regiNo = regiNo;
+            return this;
+        }
+
+        public Builder setUrl(String url) {
+            this.url = url;
+            return this;
+        }
+
+        public UserInfo build() {
+            return userInfo(builder);
+        }
     }
 }

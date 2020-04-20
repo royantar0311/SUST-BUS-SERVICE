@@ -22,16 +22,14 @@ import studio.carbonylgroup.textfieldboxes.TextFieldBoxes;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
 
+    boolean emailOk = false;
+    boolean passwordOk = false;
     private Button loginBtn;
     private TextView signUpTv;
     private TextFieldBoxes emailEt;
     private TextFieldBoxes passwordEt;
-    boolean emailOk = false;
     private String email;
-
     private String password;
-    boolean passwordOk = false;
-
     private ProgressDialog progressDialog;
 
     @Override
@@ -44,7 +42,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         loginBtn = findViewById(R.id.login_btn);
         signUpTv = findViewById(R.id.sign_up_tv);
 
-        progressDialog=new ProgressDialog(this);
+        progressDialog = new ProgressDialog(this);
 
         emailEt.setSimpleTextChangeWatcher(new SimpleTextChangedWatcher() {
             @Override
@@ -67,33 +65,31 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     @Override
     public void onClick(View view) {
-        int i=view.getId();
-        if(i == R.id.sign_up_tv){
+        int i = view.getId();
+        if (i == R.id.sign_up_tv) {
 
-            Intent intent=new Intent(LoginActivity.this, MainActivity.class);
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
             startActivity(intent);
             finish();
-        }
-        else if(i == R.id.login_btn){
+        } else if (i == R.id.login_btn) {
 
-            if( emailOk && passwordOk) {
+            if (emailOk && passwordOk) {
 
-                FirebaseAuth mAuth=FirebaseAuth.getInstance();
+                FirebaseAuth mAuth = FirebaseAuth.getInstance();
                 progressDialog.setMessage("Logging in");
                 progressDialog.show();
-                mAuth.signInWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        if(task.isSuccessful()){
+                        if (task.isSuccessful()) {
                             progressDialog.hide();
-                            Intent intent=new Intent(LoginActivity.this, HomeActivity.class);
+                            Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             startActivity(intent);
                             finish();
-                        }
-                        else{
+                        } else {
 
                             progressDialog.hide();
                             passwordEt.setHelperText(task.getException().getMessage());
@@ -102,8 +98,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     }
                 });
 
-            }
-            else {
+            } else {
                 Toast.makeText(LoginActivity.this, "please enter the fields correctly", Toast.LENGTH_SHORT).show();
             }
         }
@@ -127,8 +122,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
 
-    private void passwordValidator(String theNewText){
-        if(theNewText.length()<6 ){
+    private void passwordValidator(String theNewText) {
+        if (theNewText.length() < 6) {
             passwordEt.setHelperText("user name must contain 6 letters at least");
             passwordEt.setHelperTextColor(ContextCompat.getColor(LoginActivity.this, R.color.A400red));
             passwordEt.setCounterTextColor(ContextCompat.getColor(LoginActivity.this, R.color.A400red));

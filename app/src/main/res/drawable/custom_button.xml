@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<selector
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!--    <item android:state_pressed="true" >-->
     <!--        <shape>-->
@@ -43,22 +42,10 @@
 
     <item>
         <shape>
-            <gradient
-                android:angle="45"
-                android:centerX="59%"
-                android:centerColor="#F07470"
-                android:startColor="@color/A400red"
-                android:endColor="#F1959B"
-                android:type="linear"/>
-            <stroke
-                />
-            <corners
-                android:radius="20dp" />
-            <padding
-                android:left="10dp"
-                android:top="10dp"
-                android:right="10dp"
-                android:bottom="10dp" />
+            <gradient android:angle="45" android:centerColor="#F07470" android:centerX="59%" android:endColor="#F1959B" android:startColor="@color/A400red" android:type="linear" />
+            <stroke />
+            <corners android:radius="20dp" />
+            <padding android:bottom="10dp" android:left="10dp" android:right="10dp" android:top="10dp" />
         </shape>
     </item>
 </selector>
