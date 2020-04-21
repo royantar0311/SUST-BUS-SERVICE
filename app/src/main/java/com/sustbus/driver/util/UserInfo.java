@@ -1,4 +1,4 @@
-package com.sustbus.driver;
+package com.sustbus.driver.util;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -52,7 +52,7 @@ public class UserInfo {
      * This method creates a object of the inner Builder class
      */
 
-    static Builder getBuilder() {
+    public static Builder getBuilder() {
         return builder;
     }
 

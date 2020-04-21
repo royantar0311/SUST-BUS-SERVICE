@@ -18,6 +18,7 @@
  */
 
 package com.sustbus.driver;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -66,6 +67,8 @@ import com.here.sdk.routing.RouteRestrictions;
 import com.here.sdk.routing.RoutingEngine;
 import com.here.sdk.routing.RoutingError;
 import com.here.sdk.routing.Waypoint;
+import com.sustbus.driver.util.MapUtil;
+import com.sustbus.driver.util.PathInformation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -77,7 +80,6 @@ import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
-
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, View.OnClickListener, GoogleMap.OnMarkerClickListener {
 
@@ -319,7 +321,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         isCalculatingBusRout = true;
         informationTv.setText("Please wait, Getting bus route...");
 
-        MapUtil.PathInformation pathInformation = mapUtil.stringToPath(path);
+        PathInformation pathInformation = mapUtil.stringToPath(path);
 
         Waypoint starWaypoint = new Waypoint(new GeoCoordinates(marker.getPosition().latitude, marker.getPosition().longitude));
 

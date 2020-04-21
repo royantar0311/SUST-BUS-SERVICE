@@ -44,6 +44,10 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.here.sdk.core.GeoCoordinates;
+import com.sustbus.driver.util.MapUtil;
+import com.sustbus.driver.util.PermissionsRequestor;
+import com.sustbus.driver.util.ResultListener;
+import com.sustbus.driver.util.UserInfo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,7 +60,6 @@ import androidx.cardview.widget.CardView;
 
 import static com.sustbus.driver.MapsActivity.MIN_DIST;
 import static com.sustbus.driver.MapsActivity.MIN_TIME;
-
 
 public class HomeActivity extends AppCompatActivity implements View.OnClickListener, FirebaseAuth.AuthStateListener {
     private static final String TAG = "HomeActivity";
@@ -195,7 +198,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         super.onStart();
         Log.d(TAG, "onStart: ");
         permissionsRequestor = new PermissionsRequestor(this);
-        permissionsRequestor.request(new PermissionsRequestor.ResultListener() {
+        permissionsRequestor.request(new ResultListener() {
             @Override
             public void permissionsGranted() {
             }
@@ -432,7 +435,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             startActivity(new Intent(HomeActivity.this, ProfileActivity.class));
         }
         else if(i==R.id.bus_schedule_cv){
-            startActivity(new Intent(HomeActivity.this,ScheduleActivity.class));
+           // startActivity(new Intent(HomeActivity.this,Schedule.class));
         }
     }
 

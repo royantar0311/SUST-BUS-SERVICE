@@ -1,8 +1,7 @@
-package com.sustbus.driver;
+package com.sustbus.driver.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.EventListener;
@@ -19,23 +18,33 @@ import java.util.Set;
 
 import androidx.annotation.Nullable;
 
-
 public class RouteDatabaseManager {
 
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
     private final String PREF_ID="DRIVER_APP_SUST";
     private String  today;
-    private Set<String>ids;
+    private Set<String> ids;
+    private Context context;
 
-    public void checkForUpdate(final Context context,OnUpdateCheckFinish callBack){
+    RouteDatabaseManager(Context context){
+        this.context=context;
 
-       sharedPreferences=context.getSharedPreferences(PREF_ID,context.MODE_PRIVATE);
-       editor=sharedPreferences.edit();
+        sharedPreferences=context.getSharedPreferences(PREF_ID,context.MODE_PRIVATE);
+        editor=sharedPreferences.edit();
 
-       Calendar calendar=Calendar.getInstance();
-       int y=calendar.get(Calendar.YEAR),m=calendar.get(Calendar.MONTH),d=calendar.get(Calendar.DAY_OF_MONTH);
-       today=""+y+(m>=10?m:"0"+m)+(d>=10?d:"0"+d);
+        Calendar calendar=Calendar.getInstance();
+        int y=calendar.get(Calendar.YEAR),m=calendar.get(Calendar.MONTH),d=calendar.get(Calendar.DAY_OF_MONTH);
+        today=""+y+(m>=10?m:"0"+m)+(d>=10?d:"0"+d);
+
+    }
+
+    public void checkForUpdate(CallBack callBack, boolean forced){
+
+        if(forced){
+            update(callBack);
+            return;
+        }
 
        String version=sharedPreferences.getString("version","noExist");
 
@@ -47,7 +56,7 @@ public class RouteDatabaseManager {
        }
     }
 
-    private void update(OnUpdateCheckFinish callBack){
+    private void update(CallBack callBack){
         ids=sharedPreferences.getStringSet("id",new HashSet<>());
 
         FirebaseFirestore.getInstance().collection("routes").addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -80,11 +89,11 @@ public class RouteDatabaseManager {
                     editor.putStringSet("id",ids);
                     editor.putString("version",today);
                     editor.apply();
-                    Log.d("DEB","firestore");
+                   // Log.d("DEB","firestore");
                     callBack.ok();
                 }
                 else {
-                    Log.d("DEB","firestoreeror "+e.getMessage());
+                    //Log.d("DEB","firestoreeror "+e.getMessage());
                     callBack.notOk();
 
                 }
@@ -109,48 +118,4 @@ public class RouteDatabaseManager {
         return lst;
     }
 
-}
-
-class RouteInformation{
-    private String routeId;
-    private String path;
-    private String time;
-    private String title;
-
-    public String getPath() {
-        return path;
-    }
-
-    public String getRouteId() {
-        return routeId;
-    }
-
-    public String getTime() {
-        return time;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public void setRouteId(String routeId) {
-        this.routeId = routeId;
-    }
-
-    public void setTime(String time) {
-        this.time = time;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-}
-
-abstract class OnUpdateCheckFinish{
-    abstract public void ok();
-    abstract public void notOk();
 }
