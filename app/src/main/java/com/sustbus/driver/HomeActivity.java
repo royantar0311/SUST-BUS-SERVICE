@@ -263,7 +263,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         /**
          * gps is enabled and location updates will be shown on the map and pushed to database
          * */
-        mapUtil.rideShareStatus = true;
+        MapUtil.rideShareStatus = true;
         isRideShareOn = true;
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.end_ride));
 
@@ -314,8 +314,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             currentPosition = latLng;
             int rem = 0;
             for (int i = 0; i + 1 < pathString.size(); i++) {
-                GeoCoordinates co1 = mapUtil.GeoCoordinatesMap.get(pathString.get(i));
-                GeoCoordinates co2 = mapUtil.GeoCoordinatesMap.get(pathString.get(i + 1));
+                GeoCoordinates co1 = MapUtil.GeoCoordinatesMap.get(pathString.get(i));
+                GeoCoordinates co2 = MapUtil.GeoCoordinatesMap.get(pathString.get(i + 1));
 
                 if (Math.abs(currentPosition.distanceTo(co2) + previousPosition.distanceTo(co2) - previousPosition.distanceTo(currentPosition)) <= 1) {
 
@@ -376,7 +376,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     public void initializePath() {
 
-        pathString = new ArrayList<>(Arrays.asList(mapUtil.CAMPUS, mapUtil.CAMPUS_GATE, mapUtil.MODINA_MARKET, mapUtil.SUBID_BAZAR, mapUtil.AMBORKHANA, mapUtil.EIDGAH, mapUtil.KUMARPARA, mapUtil.TILAGOR, mapUtil.BALUCHAR, mapUtil.CAMPUS));
+        pathString = new ArrayList<>(Arrays.asList(MapUtil.CAMPUS, MapUtil.CAMPUS_GATE, MapUtil.MODINA_MARKET, MapUtil.SUBID_BAZAR, MapUtil.AMBORKHANA, MapUtil.EIDGAH, MapUtil.KUMARPARA, MapUtil.TILAGOR, MapUtil.BALUCHAR, MapUtil.CAMPUS));
         userPathReference.setValue("NA;");
         pathOk = false;
         determineCallCount = 0;
@@ -392,12 +392,12 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public Activity getActivity() {
-        return (Activity) this;
+        return this;
     }
 
     public void turnOffRideShare() {
 
-        mapUtil.rideShareStatus = isRideShareOn = false;
+        MapUtil.rideShareStatus = isRideShareOn = false;
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.start_ride));
         locationManager.removeUpdates(locationListener);
         locationListener = null;
@@ -435,7 +435,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             startActivity(new Intent(HomeActivity.this, ProfileActivity.class));
         }
         else if(i==R.id.bus_schedule_cv){
-           // startActivity(new Intent(HomeActivity.this,Schedule.class));
+           startActivity(new Intent(HomeActivity.this,ScheduleActivity.class));
         }
     }
 
@@ -460,7 +460,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         Log.d(TAG, "onDestroy: ");
         super.onDestroy();
         if (isRideShareOn) {
-            mapUtil.rideShareStatus = false;
+            MapUtil.rideShareStatus = false;
             locationManager.removeUpdates(locationListener);
             locationListener = null;
             userLocationData.removeValue();

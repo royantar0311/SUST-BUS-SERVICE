@@ -2,11 +2,13 @@ package com.sustbus.driver.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -27,39 +29,40 @@ public class RouteDatabaseManager {
     private Set<String> ids;
     private Context context;
 
-    RouteDatabaseManager(Context context){
+    public RouteDatabaseManager(Context context){
         this.context=context;
 
-        sharedPreferences=context.getSharedPreferences(PREF_ID,context.MODE_PRIVATE);
+        sharedPreferences=context.getSharedPreferences(PREF_ID, Context.MODE_PRIVATE);
         editor=sharedPreferences.edit();
 
         Calendar calendar=Calendar.getInstance();
         int y=calendar.get(Calendar.YEAR),m=calendar.get(Calendar.MONTH),d=calendar.get(Calendar.DAY_OF_MONTH);
-        today=""+y+(m>=10?m:"0"+m)+(d>=10?d:"0"+d);
+        today=""+y+(m>=10?"":"0")+m+(d>=10?"":"0")+d;
 
     }
 
-    public void checkForUpdate(CallBack callBack, boolean forced){
+    public ListenerRegistration checkForUpdate(CallBack callBack, boolean forced){
 
         if(forced){
-            update(callBack);
-            return;
+           return update(callBack);
         }
 
        String version=sharedPreferences.getString("version","noExist");
 
        if(!today.equals(version)){
-           update(callBack);
+           return update(callBack);
+
        }
        else{
            callBack.ok();
+           return null;
        }
     }
 
-    private void update(CallBack callBack){
+    private ListenerRegistration update(CallBack callBack){
         ids=sharedPreferences.getStringSet("id",new HashSet<>());
-
-        FirebaseFirestore.getInstance().collection("routes").addSnapshotListener(new EventListener<QuerySnapshot>() {
+        Log.d("DEB",today);
+        ListenerRegistration listenerRegistration=FirebaseFirestore.getInstance().collection("routes").addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
                 if(e==null){
@@ -72,20 +75,24 @@ public class RouteDatabaseManager {
                             editor.remove(key+"path");
                             editor.remove(key+"title");
                             editor.remove(key+"time");
+                            editor.remove(key+"show");
                         }
                         else if(qd.getOldIndex()==-1){//document added
                             ids.add(key);
                             editor.putString(key+"path",d.getString("path"));
                             editor.putString(key+"time",d.getString("time"));
                             editor.putString(key+"title",d.getString("title"));
+                            editor.putString(key+"show",d.getString("show"));
                         }
                         else{//document changed
                             editor.putString(key+"path",d.getString("path"));
                             editor.putString(key+"time",d.getString("time"));
                             editor.putString(key+"title",d.getString("title"));
+                            editor.putString(key+"show",d.getString("show"));
 
                         }
                     }
+                    editor.remove("id");
                     editor.putStringSet("id",ids);
                     editor.putString("version",today);
                     editor.apply();
@@ -97,9 +104,13 @@ public class RouteDatabaseManager {
                     callBack.notOk();
 
                 }
+
             }
+
         });
 
+
+      return listenerRegistration;
     }
 
     public List<RouteInformation> getAll(){
@@ -109,9 +120,10 @@ public class RouteDatabaseManager {
         for(String key:ids){
             RouteInformation routeInformation=new RouteInformation();
             routeInformation.setRouteId(key);
-            routeInformation.setPath(sharedPreferences.getString(key+"path",null));
-            routeInformation.setTime(sharedPreferences.getString(key+"time",null));
-            routeInformation.setTitle(sharedPreferences.getString(key+"title",null));
+            routeInformation.setPath(sharedPreferences.getString(key+"path","Campus-Amborkhan"));
+            routeInformation.setTime(sharedPreferences.getString(key+"time","12:30 pm"));
+            routeInformation.setTitle(sharedPreferences.getString(key+"title","SUST-SUST"));
+            routeInformation.setShow(sharedPreferences.getString(key+"show","No Information"));
             lst.add(routeInformation);
         }
 
