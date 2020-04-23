@@ -11,7 +11,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/A400red"
+        android:background="@color/colorAccent"
         android:elevation="11dp"
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
@@ -58,7 +58,16 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar">
+        <TextView
+            android:id="@+id/waiting_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Wait a Moment..."
+            android:textAlignment="center"
+            android:textSize="34sp"
 
+            />
     </FrameLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
@@ -68,7 +77,7 @@
         android:layout_gravity="bottom"
         android:background="?android:attr/windowBackground"
         app:elevation="10dp"
-        app:itemIconSize="29dp"
+        app:itemIconSize="25dp"
         app:itemIconTint="@color/A400red"
         app:itemTextColor="@android:color/background_dark"
         app:layout_constraintBottom_toBottomOf="parent"

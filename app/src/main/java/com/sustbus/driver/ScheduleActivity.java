@@ -15,7 +15,6 @@ import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.firestore.ListenerRegistration;
 import com.sustbus.driver.fragments.FinishedFragment;
 import com.sustbus.driver.fragments.NextFragment;
 import com.sustbus.driver.fragments.OnRoadFragment;
@@ -50,10 +49,9 @@ public class ScheduleActivity extends AppCompatActivity {
     private boolean initok=false;
     private BottomNavigationView bottomNav;
     private CountDownTimer countDownTimerForRefreshingLists;
-    private TextView appBarTextView;
+    private TextView appBarTextView,waitingText;
     private ImageButton refreshImagebutton;
-    private ListenerRegistration listenerRegistration;
-
+    private Fragment currentFragment;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +59,7 @@ public class ScheduleActivity extends AppCompatActivity {
         bottomNav=findViewById(R.id.navigation);
         appBarTextView=findViewById(R.id.appbar_tv);
         refreshImagebutton=findViewById(R.id.appbar_ib);
+        waitingText=findViewById(R.id.waiting_text);
         bottomNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -68,38 +67,34 @@ public class ScheduleActivity extends AppCompatActivity {
                 return true;
             }
         });
-
         routeDatabaseManager=new RouteDatabaseManager(this);
-        listenerRegistration=routeDatabaseManager.checkForUpdate(new CallBack() {
+        routeDatabaseManager.checkForUpdate(new CallBack() {
             @Override
             public void ok() {
-                init();
+                init(R.id.menu_item_next);
             }
 
             @Override
             public void notOk() {
                 Snackbar.make(findViewById(R.id.frame_container),"Route Lists Were Not Updated",Snackbar.LENGTH_LONG).show();
-                init();
+                init(R.id.menu_item_next);
             }
         },false);
         refreshImagebutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                handleRefresh();
+                handleRefreshButton();
             }
         });
     }
 
-    public void init(){
-
-       if(listenerRegistration!=null)listenerRegistration.remove();
+    public void init(int id){
 
         routeInformations=routeDatabaseManager.getAll();
         if(routeInformations.isEmpty()){
             Snackbar.make(findViewById(R.id.frame_container),"Please Check Your Internet Connection",Snackbar.LENGTH_LONG).show();
             return;
         }
-
         Collections.sort(routeInformations, new Comparator<RouteInformation>() {
             @Override
             public int compare(RouteInformation o1, RouteInformation o2) {
@@ -111,8 +106,8 @@ public class ScheduleActivity extends AppCompatActivity {
         onRoad=new ArrayList<>();
         next=new ArrayList<>();
         finished=new ArrayList<>();
-        next.addAll(routeInformations);
 
+        next.addAll(routeInformations);
         childEventListener=new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
@@ -156,8 +151,10 @@ public class ScheduleActivity extends AppCompatActivity {
         }, RecyclerViewAdapter.ON_ROAD);
 
         refresh();
-        bottomNav.setSelectedItemId(R.id.menu_item_next);
-        countDownTimerForRefreshingLists=new CountDownTimer(10000000000l,60*1000) {
+        waitingText.setVisibility(View.INVISIBLE);
+        refreshImagebutton.setClickable(true);
+        bottomNav.setSelectedItemId(id);
+        countDownTimerForRefreshingLists=new CountDownTimer(10000000000l,10*1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                     refresh();
@@ -215,19 +212,32 @@ public class ScheduleActivity extends AppCompatActivity {
 
     }
 
-    public void handleRefresh(){
+    public void handleRefreshButton(){
+
+
+        refreshImagebutton.setClickable(false);
         initok=false;
+        if(currentFragment!=null){
+            getSupportFragmentManager().beginTransaction().remove(currentFragment).commit();
+        }
+        waitingText.setVisibility(View.VISIBLE);
+        if(finished!=null)finished.clear();
+        if(onRoad!=null)onRoad.clear();
+        if(next!=null)next.clear();
+
         if(countDownTimerForRefreshingLists!=null)countDownTimerForRefreshingLists.cancel();
         FirebaseDatabase.getInstance().getReference().child("busesOnRoad").removeEventListener(childEventListener);
-        listenerRegistration=routeDatabaseManager.checkForUpdate(new CallBack() {
+        routeDatabaseManager.checkForUpdate(new CallBack() {
             @Override
             public void ok() {
-                init();
+                Snackbar.make(findViewById(R.id.frame_container),"Update Complete",Snackbar.LENGTH_LONG).show();
+                init(bottomNav.getSelectedItemId());
             }
 
             @Override
             public void notOk() {
-                Snackbar.make(findViewById(R.id.frame_container),"Try Again",Snackbar.LENGTH_LONG).show();
+                Snackbar.make(findViewById(R.id.frame_container),"Check Connection and Try Again",Snackbar.LENGTH_LONG).show();
+                init(bottomNav.getSelectedItemId());
             }
         },true);
 
@@ -280,13 +290,12 @@ public class ScheduleActivity extends AppCompatActivity {
         FirebaseDatabase.getInstance().getReference().child("busesOnRoad").removeEventListener(childEventListener);
     }
 
-
-
     private void loadFragment(Fragment fragment) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.frame_container, fragment);
         transaction.addToBackStack(null);
         transaction.commit();
+        currentFragment=fragment;
     }
 
     @Override

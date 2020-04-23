@@ -31,7 +31,7 @@ public class RouteInformation {
     private String routeId;
     private String path;
     private String show;
-    private String from,to;
+    public String from;
     private String title;
     private String markerId;
 
@@ -69,8 +69,8 @@ public class RouteInformation {
 
         for (int i = 0; i <title.length() ; i++) {
             if(title.charAt(i)=='-'){
-                from=title.substring(0,i);
-                to=title.substring(i+1);
+                from=title.substring(0,i)+" To ";
+                from+=title.substring(i+1);
                 break;
             }
         }

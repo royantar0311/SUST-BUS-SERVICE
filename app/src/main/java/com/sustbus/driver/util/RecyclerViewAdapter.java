@@ -41,7 +41,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int position) {
       viewHolder.detailsTv.setText(routeList.get(position).showPath());
-      viewHolder.titleTv.setText(routeList.get(position).getTitle());
+      viewHolder.titleTv.setText(routeList.get(position).from);
       viewHolder.timeTv.setText(routeList.get(position).getTime());
 
       if(id==ON_ROAD){

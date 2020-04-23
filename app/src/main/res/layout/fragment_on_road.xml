@@ -11,4 +11,16 @@
         android:layout_height="match_parent"
         />
 
+    <TextView
+        android:id="@+id/onroad_frag_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="No schedules to show"
+        android:textAlignment="center"
+        android:textColor="@color/A400red"
+        android:textSize="25sp"
+        android:visibility="invisible"
+        />
+
 </FrameLayout>
