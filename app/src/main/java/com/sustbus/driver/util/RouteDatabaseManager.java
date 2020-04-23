@@ -27,6 +27,7 @@ public class RouteDatabaseManager {
     private String  today;
     private Set<String> ids;
     private Context context;
+    private String version;
 
     public RouteDatabaseManager(Context context){
         this.context=context;
@@ -37,7 +38,10 @@ public class RouteDatabaseManager {
         Calendar calendar=Calendar.getInstance();
         int y=calendar.get(Calendar.YEAR),m=calendar.get(Calendar.MONTH),d=calendar.get(Calendar.DAY_OF_MONTH);
         today=""+y+(m>=10?"":"0")+m+(d>=10?"":"0")+d;
-
+        version=sharedPreferences.getString("version","noExist");
+    }
+    public Boolean isUpdated(){
+        return today.equals(version);
     }
 
     public void checkForUpdate(CallBack callBack, boolean forced){
@@ -47,7 +51,7 @@ public class RouteDatabaseManager {
            return;
         }
 
-       String version=sharedPreferences.getString("version","noExist");
+
 
        if(!today.equals(version)){
            update(callBack);
@@ -82,8 +86,9 @@ public class RouteDatabaseManager {
                             editor.putStringSet("id",ids);
                             editor.putString("version",today);
                             editor.commit();
-                            Log.d("DEB","firestore");
+             //               Log.d("DEB","firestore");
                             callBack.ok();
+
 
                         }
                         else{
@@ -105,7 +110,7 @@ public class RouteDatabaseManager {
             routeInformation.setTime(sharedPreferences.getString(key+"time","12:30 pm"));
             routeInformation.setTitle(sharedPreferences.getString(key+"title","SUST-SUST"));
             routeInformation.setShow(sharedPreferences.getString(key+"show","No Information"));
-            Log.d("DEB",routeInformation.getPath()+" "+routeInformation.getTime());
+           // Log.d("DEB",routeInformation.getPath()+" "+routeInformation.getTime());
             lst.add(routeInformation);
         }
 

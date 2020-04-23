@@ -1,11 +1,13 @@
 package com.sustbus.driver;
 
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.CycleInterpolator;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -15,6 +17,7 @@ import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.sustbus.driver.fragments.FinishedFragment;
 import com.sustbus.driver.fragments.NextFragment;
 import com.sustbus.driver.fragments.OnRoadFragment;
@@ -49,9 +52,11 @@ public class ScheduleActivity extends AppCompatActivity {
     private boolean initok=false;
     private BottomNavigationView bottomNav;
     private CountDownTimer countDownTimerForRefreshingLists;
-    private TextView appBarTextView,waitingText;
+    private TextView appBarTextView;
     private ImageButton refreshImagebutton;
     private Fragment currentFragment;
+    private boolean forRideShare;
+    private ProgressDialog currentProgressDialogue;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,7 +64,8 @@ public class ScheduleActivity extends AppCompatActivity {
         bottomNav=findViewById(R.id.navigation);
         appBarTextView=findViewById(R.id.appbar_tv);
         refreshImagebutton=findViewById(R.id.appbar_ib);
-        waitingText=findViewById(R.id.waiting_text);
+        forRideShare=getIntent().getBooleanExtra("forRideShare",false);
+
         bottomNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -68,18 +74,33 @@ public class ScheduleActivity extends AppCompatActivity {
             }
         });
         routeDatabaseManager=new RouteDatabaseManager(this);
-        routeDatabaseManager.checkForUpdate(new CallBack() {
-            @Override
-            public void ok() {
-                init(R.id.menu_item_next);
-            }
+        if(!routeDatabaseManager.isUpdated()) {
+            dialog("Checking for Schedule update");
+            routeDatabaseManager.checkForUpdate(new CallBack() {
+                @Override
+                public void ok() {
+                    if(currentProgressDialogue!=null)currentProgressDialogue.dismiss();
+                    Snackbar.make(findViewById(R.id.frame_container), "Schedules updated", Snackbar.LENGTH_LONG).show();
+                    if (forRideShare) init(R.id.menu_item_on_road);
+                    else init(R.id.menu_item_next);
+                }
 
-            @Override
-            public void notOk() {
-                Snackbar.make(findViewById(R.id.frame_container),"Route Lists Were Not Updated",Snackbar.LENGTH_LONG).show();
-                init(R.id.menu_item_next);
-            }
-        },false);
+                @Override
+                public void notOk() {
+                    if(currentProgressDialogue!=null)currentProgressDialogue.dismiss();
+                    if (forRideShare){
+                        refreshImagebutton.setClickable(false);
+                        bottomNav.getMenu().close();
+                        Snackbar.make(findViewById(R.id.frame_container), "Schedules needs update, Check Internet and try Again", Snackbar.LENGTH_INDEFINITE).show();
+                    }
+                    else{
+                        Snackbar.make(findViewById(R.id.frame_container), "Schedules were not updated", Snackbar.LENGTH_LONG).show();
+                        init(R.id.menu_item_next);
+                    }
+                }
+            }, false);
+        }
+        else init(R.id.menu_item_next);
         refreshImagebutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -90,6 +111,7 @@ public class ScheduleActivity extends AppCompatActivity {
 
     public void init(int id){
 
+        if(currentProgressDialogue!=null)currentProgressDialogue.dismiss();
         routeInformations=routeDatabaseManager.getAll();
         if(routeInformations.isEmpty()){
             Snackbar.make(findViewById(R.id.frame_container),"Please Check Your Internet Connection",Snackbar.LENGTH_LONG).show();
@@ -112,6 +134,7 @@ public class ScheduleActivity extends AppCompatActivity {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                try {
+
                     onRoadMap.put(dataSnapshot.getKey(),dataSnapshot.child("key").getValue(String.class));
                }
                catch (Exception e){}
@@ -139,6 +162,7 @@ public class ScheduleActivity extends AppCompatActivity {
 
             }
         };
+
         FirebaseDatabase.getInstance().getReference().child("busesOnRoad").addChildEventListener(childEventListener);
         initok=true;
         finishedAdapter=new RecyclerViewAdapter(this,finished,null,RecyclerViewAdapter.FINISHED);
@@ -151,10 +175,10 @@ public class ScheduleActivity extends AppCompatActivity {
         }, RecyclerViewAdapter.ON_ROAD);
 
         refresh();
-        waitingText.setVisibility(View.INVISIBLE);
+
         refreshImagebutton.setClickable(true);
         bottomNav.setSelectedItemId(id);
-        countDownTimerForRefreshingLists=new CountDownTimer(10000000000l,10*1000) {
+        countDownTimerForRefreshingLists=new CountDownTimer(10000000000l,2*1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                     refresh();
@@ -202,25 +226,16 @@ public class ScheduleActivity extends AppCompatActivity {
 
     }
 
-    public void onRoadClickEvent(int position){
-
-        if(position>=onRoad.size())return;
-        RouteInformation tmp=onRoad.get(position);
-        Log.d("DEB",tmp.getRouteId()+" "+tmp.getTitle());
-
-
-
-    }
-
     public void handleRefreshButton(){
 
 
         refreshImagebutton.setClickable(false);
+        refreshImagebutton.animate().rotation(360).setDuration(100*700).setInterpolator(new CycleInterpolator(20)).start();
         initok=false;
+        currentMenuItemid=0;
         if(currentFragment!=null){
             getSupportFragmentManager().beginTransaction().remove(currentFragment).commit();
         }
-        waitingText.setVisibility(View.VISIBLE);
         if(finished!=null)finished.clear();
         if(onRoad!=null)onRoad.clear();
         if(next!=null)next.clear();
@@ -230,14 +245,18 @@ public class ScheduleActivity extends AppCompatActivity {
         routeDatabaseManager.checkForUpdate(new CallBack() {
             @Override
             public void ok() {
-                Snackbar.make(findViewById(R.id.frame_container),"Update Complete",Snackbar.LENGTH_LONG).show();
+                Snackbar.make(findViewById(R.id.frame_container),"Update Complete",3000).show();
                 init(bottomNav.getSelectedItemId());
-            }
+                refreshImagebutton.animate().cancel();
+                refreshImagebutton.clearAnimation();
+        }
 
             @Override
             public void notOk() {
-                Snackbar.make(findViewById(R.id.frame_container),"Check Connection and Try Again",Snackbar.LENGTH_LONG).show();
+                Snackbar.make(findViewById(R.id.frame_container),"Check Connection and Try Again",4000).show();
                 init(bottomNav.getSelectedItemId());
+                refreshImagebutton.animate().cancel();
+                refreshImagebutton.clearAnimation();
             }
         },true);
 
@@ -283,11 +302,50 @@ public class ScheduleActivity extends AppCompatActivity {
       onadapter.notifyDataSetChanged();
     }
 
+    public void onRoadClickEvent(int position){
+
+        if(position>=onRoad.size()){
+            Snackbar.make(findViewById(R.id.frame_container),"Something Went Wrong",Snackbar.LENGTH_LONG).show();
+            return;
+        }
+
+         if(!forRideShare)return;
+         RouteInformation tmp=onRoad.get(position);
+
+         if(tmp.getMarkerId()!=null){
+             Snackbar.make(findViewById(R.id.frame_container),"Please Select the Available Schedules.(Red ones)",4000).show();
+             return;
+         }
+
+         dialog("Checking online for Availability...");
+         FirebaseDatabase.getInstance().getReference().child("busesOnRoad").addListenerForSingleValueEvent(new ValueEventListener() {
+             @Override
+             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                 if(!dataSnapshot.hasChild(tmp.getRouteId())){
+                     giveResult(position);
+                 }
+                 else {
+                     Snackbar.make(findViewById(R.id.frame_container),"This Schedule is Already Running",4000).show();
+                 }
+
+             }
+
+             @Override
+             public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                 Snackbar.make(findViewById(R.id.frame_container),"Please Check your Internet Connection",4000).show();
+             }
+         });
+
+
+    }
+
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        countDownTimerForRefreshingLists.cancel();
-        FirebaseDatabase.getInstance().getReference().child("busesOnRoad").removeEventListener(childEventListener);
+        if(countDownTimerForRefreshingLists!=null)countDownTimerForRefreshingLists.cancel();
+        if(childEventListener!=null)FirebaseDatabase.getInstance().getReference().child("busesOnRoad").removeEventListener(childEventListener);
     }
 
     private void loadFragment(Fragment fragment) {
@@ -318,5 +376,30 @@ public class ScheduleActivity extends AppCompatActivity {
         }
         String nowTime=(hour<10?"0":"")+hour+":"+(min<10?"0":"")+min;
         return nowTime;
+    }
+
+    public void giveResult(int position){
+
+        RouteInformation tmp=onRoad.get(position);
+
+        Intent intent=new Intent();
+
+        intent.putExtra("path",tmp.getPath());
+        intent.putExtra("title",tmp.getTitle());
+        intent.putExtra("routeId",tmp.getRouteId());
+
+        setResult(100,intent);
+        finish();
+    }
+
+    private void dialog(String msg){
+          if(currentProgressDialogue!=null){
+              currentProgressDialogue.dismiss();
+          }
+
+          currentProgressDialogue=new ProgressDialog(this);
+          currentProgressDialogue.setMessage(msg);
+          currentProgressDialogue.show();
+
     }
 }
