@@ -117,6 +117,9 @@ public class ScheduleActivity extends AppCompatActivity {
 
     public void init(int id){
 
+        if(currentFragment!=null){
+            getSupportFragmentManager().beginTransaction().remove(currentFragment).commit();
+        }
         if(currentProgressDialogue!=null)currentProgressDialogue.dismiss();
         routeInformations=routeDatabaseManager.getAll();
         if(routeInformations.isEmpty()){
@@ -239,9 +242,6 @@ public class ScheduleActivity extends AppCompatActivity {
         refreshImagebutton.animate().rotation(360).setDuration(100*700).setInterpolator(new CycleInterpolator(20)).start();
         initok=false;
         currentMenuItemid=0;
-        if(currentFragment!=null){
-            getSupportFragmentManager().beginTransaction().remove(currentFragment).commit();
-        }
         if(finished!=null)finished.clear();
         if(onRoad!=null)onRoad.clear();
         if(next!=null)next.clear();
