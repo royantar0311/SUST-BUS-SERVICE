@@ -29,7 +29,6 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
@@ -182,8 +181,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         if(getIntent().getBooleanExtra("fromSchedule",false)){
-            Log.d("DEB","kjh");
-            new CountDownTimer(1000000,1000){
+
+            new CountDownTimer(100000l,1000){
                 @Override
                 public void onFinish() {
 
@@ -191,11 +190,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 @Override
                 public void onTick(long millisUntilFinished) {
-
-                    if(markerMap.containsKey(getIntent().getStringExtra("markerToShow"))){
+                          if(markerMap.containsKey(getIntent().getStringExtra("markerToshow"))){
                               String markerKey=getIntent().getStringExtra("markerToShow");
-                              mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(markerMap.get(markerKey).getPosition(),16f));
-                              markerMap.get(markerKey).showInfoWindow();
+                              mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(markerMap.get(markerKey).getPosition(),20f));
                               this.cancel();
                           }
                 }
