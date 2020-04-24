@@ -29,6 +29,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
@@ -178,6 +179,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 }
             }.start();
+        }
+
+        if(getIntent().getBooleanExtra("fromSchedule",false)){
+            Log.d("DEB","kjh");
+            new CountDownTimer(1000000,1000){
+                @Override
+                public void onFinish() {
+
+                }
+
+                @Override
+                public void onTick(long millisUntilFinished) {
+
+                    if(markerMap.containsKey(getIntent().getStringExtra("markerToShow"))){
+                              String markerKey=getIntent().getStringExtra("markerToShow");
+                              mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(markerMap.get(markerKey).getPosition(),16f));
+                              markerMap.get(markerKey).showInfoWindow();
+                              this.cancel();
+                          }
+                }
+            }.start();
+
         }
 
         childEventListener = new ChildEventListener() {

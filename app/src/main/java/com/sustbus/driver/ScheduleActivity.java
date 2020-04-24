@@ -1,6 +1,8 @@
 package com.sustbus.driver;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -57,6 +59,7 @@ public class ScheduleActivity extends AppCompatActivity {
     private Fragment currentFragment;
     private boolean forRideShare;
     private ProgressDialog currentProgressDialogue;
+    private AlertDialog alertDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,7 +103,10 @@ public class ScheduleActivity extends AppCompatActivity {
                 }
             }, false);
         }
-        else init(R.id.menu_item_next);
+        else {
+            if(forRideShare)init(R.id.menu_item_on_road);
+            else init(R.id.menu_item_next);
+        }
         refreshImagebutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -308,35 +314,56 @@ public class ScheduleActivity extends AppCompatActivity {
             Snackbar.make(findViewById(R.id.frame_container),"Something Went Wrong",Snackbar.LENGTH_LONG).show();
             return;
         }
+        RouteInformation tmp = onRoad.get(position);
 
-         if(!forRideShare)return;
-         RouteInformation tmp=onRoad.get(position);
 
-         if(tmp.getMarkerId()!=null){
-             Snackbar.make(findViewById(R.id.frame_container),"Please Select the Available Schedules.(Red ones)",4000).show();
-             return;
+        if(forRideShare) {
+
+             if (tmp.getMarkerId() != null) {
+                 Snackbar.make(findViewById(R.id.frame_container), "Please Select the Available Schedules.(Red ones)", 4000).show();
+                 return;
+             }
+
+             dialog("Checking online for Availability...");
+             FirebaseDatabase.getInstance().getReference().child("busesOnRoad").addListenerForSingleValueEvent(new ValueEventListener() {
+                 @Override
+                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                     if (!dataSnapshot.hasChild(tmp.getRouteId())) {
+                         giveResult(position);
+                     } else {
+                         Snackbar.make(findViewById(R.id.frame_container), "This Schedule is Already Running", 4000).show();
+                     }
+
+                 }
+
+                 @Override
+                 public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                     Snackbar.make(findViewById(R.id.frame_container), "Please Check your Internet Connection", 4000).show();
+                 }
+             });
          }
+        else if(tmp.getMarkerId()!=null){
 
-         dialog("Checking online for Availability...");
-         FirebaseDatabase.getInstance().getReference().child("busesOnRoad").addListenerForSingleValueEvent(new ValueEventListener() {
-             @Override
-             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                 if(!dataSnapshot.hasChild(tmp.getRouteId())){
-                     giveResult(position);
-                 }
-                 else {
-                     Snackbar.make(findViewById(R.id.frame_container),"This Schedule is Already Running",4000).show();
-                 }
+            AlertDialog.Builder builder=new AlertDialog.Builder(this);
 
-             }
+           alertDialog= builder.setTitle("Confirmation")
+                    .setMessage("Show the bus on map?")
+                    .setPositiveButton("show", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            startActivity(new Intent(ScheduleActivity.this,MapsActivity.class)
+                                    .putExtra("fromSchedule",true)
+                                     .putExtra("markerToShow",tmp.getMarkerId()));
 
-             @Override
-             public void onCancelled(@NonNull DatabaseError databaseError) {
+                        }
+                    })
+                    .setNegativeButton("cancel",null)
+                     .create();
 
-                 Snackbar.make(findViewById(R.id.frame_container),"Please Check your Internet Connection",4000).show();
-             }
-         });
+           alertDialog.show();
 
+        }
 
     }
 
