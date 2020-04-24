@@ -180,6 +180,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }.start();
         }
 
+        if(getIntent().getBooleanExtra("fromSchedule",false)){
+
+            new CountDownTimer(100000l,1000){
+                @Override
+                public void onFinish() {
+
+                }
+
+                @Override
+                public void onTick(long millisUntilFinished) {
+                          if(markerMap.containsKey(getIntent().getStringExtra("markerToshow"))){
+                              String markerKey=getIntent().getStringExtra("markerToShow");
+                              mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(markerMap.get(markerKey).getPosition(),20f));
+                              this.cancel();
+                          }
+                }
+            }.start();
+
+        }
+
         childEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
