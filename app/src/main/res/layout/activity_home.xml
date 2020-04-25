@@ -59,7 +59,7 @@
                 <!--                    android:layout_height="66dp"-->
                 <!--                    android:src="@drawable/user_not_available_image"/>-->
                 <TextView
-                    android:id="@+id/user_name_tv"
+                    android:id="@+id/row_item_user_name_tv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="N/A"
