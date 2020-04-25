@@ -100,7 +100,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         openMapBtn = findViewById(R.id.track_buses_cv);
         shareRideTv = findViewById(R.id.ride_on_cv);
         scheduleBtn = findViewById(R.id.bus_schedule_cv);
-        userNameTv = findViewById(R.id.user_name_tv);
+        userNameTv = findViewById(R.id.row_item_user_name_tv);
         driverOrStudent = findViewById(R.id.driver_or_student_tv);
         profileCv = findViewById(R.id.profile_cv);
         signOut = findViewById(R.id.help_center_cv);
@@ -119,21 +119,15 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         mAuth = FirebaseAuth.getInstance();
         mapUtil = MapUtil.getInstance();
 
-        //loadImage();
     }
 
     private void loadImage() {
-//        if(userInfo != null && userInfo.getUrl() != null){
-//            Glide.with(HomeActivity.this)
-//                    .load(userInfo.getUrl())
-//                    .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.AUTOMATIC))
-//                    .into(dpEv);
-//        }
         if (userInfo != null && userInfo.getUrl() != null) {
             Glide.with(HomeActivity.this)
                     .load(userInfo.getUrl())
                     .apply(new RequestOptions()
-                            .diskCacheStrategy((UserInfo.downNeeded) ? DiskCacheStrategy.NONE : DiskCacheStrategy.AUTOMATIC))
+                            .diskCacheStrategy(DiskCacheStrategy.NONE))
+                    .thumbnail(Glide.with(HomeActivity.this).load(R.drawable.loading))
                     .into(dpEv);
             UserInfo.downNeeded = false;
         }
@@ -214,7 +208,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume: ");
-
+        loadImage();
     }
 
     @Override

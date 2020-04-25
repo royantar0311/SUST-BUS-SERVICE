@@ -2,8 +2,11 @@ package com.sustbus.driver;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -19,12 +22,18 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.sustbus.driver.util.UserInfo;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 import de.hdodenhof.circleimageview.CircleImageView;
+import io.opencensus.stats.Measure;
 import studio.carbonylgroup.textfieldboxes.SimpleTextChangedWatcher;
 import studio.carbonylgroup.textfieldboxes.TextFieldBoxes;
 
@@ -48,13 +57,14 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     private boolean userNameOk;
     private boolean regiNoOk;
     private DocumentReference db;
+    private byte[] dpBytes,idBytes;
     private Uri dpFilePath = null, idFilePath = null;
     private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_profile);
+        setContentView(R.layout.activity_profile_v2);
 
         updateProfileBtn = findViewById(R.id.update_profile_btn);
         userNameTf = findViewById(R.id.profile_username_tf);
@@ -89,7 +99,6 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         });
 
         updateProfileBtn.setOnClickListener(this);
-        dpChooserBtn.setOnClickListener(this);
 
         progressDialog = new ProgressDialog(this);
         loadImage();
@@ -99,7 +108,8 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         if (userInfo != null && userInfo.getUrl() != null) {
             Glide.with(ProfileActivity.this)
                     .load(userInfo.getUrl())
-                    .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.AUTOMATIC))
+                    .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.NONE))
+                    .apply(new RequestOptions().placeholder(R.drawable.loading))
                     .into(dpEv);
         }
     }
@@ -150,17 +160,9 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
                 if (dpFilePath != null) {
                     Log.d(TAG, "onClick: filepath not null, file upload initializing");
-                    storageReference.child("dp.jpg").putFile(dpFilePath);
-                    storageReference.child("dp.jpg").getDownloadUrl()
-                            .addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                @Override
-                                public void onSuccess(Uri uri) {
-                                    Log.d(TAG, "onSuccess: " + "dp upload successful: " + uri.toString());
-                                    userInfo.setUrl(uri.toString());
-                                    UserInfo.downNeeded = true;
-
-                                }
-                            });
+                    BackgroundImageUpload backgroundImageUpload = new BackgroundImageUpload();
+                    backgroundImageUpload.execute(dpFilePath);
+                    Log.d(TAG, "onClick: here");
                 }
                 if (idFilePath != null) {
                     storageReference.child("id.jpg").putFile(idFilePath);
@@ -177,11 +179,6 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                 progressDialog.hide();
                 Toast.makeText(ProfileActivity.this, "enter all fields correctly", Toast.LENGTH_SHORT).show();
             }
-        } else if (i == R.id.dp_chooser_button) {
-            Intent intent = new Intent();
-            intent.setType("image/*");
-            intent.setAction(Intent.ACTION_GET_CONTENT);
-            startActivityForResult(Intent.createChooser(intent, "Select Profile Photo"), REQUESTING_DP);
         }
     }
 
@@ -230,9 +227,6 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         regiNoEt.setText(regiNo);
     }
 
-    public void backButtonPressed(View view) {
-        finish();
-    }
 
     @Override
     protected void onStart() {
@@ -256,7 +250,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     private void permitted() {
         updateProfileBtn.setEnabled(true);
         updateProfileBtn.setText("Update Profile");
-        idAvailibilityTv.setText("              ID Confirmed");
+        idAvailibilityTv.setText("ID Confirmed");
         idChooserBtn.setVisibility(View.GONE);
         updateProfileBtn.setBackground(ContextCompat.getDrawable(ProfileActivity.this, R.drawable.custom_button));
     }
@@ -280,12 +274,76 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         super.onBackPressed();
         backButtonPressed(null);
     }
+    public void backButtonPressed(View view) {
+        finish();
+    }
 
     public void idChooserButtonPressed(View view) {
         Log.d(TAG, "onClick: " + "id chooser button clicked");
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Select Profile Photo"), REQUESTING_ID);
+        startActivityForResult(Intent.createChooser(intent, "Select ID"), REQUESTING_ID);
+    }
+
+    public void dpChooserButtonPressed(View view) {
+        Log.d(TAG, "dpChooserButtonPressed: ");
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Profile Photo"), REQUESTING_DP);
+    }
+    public class BackgroundImageUpload extends AsyncTask<Uri, Integer, byte[]>{
+        Bitmap bitmap;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            Log.d(TAG, "onPreExecute: ");
+        }
+
+
+
+        @Override
+        protected byte[] doInBackground(Uri... uris) {
+            Log.d(TAG, "doInBackground: started");
+
+            if(bitmap == null){
+                try {
+                    bitmap = MediaStore.Images.Media.getBitmap(ProfileActivity.this.getContentResolver(),uris[0]);
+                }
+                catch (IOException e){
+                    e.printStackTrace();
+                }
+                
+            }
+            byte[] bytes;
+            bytes = getBytesFromBitmap(bitmap,20);
+            return bytes;
+        }
+        @Override
+        protected void onPostExecute(byte[] bytes) {
+            super.onPostExecute(bytes);
+            Log.d(TAG, "onPostExecute: done " + bytes.length);
+            UploadTask uploadTask = storageReference.child("dp.jpg").putBytes(bytes);
+            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    Log.d(TAG, "onSuccess: dp compressed and uploaded");
+                    taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            UserInfo.downNeeded=true;
+                            userInfo.setUrl(uri.toString());
+                        }
+                    });
+                }
+            });
+        }
+    }
+    public static byte[] getBytesFromBitmap(Bitmap bitmap, int quality){
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, quality,stream);
+        return stream.toByteArray();
     }
 }
