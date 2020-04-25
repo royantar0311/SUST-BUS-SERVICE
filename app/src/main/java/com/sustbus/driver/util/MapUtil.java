@@ -30,7 +30,7 @@ public class MapUtil {
     public static final String SUBID_BAZAR = "Subid Bazar";
     public static final String MODINA_MARKET = "Modina Market";
     public static final String RIKABI_BAZAR = "Rikabi Bazar";
-    public static final String CHOWHATTA = "chowhatta";
+    public static final String CHOWHATTA = "Chowhatta";
     public static final String NAIORPUL = "Naiorpul";
     public static final String KUMARPARA = "Kumarpara";
     public static final String EIDGAH = "Eidgah";

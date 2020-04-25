@@ -20,7 +20,6 @@
 
 package com.sustbus.driver;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.location.Location;
@@ -50,7 +49,6 @@ import com.sustbus.driver.util.ResultListener;
 import com.sustbus.driver.util.UserInfo;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -74,14 +72,14 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private CardView profileCv;
     private CardView signOut;
     private ImageView dpEv;
-    private DatabaseReference databaseReference, userDatabaseReference, userLocationData, userPathReference;
+    private DatabaseReference databaseReference,userLocationData, userPathReference;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
     private ImageView rideShareIndicatorIV;
-    private boolean isRideShareOn = false, quit = false;
+    private boolean isRideShareOn = false;
     private LocationManager locationManager;
     private LocationListener locationListener;
-    private String userUid;
+    private String userUid,routeIdCurrentlySharing;
     private MapUtil mapUtil;
     private PermissionsRequestor permissionsRequestor;
     private List<String> pathString;
@@ -105,7 +103,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         profileCv = findViewById(R.id.profile_cv);
         signOut = findViewById(R.id.help_center_cv);
         dpEv = findViewById(R.id.home_user_image_ev);
-
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
         openMapBtn.setOnClickListener(this);
         scheduleBtn.setOnClickListener(this);
@@ -232,36 +230,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-
-    @SuppressLint("MissingPermission")
     public void turnOnRideShare() {
 
-
-        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        /**
-         * checking if gps is enabled or not
-         * */
-        boolean isGps = false;
-        try {
-            isGps = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        } catch (Exception e) {
-
-        }
-
-        if (!isGps) {
-            mapUtil.enableGPS(getApplicationContext(), this, 101);
-            locationManager = null;
-            return;
-        }
-
-        /**
-         * gps is enabled and location updates will be shown on the map and pushed to database
-         * */
-        mapUtil.rideShareStatus = true;
+        MapUtil.rideShareStatus = true;
         isRideShareOn = true;
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.end_ride));
-
-        initializePath();
 
         locationListener = new LocationListener() {
 
@@ -308,8 +281,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             currentPosition = latLng;
             int rem = 0;
             for (int i = 0; i + 1 < pathString.size(); i++) {
-                GeoCoordinates co1 = mapUtil.GeoCoordinatesMap.get(pathString.get(i));
-                GeoCoordinates co2 = mapUtil.GeoCoordinatesMap.get(pathString.get(i + 1));
+                GeoCoordinates co1 = MapUtil.GeoCoordinatesMap.get(pathString.get(i));
+                GeoCoordinates co2 = MapUtil.GeoCoordinatesMap.get(pathString.get(i + 1));
 
                 if (Math.abs(currentPosition.distanceTo(co2) + previousPosition.distanceTo(co2) - previousPosition.distanceTo(currentPosition)) <= 1) {
 
@@ -369,12 +342,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void initializePath() {
-
-        pathString = new ArrayList<>(Arrays.asList(mapUtil.CAMPUS, mapUtil.CAMPUS_GATE, mapUtil.MODINA_MARKET, mapUtil.SUBID_BAZAR, mapUtil.AMBORKHANA, mapUtil.EIDGAH, mapUtil.KUMARPARA, mapUtil.TILAGOR, mapUtil.BALUCHAR, mapUtil.CAMPUS));
-        userPathReference.setValue("NA;");
-        pathOk = false;
-        determineCallCount = 0;
-
+        startActivityForResult(new Intent(this,ScheduleActivity.class).putExtra("forRideShare",true),100);
     }
 
     public void updatePath() {
@@ -386,17 +354,17 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public Activity getActivity() {
-        return (Activity) this;
+        return this;
     }
 
     public void turnOffRideShare() {
-
-        mapUtil.rideShareStatus = isRideShareOn = false;
+        MapUtil.rideShareStatus = isRideShareOn = false;
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.start_ride));
         locationManager.removeUpdates(locationListener);
         locationListener = null;
         userLocationData.setValue(null);
         userPathReference.setValue(null);
+        databaseReference.child("busesOnRoad").child(routeIdCurrentlySharing).setValue(null);
     }
 
 
@@ -406,11 +374,19 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
         if (i == R.id.ride_on_cv) {
 
-            /**
-             * check for permission to use location service
-             * */
             if (userInfo.isDriver()) {
-                if (!isRideShareOn) turnOnRideShare();
+                if (!isRideShareOn){
+                    boolean isGps = false;
+                    try {
+                        isGps = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+                    } catch (Exception e) {}
+
+                    if (!isGps) {
+                        mapUtil.enableGPS(getApplicationContext(), this, 101);
+                    }
+                    else initializePath();
+
+                }
                 else turnOffRideShare();
             } else {
                 Snackbar.make(findViewById(R.id.home_scrollview), "You're not a Driver!", Snackbar.LENGTH_SHORT).show();
@@ -427,9 +403,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             startActivity(new Intent(HomeActivity.this, MapsActivity.class));
         } else if (i == R.id.profile_cv && userInfo != null) {
             startActivity(new Intent(HomeActivity.this, ProfileActivity.class));
-        }
-        else if(i==R.id.bus_schedule_cv){
-           // startActivity(new Intent(HomeActivity.this,Schedule.class));
+        } else if (i == R.id.bus_schedule_cv) {
+            startActivity(new Intent(HomeActivity.this, ScheduleActivity.class));
         }
     }
 
@@ -437,7 +412,38 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 101) {
-            if (resultCode == Activity.RESULT_OK) turnOnRideShare();
+            if (resultCode == Activity.RESULT_OK) initializePath();
+        }
+        else if(requestCode==100 && data!=null){
+
+
+            pathString = new ArrayList<>();
+            String path=data.getStringExtra("path");
+            String routeId=data.getStringExtra("routeId");
+            String title=data.getStringExtra("title");
+            if(path==null || routeId==null || title==null)return;
+
+            int last=0;
+            for (int i = 0; i <path.length(); i++) {
+                if(path.charAt(i)==';'){
+                    pathString.add(path.substring(last,i));
+                    Log.d("DEB",path.substring(last,i));
+                    last=i+1;
+                }
+            }
+
+
+
+            userLocationData.child("title").setValue(title);
+            databaseReference.child("busesOnRoad").child(routeId).onDisconnect().setValue(null);
+            databaseReference.child("busesOnRoad").child(routeId).child("key").setValue(userUid);
+            routeIdCurrentlySharing=routeId;
+            userPathReference.setValue("NA;");
+            pathOk = false;
+            determineCallCount = 0;
+
+            turnOnRideShare();
+
         }
 
     }
@@ -454,11 +460,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         Log.d(TAG, "onDestroy: ");
         super.onDestroy();
         if (isRideShareOn) {
-            mapUtil.rideShareStatus = false;
-            locationManager.removeUpdates(locationListener);
-            locationListener = null;
-            userLocationData.removeValue();
-            userPathReference.setValue(null);
+            turnOffRideShare();
         }
         FirebaseAuth.getInstance().removeAuthStateListener(this);
     }

@@ -159,8 +159,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         carOptions = new RoutingEngine.CarOptions();
         carOptions.routeOptions = new RouteOptions.Builder().setAlternatives(0).setOptimizationMode(OptimizationMode.SHORTEST).build();
         carOptions.restrictions = new RouteRestrictions();
-        carOptions.restrictions.avoidAreas = mapUtil.restrictionList;
-        if (!mapUtil.rideShareStatus) showUserLocation();
+        carOptions.restrictions.avoidAreas = MapUtil.restrictionList;
+        if (!MapUtil.rideShareStatus) showUserLocation();
         else {
             new CountDownTimer(60000 * 5, 2000) {
                 @Override
@@ -178,6 +178,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 }
             }.start();
+        }
+
+        if(getIntent().getBooleanExtra("fromSchedule",false)){
+
+            new CountDownTimer(100000l,1000){
+                @Override
+                public void onFinish() {
+
+                }
+
+                @Override
+                public void onTick(long millisUntilFinished) {
+                          if(markerMap.containsKey(getIntent().getStringExtra("markerToshow"))){
+                              String markerKey=getIntent().getStringExtra("markerToShow");
+                              mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(markerMap.get(markerKey).getPosition(),20f));
+                              this.cancel();
+                          }
+                }
+            }.start();
+
         }
 
         childEventListener = new ChildEventListener() {
@@ -307,9 +327,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
 
-        String path = pathInformationMap.get((String) marker.getTag());
+        String path = pathInformationMap.get(marker.getTag());
 
-        if (path == null || path.equals((String) "NA;")) {
+        if (path == null || path.equals("NA;")) {
             blinkRed("Sorry, Currently Route is not availavle for this bus");
             return false;
         }
@@ -369,7 +389,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         int second = (int) (time % (3600)) % 60;
         polylineOptions.endCap(new ButtCap());
 
-        String tmp = new String();
+        String tmp = "";
         if (hour != 0) tmp = hour + " hour ";
         if (minute != 0) tmp += minute + " minute ";
         if (second != 0) tmp += second + " seconds";
@@ -387,7 +407,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return;
         }
 
-        if (mapUtil.rideShareStatus) {
+        if (MapUtil.rideShareStatus) {
             greenSignal("You are on this bus");
             if (markerMap.containsKey(userUid))
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(markerMap.get(userUid).getPosition(), 20));
@@ -529,7 +549,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public Activity getActivity() {
-        return (Activity) this;
+        return this;
     }
 
     public Marker addMark(LatLng cur, String title) {
@@ -585,7 +605,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         informationTv.setText(mes);
         AlphaAnimation alphaAnimation = new AlphaAnimation(0, 1);
-        alphaAnimation.setDuration(250);
+        alphaAnimation.setDuration(450);
         alphaAnimation.setRepeatCount(0);
         informationCard.setAnimation(alphaAnimation);
 
