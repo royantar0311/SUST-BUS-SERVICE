@@ -190,9 +190,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 @Override
                 public void onTick(long millisUntilFinished) {
-                          if(markerMap.containsKey(getIntent().getStringExtra("markerToshow"))){
+                          if(markerMap.containsKey(getIntent().getStringExtra("markerToShow"))){
                               String markerKey=getIntent().getStringExtra("markerToShow");
-                              mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(markerMap.get(markerKey).getPosition(),20f));
+                              mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(markerMap.get(markerKey).getPosition(),16f));
                               this.cancel();
                           }
                 }
