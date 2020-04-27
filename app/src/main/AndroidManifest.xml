@@ -42,7 +42,11 @@
         <activity
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps" />
-        <activity android:name=".HomeActivity">
+        <activity android:name=".HomeActivity"/>
+        <activity android:name=".LoginActivity" />
+        <activity android:name=".MainActivity" />
+        <activity android:name=".ProfileActivity" />
+        <activity android:name=".adminPanel.AdminPanelActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -57,9 +61,7 @@
              sign the APK for publishing.
              You can define the keys for the debug and release targets in src/debug/ and src/release/.
         -->
-        <activity android:name=".LoginActivity" />
-        <activity android:name=".MainActivity" />
-        <activity android:name=".ProfileActivity" />
+
 
         <meta-data
             android:name="preloaded_fonts"

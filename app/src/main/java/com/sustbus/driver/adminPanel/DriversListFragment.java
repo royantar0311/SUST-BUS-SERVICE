@@ -18,7 +18,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.sustbus.driver.R;
-import com.sustbus.driver.util.RecyclerViewAdapter;
 import com.sustbus.driver.util.UserInfo;
 
 public class DriversListFragment extends Fragment implements DriversRecyclerAdapter.CheckChangedListener {
@@ -39,7 +38,6 @@ public class DriversListFragment extends Fragment implements DriversRecyclerAdap
         recyclerView = view.findViewById(R.id.drivers_list_recycler_view);
 
         initRecyclerView(FirebaseAuth.getInstance().getCurrentUser());
-        Log.d(TAG, "onViewCreated: rv paise");
     }
 
     private void initRecyclerView(FirebaseUser currentUser) {
