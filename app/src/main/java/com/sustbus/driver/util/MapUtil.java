@@ -65,6 +65,14 @@ public class MapUtil {
         restrictionList.add(new GeoBox(new GeoCoordinates(24.921759, 91.82511), new GeoCoordinates(24.925740, 91.83950)));
     }
 
+    public static String removeSpace(String s){
+        String z= "";
+        for(int i=0;i<s.length();i++){
+            if(s.charAt(i)!=' ')z+=s.charAt(i);
+        }
+        return z;
+    }
+
     public static MapUtil getInstance() {
         return mapUtil;
     }
