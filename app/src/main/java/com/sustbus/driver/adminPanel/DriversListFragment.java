@@ -39,7 +39,6 @@ public class DriversListFragment extends Fragment implements DriversRecyclerAdap
         recyclerView = view.findViewById(R.id.drivers_list_recycler_view);
 
         initRecyclerView(FirebaseAuth.getInstance().getCurrentUser());
-        Log.d(TAG, "onViewCreated: rv paise");
     }
 
     private void initRecyclerView(FirebaseUser currentUser) {

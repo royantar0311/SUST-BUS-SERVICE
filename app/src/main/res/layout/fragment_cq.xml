@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/cq_recycler_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="1dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cq_search_btn" />
+
+    <EditText
+        android:id="@+id/cq_from_tv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="16dp"
+        android:hint="20########"
+        app:layout_constraintEnd_toStartOf="@+id/cq_to_tv"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/cq_to_tv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="32dp"
+        android:hint="20########"
+        app:layout_constraintBaseline_toBaselineOf="@+id/cq_from_tv"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/cq_from_tv" />
+
+    <Button
+        android:id="@+id/cq_search_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/custom_button"
+        android:text="search"
+        android:textColor="#F6F0F0"
+        android:textSize="10sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.465"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cq_driver_spinner" />
+
+    <Spinner
+        android:id="@+id/cq_permission_spinner"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toStartOf="@+id/cq_asc_desc_spinner"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/cq_driver_spinner"
+        app:layout_constraintTop_toTopOf="@+id/cq_driver_spinner" />
+
+    <Spinner
+        android:id="@+id/cq_driver_spinner"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toStartOf="@+id/cq_permission_spinner"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cq_from_tv" />
+
+    <Spinner
+        android:id="@+id/cq_asc_desc_spinner"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="24dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/cq_permission_spinner"
+        app:layout_constraintTop_toTopOf="@+id/cq_permission_spinner" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="To"
+        android:textColor="#020000"
+        android:textSize="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/cq_to_tv"
+        app:layout_constraintStart_toStartOf="@+id/cq_to_tv" />
+
+    <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="From"
+    android:textColor="#020000"
+    android:textSize="10dp"
+    app:layout_constraintBottom_toTopOf="@+id/cq_from_tv"
+    app:layout_constraintStart_toStartOf="@+id/cq_from_tv" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Driver/Student"
+        android:textColor="#020000"
+        android:textSize="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/cq_driver_spinner"
+        app:layout_constraintStart_toStartOf="@+id/cq_driver_spinner" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Permitted?"
+        android:textColor="#020000"
+        android:textSize="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/cq_permission_spinner"
+        app:layout_constraintStart_toStartOf="@+id/cq_permission_spinner" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ascending/Descending"
+        android:textColor="#020000"
+        android:textSize="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/cq_asc_desc_spinner"
+        app:layout_constraintStart_toStartOf="@+id/cq_asc_desc_spinner" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

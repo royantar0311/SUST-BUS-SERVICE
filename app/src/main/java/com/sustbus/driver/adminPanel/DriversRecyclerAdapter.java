@@ -13,13 +13,20 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.sustbus.driver.R;
 import com.sustbus.driver.util.UserInfo;
 
-public class DriversRecyclerAdapter extends FirestoreRecyclerAdapter<UserInfo,DriversRecyclerAdapter.DriversViewHolder> {
+public class DriversRecyclerAdapter extends FirestoreRecyclerAdapter<UserInfo, DriversRecyclerAdapter.DriversViewHolder> {
     private static final String TAG = "DriversRecyclerAdapter";
     CheckChangedListener checkChangedListener;
+    @NonNull
+    @Override
+    public DriversViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        Log.d(TAG, "onCreateViewHolder: ");
+        LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
+        View view = layoutInflater.inflate(R.layout.row_item,parent,false);
+        return new DriversViewHolder(view);
+    }
 
     public DriversRecyclerAdapter(@NonNull FirestoreRecyclerOptions<UserInfo> options,CheckChangedListener checkChangedListener) {
         super(options);
@@ -35,14 +42,7 @@ public class DriversRecyclerAdapter extends FirestoreRecyclerAdapter<UserInfo,Dr
         holder.aSwitch.setChecked((userInfo.getIsStudentPermitted()!=1)?false:true);
     }
 
-    @NonNull
-    @Override
-    public DriversViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        Log.d(TAG, "onCreateViewHolder: ");
-        LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-        View view = layoutInflater.inflate(R.layout.row_item,parent,false);
-        return new DriversRecyclerAdapter.DriversViewHolder(view);
-    }
+
 
     class DriversViewHolder extends RecyclerView.ViewHolder{
         TextView username,regino;

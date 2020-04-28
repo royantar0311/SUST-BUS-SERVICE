@@ -27,6 +27,8 @@ public class AdminPanelActivity extends AppCompatActivity {
         viewPagerAdapter = new ViewPagerAdapter(fragmentManager,FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         viewPagerAdapter.addFragment(new StudentsListFragment(),"Students List");
         viewPagerAdapter.addFragment(new DriversListFragment(),"Drivers List");
+        viewPagerAdapter.addFragment(new CustomQueryFragment(),"Custom Query");
+        viewPager.setOffscreenPageLimit(2);
         viewPager.setAdapter(viewPagerAdapter);
         tabLayout.setupWithViewPager(viewPager);
     }
