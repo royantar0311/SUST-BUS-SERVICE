@@ -12,6 +12,7 @@ import com.android.volley.toolbox.Volley;
 
 import org.json.JSONObject;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -60,14 +61,19 @@ public class NotificationSender {
             }
            },null){
 
+
             @Override
-            public String getBodyContentType() {
-                return "application/json; charset=utf-8";
+            public byte[] getBody() throws AuthFailureError {
+                try{
+                    return notification.toString().getBytes(StandardCharsets.UTF_8);
+                }
+                catch (Exception e){
+                    return null;
+                }
             }
 
-
             @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
+            public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String, String> params = new HashMap<>();
                 params.put("Authorization", "key="+serverKey);
                 params.put("Content-Type", contentType);
