@@ -6,20 +6,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.RecyclerView;
-
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.sustbus.driver.R;
-import com.sustbus.driver.util.RecyclerViewAdapter;
 import com.sustbus.driver.util.UserInfo;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class DriversListFragment extends Fragment implements DriversRecyclerAdapter.CheckChangedListener {
     private static final String TAG = "DriversListFragment";
@@ -32,6 +31,7 @@ public class DriversListFragment extends Fragment implements DriversRecyclerAdap
         view = inflater.inflate(R.layout.fragment_drivers_list,container,false);
         return view;
     }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -44,6 +44,7 @@ public class DriversListFragment extends Fragment implements DriversRecyclerAdap
 
     private void initRecyclerView(FirebaseUser currentUser) {
         Query query = FirebaseFirestore.getInstance()
+
                 .collection("users")
                 .whereEqualTo("driver",true);
         FirestoreRecyclerOptions<UserInfo> options = new FirestoreRecyclerOptions.Builder<UserInfo>()
@@ -61,4 +62,6 @@ public class DriversListFragment extends Fragment implements DriversRecyclerAdap
             recyclerAdapter.stopListening();
         }
     }
+
+
 }

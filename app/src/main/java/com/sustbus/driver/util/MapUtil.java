@@ -38,6 +38,9 @@ public class MapUtil {
     public static final String BALUCHAR = "Baluchar";
     public static final String LAKKATURA = "Lakkatura";
     public static final String CAMPUS_GATE = "Gate";
+
+
+
     public static boolean rideShareStatus = false;
 
     public static Map<String, GeoCoordinates> GeoCoordinatesMap = new HashMap<>();

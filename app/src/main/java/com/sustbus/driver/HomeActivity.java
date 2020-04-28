@@ -16,8 +16,6 @@
  * SPDX-License-Identifier: Apache-2.0
  * License-Filename: LICENSE
  */
-
-
 package com.sustbus.driver;
 
 import android.app.Activity;
@@ -42,6 +40,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.here.sdk.core.GeoCoordinates;
 import com.sustbus.driver.util.MapUtil;
 import com.sustbus.driver.util.PermissionsRequestor;
@@ -66,11 +65,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     Intent intent;
     private TextView userNameTv;
     private TextView driverOrStudent;
-    private CardView openMapBtn;
-    private CardView scheduleBtn;
     private CardView shareRideTv;
-    private CardView profileCv;
-    private CardView signOut;
     private ImageView dpEv;
     private DatabaseReference databaseReference,userLocationData, userPathReference;
     private FirebaseFirestore db;
@@ -85,8 +80,9 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private List<String> pathString;
     private boolean pathOk;
     private int determineCallCount;
-    private GeoCoordinates previousPosition, currentPosition;
+    private GeoCoordinates previousPosition;
     private Location ridersPreviousLocation = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,16 +91,17 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_home);
         rideShareIndicatorIV = findViewById(R.id.ride_share_iv);
 
-        openMapBtn = findViewById(R.id.track_buses_cv);
+        CardView openMapBtn = findViewById(R.id.track_buses_cv);
         shareRideTv = findViewById(R.id.ride_on_cv);
-        scheduleBtn = findViewById(R.id.bus_schedule_cv);
+        CardView scheduleBtn = findViewById(R.id.bus_schedule_cv);
         userNameTv = findViewById(R.id.row_item_user_name_tv);
         driverOrStudent = findViewById(R.id.driver_or_student_tv);
-        profileCv = findViewById(R.id.profile_cv);
-        signOut = findViewById(R.id.help_center_cv);
+        CardView profileCv = findViewById(R.id.profile_cv);
+        CardView signOut = findViewById(R.id.help_center_cv);
         dpEv = findViewById(R.id.home_user_image_ev);
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
+        findViewById(R.id.home_notifications_tv).setOnClickListener(this);
         openMapBtn.setOnClickListener(this);
         scheduleBtn.setOnClickListener(this);
         shareRideTv.setOnClickListener(this);
@@ -116,6 +113,9 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         userInfo = UserInfo.getInstance();
         mAuth = FirebaseAuth.getInstance();
         mapUtil = MapUtil.getInstance();
+
+
+        FirebaseMessaging.getInstance().subscribeToTopic("test");
 
     }
 
@@ -278,27 +278,26 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
         if (determineCallCount == 0) previousPosition = latLng;
         else if (latLng.distanceTo(previousPosition) >= 5) {
-            currentPosition = latLng;
             int rem = 0;
             for (int i = 0; i + 1 < pathString.size(); i++) {
                 GeoCoordinates co1 = MapUtil.GeoCoordinatesMap.get(pathString.get(i));
                 GeoCoordinates co2 = MapUtil.GeoCoordinatesMap.get(pathString.get(i + 1));
 
-                if (Math.abs(currentPosition.distanceTo(co2) + previousPosition.distanceTo(co2) - previousPosition.distanceTo(currentPosition)) <= 1) {
+                if (Math.abs(latLng.distanceTo(co2) + previousPosition.distanceTo(co2) - previousPosition.distanceTo(latLng)) <= 1) {
 
-                    if (co1.distanceTo(previousPosition) < co1.distanceTo(currentPosition)) {
+                    if (co1.distanceTo(previousPosition) < co1.distanceTo(latLng)) {
                         rem = i + 2;
                         break;
                     }
 
-                } else if (Math.abs(currentPosition.distanceTo(co1) + previousPosition.distanceTo(co1) - previousPosition.distanceTo(currentPosition)) <= 1) {
+                } else if (Math.abs(latLng.distanceTo(co1) + previousPosition.distanceTo(co1) - previousPosition.distanceTo(latLng)) <= 1) {
 
-                    if (co2.distanceTo(previousPosition) > co2.distanceTo(currentPosition)) {
+                    if (co2.distanceTo(previousPosition) > co2.distanceTo(latLng)) {
                         rem = i + 1;
                         break;
                     }
 
-                } else if (co1.distanceTo(previousPosition) < co1.distanceTo(currentPosition) && co2.distanceTo(previousPosition) > co2.distanceTo(currentPosition)) {
+                } else if (co1.distanceTo(previousPosition) < co1.distanceTo(latLng) && co2.distanceTo(previousPosition) > co2.distanceTo(latLng)) {
                     rem = i + 1;
                     break;
 
@@ -405,6 +404,9 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             startActivity(new Intent(HomeActivity.this, ProfileActivity.class));
         } else if (i == R.id.bus_schedule_cv) {
             startActivity(new Intent(HomeActivity.this, ScheduleActivity.class));
+        }
+        else if(i==R.id.home_notifications_tv){
+            startActivity(new Intent(HomeActivity.this, NotificationSettings.class));
         }
     }
 
