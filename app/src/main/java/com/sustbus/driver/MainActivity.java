@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,8 +28,8 @@ import studio.carbonylgroup.textfieldboxes.TextFieldBoxes;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = "MainActivity";
-    boolean userNameOk = false;
     boolean emailOk = false;
+    private CheckBox driverCb,studentCb;
     boolean passwordOk = false;
     private TextView signInTv;
     private Button signUpBtn;
@@ -48,12 +50,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-        userNameEt = findViewById(R.id.username_tf);
         emailEt = findViewById(R.id.email_tf);
         passwordEt = findViewById(R.id.password_tf);
         signUpBtn = findViewById(R.id.signup_btn);
         signInTv = findViewById(R.id.sign_in_tv);
+        driverCb = findViewById(R.id.main_driver_cb);
+        studentCb = findViewById(R.id.main_student_cb);
 
         progressDialog = new ProgressDialog(this);
 
@@ -63,18 +65,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 emailIdValidator(theNewText);
             }
         });
-        userNameEt.setSimpleTextChangeWatcher(new SimpleTextChangedWatcher() {
-            @Override
-            public void onTextChanged(String theNewText, boolean isError) {
-                userNameValidator(theNewText);
-            }
-        });
+
         passwordEt.setSimpleTextChangeWatcher(new SimpleTextChangedWatcher() {
             @Override
             public void onTextChanged(String theNewText, boolean isError) {
                 passwordValidator(theNewText);
             }
         });
+
+        studentCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked && driverCb.isChecked())driverCb.setChecked(false);
+            }
+        });
+        driverCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked && studentCb.isChecked())studentCb.setChecked(false);
+            }
+        });
+
         signUpBtn.setOnClickListener(this);
         signInTv.setOnClickListener(this);
 
@@ -105,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         } else if (i == R.id.signup_btn) {
 
-            if (emailOk && userNameOk && passwordOk) {
+            if (emailOk && passwordOk && (driverCb.isChecked() || studentCb.isChecked())) {
 
                 progressDialog.setMessage("Register in progress");
                 progressDialog.setCancelable(false);
@@ -119,12 +130,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         if (task.isSuccessful()) {
                             progressDialog.hide();
                             UserInfo.getBuilder()
-                                    .setDriver(false)
+                                    .setDriver(driverCb.isChecked())
                                     .setPermitted(UserInfo.NOT_PERMITTED)
                                     .setProfileCompleted(false)
                                     .setEmail(email)
                                     .setuId(mAuth.getCurrentUser().getUid())
-                                    .setUserName(userName)
                                     .build();
                             db.collection("users")
                                     .document(userInfo.getuId())
@@ -150,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 });
 
             } else {
-                Snackbar.make(findViewById(R.id.main_relative_layout), "Please enter all the fields correctly", Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(findViewById(R.id.main_constraint_layout), "Please enter all the fields correctly", Snackbar.LENGTH_SHORT).show();
             }
         }
     }
@@ -173,35 +183,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void userNameValidator(String theNewText) {
-        if (theNewText.length() < 4) {
-
-            userNameEt.setHelperText("user name must contain 6 letters at least");
-            userNameEt.setHelperTextColor(ContextCompat.getColor(com.sustbus.driver.MainActivity.this, R.color.A400red));
-            userNameEt.setCounterTextColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
-            userNameEt.setPrimaryColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
-            userNameOk = false;
-        } else if (theNewText.contains(".") ||
-                theNewText.contains("$") ||
-                theNewText.contains("[") ||
-                theNewText.contains("]") ||
-                theNewText.contains("#") ||
-                theNewText.contains("/")) {
-
-            userNameEt.setHelperText("\".$[]#/\" are not allowed");
-            userNameEt.setHelperTextColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
-            userNameEt.setCounterTextColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
-            userNameEt.setPrimaryColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
-            userNameOk = false;
-
-        } else {
-            userNameEt.setHelperText(" ");
-            userNameEt.setCounterTextColor(ContextCompat.getColor(MainActivity.this, R.color.sust));
-            userNameEt.setPrimaryColor(ContextCompat.getColor(MainActivity.this, R.color.sust));
-            userName = theNewText;
-            userNameOk = true;
-        }
-    }
+//    private void userNameValidator(String theNewText) {
+//        if (theNewText.length() < 4) {
+//
+//            userNameEt.setHelperText("user name must contain 6 letters at least");
+//            userNameEt.setHelperTextColor(ContextCompat.getColor(com.sustbus.driver.MainActivity.this, R.color.A400red));
+//            userNameEt.setCounterTextColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
+//            userNameEt.setPrimaryColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
+//            userNameOk = false;
+//        } else if (theNewText.contains(".") ||
+//                theNewText.contains("$") ||
+//                theNewText.contains("[") ||
+//                theNewText.contains("]") ||
+//                theNewText.contains("#") ||
+//                theNewText.contains("/")) {
+//
+//            userNameEt.setHelperText("\".$[]#/\" are not allowed");
+//            userNameEt.setHelperTextColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
+//            userNameEt.setCounterTextColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
+//            userNameEt.setPrimaryColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
+//            userNameOk = false;
+//
+//        } else {
+//            userNameEt.setHelperText(" ");
+//            userNameEt.setCounterTextColor(ContextCompat.getColor(MainActivity.this, R.color.sust));
+//            userNameEt.setPrimaryColor(ContextCompat.getColor(MainActivity.this, R.color.sust));
+//            userName = theNewText;
+//            userNameOk = true;
+//        }
+//    }
 
     private void passwordValidator(String theNewText) {
         if (theNewText.length() < 6) {

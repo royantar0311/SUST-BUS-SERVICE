@@ -78,6 +78,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         profileHelperTv = findViewById(R.id.profile_helper_tv);
 
         userInfo = UserInfo.getInstance();
+        Log.d(TAG, "onCreate: " + userInfo.toString());
         db = FirebaseFirestore.getInstance()
                 .collection("users")
                 .document(userInfo.getuId());
@@ -200,6 +201,8 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                         if (!userInfo.isProfileCompleted()) {
                             permissionPending();
                             userInfo.setProfileCompleted(true);
+                            db.update(userInfo.toMap());
+
                         } else if (userInfo.isPermitted()) {
                             permitted();
                         }
@@ -211,6 +214,9 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        Log.d(TAG, "onActivityResult: " + userName + " " + regiNo);
+        userNameEt.setText(userName);
+        regiNoEt.setText(regiNo);
         if (requestCode == REQUESTING_DP && resultCode == RESULT_OK &&
                 data != null && data.getData() != null) {
             Log.d(TAG, "onActivityResult: " + data + "dp fetched");
@@ -223,8 +229,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             Log.d(TAG, "onActivityResult: " + data + "id fetched");
             idFilePath = data.getData();
         }
-        userNameEt.setText(userName);
-        regiNoEt.setText(regiNo);
+
     }
 
 
@@ -284,7 +289,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     public void idChooserButtonPressed(View view) {
-        Log.d(TAG, "onClick: " + "id chooser button clicked");
+        Log.d(TAG, "onClick: " + "id chooser button clicked " + userName + " " + regiNo);
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);

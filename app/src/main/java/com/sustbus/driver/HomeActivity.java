@@ -28,12 +28,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -113,7 +115,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         userInfo = UserInfo.getInstance();
         mAuth = FirebaseAuth.getInstance();
         mapUtil = MapUtil.getInstance();
-
 
         FirebaseMessaging.getInstance().subscribeToTopic("test");
 

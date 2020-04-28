@@ -1,11 +1,16 @@
 package com.sustbus.driver.util;
 
+import android.util.Log;
+
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class UserInfo {
+
+    private static final String TAG = "UserInfo";
+
     public static final boolean PERMITTED = true;
     public static final boolean NOT_PERMITTED = false;
     public static final int PERMISSION_PENDING = -1;
@@ -32,6 +37,7 @@ public class UserInfo {
 
     public static void setInstance(UserInfo i) {
         instance = i;
+        Log.d(TAG, "setInstance: " + i.toString());
     }
 
     /**
@@ -66,7 +72,8 @@ public class UserInfo {
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("email", email);
-        map.put("isStudentPermitted", permitted);
+        map.put("permitted", permitted);
+        map.put("profileCompleted", profileCompleted);
         map.put("userName", userName);
         map.put("driver", driver);
         map.put("uId", uId);
@@ -79,8 +86,8 @@ public class UserInfo {
         return "userInfo new datas"
                 + "\nisDriver " + instance.isDriver()
                 + "\nuid " + instance.getuId()
-                + "\nispermitted " + instance.isPermitted()
-                + "\nisCompleted" + instance.isProfileCompleted()
+                + "\nisPermitted " + instance.isPermitted()
+                + "\nisProfileCompleted " + instance.isProfileCompleted()
                 + "\nemail " + instance.getEmail()
                 + "\nurl " + instance.getUrl()
                 + "\nregiNO " + instance.regiNo
