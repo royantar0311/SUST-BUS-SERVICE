@@ -30,8 +30,8 @@ public class CustomQueryRecyclerAdapter extends FirestoreRecyclerAdapter<UserInf
     protected void onBindViewHolder(@NonNull CustomQueryRecyclerViewHolder holder, int position, @NonNull UserInfo userInfo) {
         Log.d(TAG, "onBindViewHolder: ");
         holder.regino.setText(userInfo.getRegiNo());
-        holder.username.setText(userInfo.getUserName());
-        holder.aSwitch.setChecked(userInfo.getIsStudentPermitted()==1?true:false);
+        holder.username.setText("#" + userInfo.getUserName());
+        holder.aSwitch.setChecked(userInfo.isPermitted());
     }
 
     @NonNull

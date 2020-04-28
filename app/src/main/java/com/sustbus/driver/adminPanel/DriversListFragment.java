@@ -43,9 +43,9 @@ public class DriversListFragment extends Fragment implements DriversRecyclerAdap
 
     private void initRecyclerView(FirebaseUser currentUser) {
         Query query = FirebaseFirestore.getInstance()
-
                 .collection("users")
-                .whereEqualTo("driver",true);
+                .whereEqualTo("driver",true)
+                .whereEqualTo("profileCompleted",true);
         FirestoreRecyclerOptions<UserInfo> options = new FirestoreRecyclerOptions.Builder<UserInfo>()
                 .setQuery(query,UserInfo.class)
                 .build();

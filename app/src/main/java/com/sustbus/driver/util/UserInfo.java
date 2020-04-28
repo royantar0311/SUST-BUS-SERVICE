@@ -1,19 +1,22 @@
 package com.sustbus.driver.util;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class UserInfo {
-    public static final int STUDENT_PERMITTED = 1;
-    public static final int STUDENT_NOT_PERMITTED = 0;
+    public static final boolean PERMITTED = true;
+    public static final boolean NOT_PERMITTED = false;
     public static final int PERMISSION_PENDING = -1;
     public static boolean downNeeded = false;
     public static Builder builder = new Builder();
     private static UserInfo instance = new UserInfo();
     private String email;
-    private long isStudentPermitted;
+    private boolean permitted;
     private String userName;
     private boolean driver;
+    private boolean profileCompleted;
     private Double lat;
     private Double lang;
     private String uId;
@@ -39,7 +42,7 @@ public class UserInfo {
 
     static UserInfo userInfo(Builder builder) {
         instance.email = builder.email;
-        instance.isStudentPermitted = builder.isStudentPermitted;
+        instance.permitted = builder.permitted;
         instance.userName = builder.userName;
         instance.driver = builder.isDriver;
         instance.lat = builder.lat;
@@ -56,10 +59,14 @@ public class UserInfo {
         return builder;
     }
 
+    /**
+    * Creating a map of all the data to push to the database
+    */
+
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("email", email);
-        map.put("isStudentPermitted", isStudentPermitted);
+        map.put("isStudentPermitted", permitted);
         map.put("userName", userName);
         map.put("driver", driver);
         map.put("uId", uId);
@@ -72,7 +79,8 @@ public class UserInfo {
         return "userInfo new datas"
                 + "\nisDriver " + instance.isDriver()
                 + "\nuid " + instance.getuId()
-                + "\nispermitted " + instance.getIsStudentPermitted()
+                + "\nispermitted " + instance.isPermitted()
+                + "\nisCompleted" + instance.isProfileCompleted()
                 + "\nemail " + instance.getEmail()
                 + "\nurl " + instance.getUrl()
                 + "\nregiNO " + instance.regiNo
@@ -103,12 +111,12 @@ public class UserInfo {
         this.email = email;
     }
 
-    public long getIsStudentPermitted() {
-        return isStudentPermitted;
+    public boolean isPermitted() {
+        return permitted;
     }
 
-    public void setIsStudentPermitted(long isStudentPermitted) {
-        this.isStudentPermitted = isStudentPermitted;
+    public void setPermitted(boolean permitted) {
+        this.permitted = permitted;
     }
 
     public String getUserName() {
@@ -127,22 +135,6 @@ public class UserInfo {
         this.driver = driver;
     }
 
-    public Double getLat() {
-        return lat;
-    }
-
-    public void setLat(Double lat) {
-        this.lat = lat;
-    }
-
-    public Double getLang() {
-        return lang;
-    }
-
-    public void setLang(Double lang) {
-        this.lang = lang;
-    }
-
     public String getuId() {
         return uId;
     }
@@ -151,20 +143,36 @@ public class UserInfo {
         this.uId = uId;
     }
 
+    public void setLatLng(double lat, double lang){
+        this.lat = lat;
+        this.lang = lang;
+    }
+
+    public boolean isProfileCompleted() {
+        return profileCompleted;
+    }
+
+    public void setProfileCompleted(boolean profileCompleted) {
+        this.profileCompleted = profileCompleted;
+    }
+
+    public LatLng getLatLang(){
+        return new LatLng(lat,lang);
+    }
+
     /**
      * Builder pattern to build a Userinfo
      */
 
     public static class Builder {
         String email;
-        long isStudentPermitted;
+        boolean permitted;
         String userName;
         boolean isDriver;
         Double lat;
         Double lang;
         String uId;
-        String regiNo;
-        String url;
+        boolean profileCompleted;
 
         Builder() {
         }
@@ -174,8 +182,12 @@ public class UserInfo {
             return this;
         }
 
-        public Builder setIsStudentPermitted(long isStudentPermitted) {
-            this.isStudentPermitted = isStudentPermitted;
+        public Builder setPermitted(boolean permitted) {
+            this.permitted = permitted;
+            return this;
+        }
+        public Builder setProfileCompleted(boolean profileCompleted) {
+            this.profileCompleted = profileCompleted;
             return this;
         }
 
@@ -201,16 +213,6 @@ public class UserInfo {
 
         public Builder setuId(String uId) {
             this.uId = uId;
-            return this;
-        }
-
-        public Builder setRegiNo(String regiNo) {
-            this.regiNo = regiNo;
-            return this;
-        }
-
-        public Builder setUrl(String url) {
-            this.url = url;
             return this;
         }
 

@@ -5,8 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Patterns;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -48,9 +46,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN
-        );
         setContentView(R.layout.activity_main);
 
 
@@ -110,7 +105,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         } else if (i == R.id.signup_btn) {
 
-
             if (emailOk && userNameOk && passwordOk) {
 
                 progressDialog.setMessage("Register in progress");
@@ -126,7 +120,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             progressDialog.hide();
                             UserInfo.getBuilder()
                                     .setDriver(false)
-                                    .setIsStudentPermitted(UserInfo.STUDENT_NOT_PERMITTED)
+                                    .setPermitted(UserInfo.NOT_PERMITTED)
+                                    .setProfileCompleted(false)
                                     .setEmail(email)
                                     .setuId(mAuth.getCurrentUser().getUid())
                                     .setUserName(userName)
@@ -134,7 +129,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             db.collection("users")
                                     .document(userInfo.getuId())
                                     .set(userInfo.toMap());
-                            Intent intent = new Intent(MainActivity.this, HomeActivity.class);
+                            Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             startActivity(intent);
                             finish();

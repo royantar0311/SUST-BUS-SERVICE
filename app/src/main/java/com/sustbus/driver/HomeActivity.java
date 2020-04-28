@@ -160,6 +160,12 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                     Log.d(TAG, userInfo.toString());
                     dashboardSetup();
                     loadImage();
+                    if(!userInfo.isProfileCompleted() || !userInfo.isPermitted()){
+                        Intent intent = new Intent(HomeActivity.this, ProfileActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(intent);
+                        finish();
+                    }
                 } else {
                     Log.d(TAG, "Current data: null");
                 }
@@ -224,9 +230,10 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
             finish();
-        } else {
-            Log.d(TAG, "onAuthStateChanged: " + "id found");
+        }
+        else {
             updateDatabase();
+            Log.d(TAG, "onAuthStateChanged: " + userInfo.toString());
         }
     }
 

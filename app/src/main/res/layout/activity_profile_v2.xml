@@ -51,7 +51,7 @@
         android:id="@+id/profile_regino_tf"
         android:layout_width="266dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="16dp"
         android:elevation="2dp"
         app:errorColor="@color/A400red"
         app:hasClearButton="true"
@@ -97,13 +97,13 @@
         app:layout_constraintTop_toBottomOf="@+id/profile_user_image_ev" />
 
     <ImageButton
-        android:id="@+id/imageButton"
+        android:id="@+id/profile_back_btn"
         android:layout_width="35dp"
         android:layout_height="25dp"
         android:layout_marginStart="36dp"
         android:layout_marginTop="36dp"
-        android:onClick="backButtonPressed"
         android:background="@drawable/transparent_button"
+        android:onClick="backButtonPressed"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_arrow_back_red_50dp" />
@@ -111,44 +111,53 @@
 
     <TextView
         android:id="@+id/profile_id_availability"
-        android:layout_width="149dp"
-        android:layout_height="25dp"
+        android:layout_width="wrap_content"
+        android:layout_height="19dp"
+        android:layout_marginTop="16dp"
         android:text="ID not Detected"
         android:textColor="#000000"
         android:textSize="16sp"
-        app:layout_constraintBaseline_toBaselineOf="@+id/profile_id_chooser_btn"
-        app:layout_constraintEnd_toStartOf="@+id/profile_id_chooser_btn"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="@+id/profile_regino_tf" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/profile_regino_tf" />
 
     <Button
         android:id="@+id/update_profile_btn"
         android:layout_width="266dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="76dp"
         android:background="@drawable/custom_button"
         android:text="Request Permission"
+        android:textColor="#FFFFFF"
+        android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/profile_id_chooser_btn" />
 
     <Button
         android:id="@+id/profile_id_chooser_btn"
         android:layout_width="80dp"
         android:layout_height="32dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="60dp"
+        android:layout_marginTop="8dp"
         android:background="@drawable/custom_button"
+        android:onClick="idChooserButtonPressed"
         android:text="choose"
         android:textColor="#FFFFFF"
-        android:onClick="idChooserButtonPressed"
         android:textSize="10sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/profile_id_availability" />
+
+    <TextView
+        android:id="@+id/profile_helper_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:text="TextView"
+        android:textColor="@color/A400red"
         app:layout_constraintBottom_toTopOf="@+id/update_profile_btn"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.749"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/profile_regino_tf"
-        app:layout_constraintVertical_bias="0.3" />
+        app:layout_constraintHorizontal_bias="0.529"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

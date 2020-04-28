@@ -39,7 +39,7 @@ public class DriversRecyclerAdapter extends FirestoreRecyclerAdapter<UserInfo, D
         Log.d(TAG, "onBindViewHolder: ");
         holder.username.setText(userInfo.getUserName());
         holder.regino.setText("#" + userInfo.getRegiNo());
-        holder.aSwitch.setChecked((userInfo.getIsStudentPermitted()!=1)?false:true);
+        holder.aSwitch.setChecked(userInfo.isPermitted());
     }
 
 

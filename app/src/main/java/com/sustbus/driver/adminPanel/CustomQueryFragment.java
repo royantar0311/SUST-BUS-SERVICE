@@ -83,7 +83,8 @@ public class CustomQueryFragment extends Fragment implements CustomQueryRecycler
                 .whereGreaterThanOrEqualTo("regiNo",from)
                 .whereLessThanOrEqualTo("regiNo",to)
                 .whereEqualTo("driver",driver)
-                .whereEqualTo("isStudentPermitted",permission?1:0);
+                .whereEqualTo("isPermitted",permission)
+                .whereEqualTo("profileCompleted",true);
         FirestoreRecyclerOptions<UserInfo> options = new FirestoreRecyclerOptions.Builder<UserInfo>()
                 .setQuery(query,UserInfo.class)
                 .build();

@@ -45,7 +45,8 @@ public class StudentsListFragment extends Fragment implements StudentsRecyclerAd
     private void initRecyclerView(FirebaseUser currentUser) {
         Query query = FirebaseFirestore.getInstance()
                 .collection("users")
-                .whereEqualTo("driver",false);
+                .whereEqualTo("driver",false)
+                .whereEqualTo("profileCompleted",true);;
         FirestoreRecyclerOptions<UserInfo> options = new FirestoreRecyclerOptions.Builder<UserInfo>()
                 .setQuery(query,UserInfo.class)
                 .build();

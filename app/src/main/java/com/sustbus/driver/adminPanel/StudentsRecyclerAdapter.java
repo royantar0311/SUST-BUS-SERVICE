@@ -4,8 +4,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -40,7 +38,7 @@ public class StudentsRecyclerAdapter extends FirestoreRecyclerAdapter<UserInfo,S
     protected void onBindViewHolder(@NonNull StudentsViewHolder holder, int position, @NonNull UserInfo userInfo) {
         holder.username.setText(userInfo.getUserName());
         holder.regino.setText("#" + userInfo.getRegiNo());
-        holder.aSwitch.setChecked((userInfo.getIsStudentPermitted()!=1)?false:true);
+        holder.aSwitch.setChecked(userInfo.isPermitted());
     }
 
 

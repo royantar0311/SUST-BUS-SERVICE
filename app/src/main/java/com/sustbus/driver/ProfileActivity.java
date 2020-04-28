@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,7 +34,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import io.opencensus.stats.Measure;
 import studio.carbonylgroup.textfieldboxes.SimpleTextChangedWatcher;
 import studio.carbonylgroup.textfieldboxes.TextFieldBoxes;
 
@@ -44,8 +44,9 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
     private UserInfo userInfo;
     private Button updateProfileBtn;
-    private Button dpChooserBtn;
     private Button idChooserBtn;
+    private TextView profileHelperTv;
+    private ImageButton backBtn;
     private EditText userNameEt;
     private EditText regiNoEt;
     private TextView idAvailibilityTv;
@@ -71,10 +72,10 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         regiNoTf = findViewById(R.id.profile_regino_tf);
         userNameEt = findViewById(R.id.profile_username_et);
         regiNoEt = findViewById(R.id.profile_regino_et);
-        dpChooserBtn = findViewById(R.id.dp_chooser_button);
         dpEv = findViewById(R.id.profile_user_image_ev);
         idChooserBtn = findViewById(R.id.profile_id_chooser_btn);
         idAvailibilityTv = findViewById(R.id.profile_id_availability);
+        profileHelperTv = findViewById(R.id.profile_helper_tv);
 
         userInfo = UserInfo.getInstance();
         db = FirebaseFirestore.getInstance()
@@ -98,7 +99,10 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             }
         });
 
+        backBtn = findViewById(R.id.profile_back_btn);
+
         updateProfileBtn.setOnClickListener(this);
+
 
         progressDialog = new ProgressDialog(this);
         loadImage();
@@ -156,7 +160,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             progressDialog.setCancelable(false);
             progressDialog.show();
             if (userNameOk && regiNoOk &&
-                    (idFilePath != null) == (userInfo.getIsStudentPermitted() == UserInfo.STUDENT_NOT_PERMITTED)) {
+                    (idFilePath != null) == (!userInfo.isProfileCompleted())) {
 
                 if (dpFilePath != null) {
                     Log.d(TAG, "onClick: filepath not null, file upload initializing");
@@ -183,12 +187,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void updateRestOfTheData() {
-        if (userInfo.getIsStudentPermitted() == UserInfo.STUDENT_NOT_PERMITTED) {
-            Log.d(TAG, "onClick: update_profile_button -> asking for permission");
-            userInfo.setIsStudentPermitted(UserInfo.PERMISSION_PENDING);
-        } else {
-            Log.d(TAG, "onClick: update_profile_button -> updating profile");
-        }
+
         userInfo.setUserName(userName);
         userInfo.setRegiNo(regiNo);
         Log.d(TAG, userInfo.toString());
@@ -198,9 +197,10 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                     public void onSuccess(Void aVoid) {
                         Log.d(TAG, "onSuccess: " + "profile updated");
                         progressDialog.hide();
-                        if (userInfo.getIsStudentPermitted() == UserInfo.PERMISSION_PENDING) {
+                        if (!userInfo.isProfileCompleted()) {
                             permissionPending();
-                        } else if (userInfo.getIsStudentPermitted() == UserInfo.STUDENT_PERMITTED) {
+                            userInfo.setProfileCompleted(true);
+                        } else if (userInfo.isPermitted()) {
                             permitted();
                         }
                         Toast.makeText(ProfileActivity.this, "Profile Updated Successfully", Toast.LENGTH_SHORT).show();
@@ -231,14 +231,16 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     protected void onStart() {
         super.onStart();
-        if (userInfo.getIsStudentPermitted() == UserInfo.STUDENT_NOT_PERMITTED) {
+        backBtn.setVisibility(View.GONE);
+        if (!userInfo.isPermitted() && !userInfo.isProfileCompleted()) {
             updateProfileBtn.setEnabled(true);
+            profileHelperTv.setText("Complete all the fields and request for permission");
             updateProfileBtn.setText("Request Permission");
             updateProfileBtn.setBackground(ContextCompat.getDrawable(ProfileActivity.this, R.drawable.custom_button));
 
-        } else if (userInfo.getIsStudentPermitted() == UserInfo.PERMISSION_PENDING) {
+        } else if (!userInfo.isPermitted() && userInfo.isProfileCompleted()) {
             permissionPending();
-        } else if (userInfo.getIsStudentPermitted() == UserInfo.STUDENT_PERMITTED) {
+        } else if (userInfo.isPermitted()) {
             permitted();
         }
         userName = userInfo.getUserName();
@@ -252,12 +254,15 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         updateProfileBtn.setText("Update Profile");
         idAvailibilityTv.setText("ID Confirmed");
         idChooserBtn.setVisibility(View.GONE);
+        profileHelperTv.setVisibility(View.GONE);
+        backBtn.setVisibility(View.VISIBLE);
         updateProfileBtn.setBackground(ContextCompat.getDrawable(ProfileActivity.this, R.drawable.custom_button));
     }
 
     private void permissionPending() {
         updateProfileBtn.setEnabled(false);
         idChooserBtn.setVisibility(View.GONE);
+        profileHelperTv.setText("Please wait, this may take upto 48 hours");
         idAvailibilityTv.setText(" ID will be checked manually");
         updateProfileBtn.setText("your request is being proceed...");
         updateProfileBtn.setBackground(ContextCompat.getDrawable(ProfileActivity.this, R.drawable.custom_button));
