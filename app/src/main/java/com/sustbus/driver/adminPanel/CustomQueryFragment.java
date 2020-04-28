@@ -37,6 +37,7 @@ public class CustomQueryFragment extends Fragment implements CustomQueryRecycler
     CustomQueryRecyclerAdapter recyclerAdapter;
     Button searchBtn;
     String ascDesc,from,to;
+    Query.Direction qd;
     boolean permission,driver;
     TextView fromTv,toTv;
     @Nullable
@@ -65,24 +66,24 @@ public class CustomQueryFragment extends Fragment implements CustomQueryRecycler
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "onClick: searchPressed");
-                from = fromTv.getText().toString();
-                to = toTv.getText().toString();
-                if(from.length()==0)from = "0";
-                if(to.length() == 0 )to = "9999999999";
-                  initRecyclerView(FirebaseAuth.getInstance().getCurrentUser());
+                from = fromTv.getText().toString().trim();
+                to = toTv.getText().toString().trim();
+                while(from.length() < 10) from = from + '0';
+                while(to.length() < 10) to = to + '9';
+                initRecyclerView(FirebaseAuth.getInstance().getCurrentUser());
             }
         });
 
     }
 
     private void initRecyclerView(FirebaseUser currentUser) {
-        Log.d(TAG, "initRecyclerView: ");
         Query query = FirebaseFirestore.getInstance()
                 .collection("users")
+                .orderBy("regiNo",qd)
+                .whereGreaterThanOrEqualTo("regiNo",from)
+                .whereLessThanOrEqualTo("regiNo",to)
                 .whereEqualTo("driver",driver)
                 .whereEqualTo("isStudentPermitted",permission?1:0);
-
-
         FirestoreRecyclerOptions<UserInfo> options = new FirestoreRecyclerOptions.Builder<UserInfo>()
                 .setQuery(query,UserInfo.class)
                 .build();
@@ -108,15 +109,15 @@ public class CustomQueryFragment extends Fragment implements CustomQueryRecycler
         ascDescSp.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Log.d(TAG, "onItemSelected: " + position);
                 if(position == 0 ){
                     searchBtn.setEnabled(false);
-                } else {
+                } else if(position == 1) {
                     searchBtn.setEnabled(true);
+                    qd = Query.Direction.ASCENDING;
+                }else if(position == 2){
+                    searchBtn.setEnabled(true);
+                    qd = Query.Direction.DESCENDING;
                 }
-
-                // TODO: sort the data
-
             }
 
             @Override
@@ -184,12 +185,6 @@ public class CustomQueryFragment extends Fragment implements CustomQueryRecycler
                 searchBtn.setEnabled(false);
             }
         });
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        Log.d(TAG, "onStart: ");
     }
 
     @Override
