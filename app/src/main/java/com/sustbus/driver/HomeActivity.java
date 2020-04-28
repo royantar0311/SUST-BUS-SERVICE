@@ -28,14 +28,12 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -45,6 +43,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.here.sdk.core.GeoCoordinates;
 import com.sustbus.driver.util.MapUtil;
+import com.sustbus.driver.util.NotificationSender;
 import com.sustbus.driver.util.PermissionsRequestor;
 import com.sustbus.driver.util.ResultListener;
 import com.sustbus.driver.util.UserInfo;
@@ -84,7 +83,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private int determineCallCount;
     private GeoCoordinates previousPosition;
     private Location ridersPreviousLocation = null;
-
+    private NotificationSender notificationSender;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,8 +114,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         userInfo = UserInfo.getInstance();
         mAuth = FirebaseAuth.getInstance();
         mapUtil = MapUtil.getInstance();
-
-        FirebaseMessaging.getInstance().subscribeToTopic("test");
 
     }
 
@@ -190,6 +187,15 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             shareRideTv.setEnabled(false);
         }
 
+
+        if(getIntent().getStringExtra("markerKey")!=null){
+
+            Intent intent=new Intent(HomeActivity.this,MapsActivity.class);
+            intent.putExtra("fromSchedule",true);
+            intent.putExtra("markerToShow",getIntent().getStringExtra("markerKey"));
+            startActivity(intent);
+        }
+
     }
 
     @Override
@@ -243,6 +249,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         MapUtil.rideShareStatus = true;
         isRideShareOn = true;
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.end_ride));
+        notificationSender=new NotificationSender(this,userUid);
 
         locationListener = new LocationListener() {
 
@@ -341,6 +348,12 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         GeoCoordinates toCheck = MapUtil.GeoCoordinatesMap.get(pathString.get(0));
 
         if (newLatLng.distanceTo(toCheck) <= 100) {
+            GeoCoordinates campus=MapUtil.GeoCoordinatesMap.get(MapUtil.CAMPUS);
+            if(toCheck.distanceTo(campus)>newLatLng.distanceTo(campus)){
+                notificationSender.send(pathString.get(0),"away");
+            }
+            else notificationSender.send(pathString.get(0),"towards");
+
             pathString.remove(0);
             updatePath();
         }
@@ -365,6 +378,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void turnOffRideShare() {
+        notificationSender.destroy();
+        notificationSender=null;
         MapUtil.rideShareStatus = isRideShareOn = false;
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.start_ride));
         locationManager.removeUpdates(locationListener);
@@ -396,7 +411,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 else turnOffRideShare();
             } else {
-                Snackbar.make(findViewById(R.id.home_scrollview), "You're not a Driver!", Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(findViewById(R.id.ride_on_cv), "You're not a Driver!", Snackbar.LENGTH_SHORT).show();
             }
         } else if (i == R.id.help_center_cv) {
             FirebaseAuth.getInstance().signOut();

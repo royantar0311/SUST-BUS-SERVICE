@@ -7,11 +7,15 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.joda.time.DateTimeUtils;
+import org.joda.time.format.DateTimeFormat;
 import org.json.JSONObject;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,22 +33,30 @@ public class NotificationSender {
         requestQueue= Volley.newRequestQueue(context.getApplicationContext());
     }
 
-    public void send(String topic,String mes){
+    public void send(String passingThrough,String awayOrTowards){
 
 
         JSONObject notification=new JSONObject();
         JSONObject notificationBody=new JSONObject();
         JSONObject data=new JSONObject();
+        String body="Hello";
+        if(awayOrTowards.equals("away")){
+            body="Going away from Campus";
+        }
+        else body="Coming towards Campus";
 
         try{
             data.put("markerKey",userId);
-            notificationBody.put("title", "Bus Passed");
-            notificationBody.put("body", mes);
 
-            notification.put("to", "/topics/"+topic);
-           // notification.put("notification", notificationBody);
+
+
+
+            notificationBody.put("title", "Bus Passed "+passingThrough);
+            notificationBody.put("body", body+" at "+DateTimeFormat.shortTime().print(DateTimeUtils.currentTimeMillis()));
+
+            notification.put("to", "/topics/"+MapUtil.removeSpace(passingThrough)+awayOrTowards);
+            notification.put("notification", notificationBody);
             notification.put("data", data);
-
 
         }
         catch (Exception e){
@@ -53,25 +65,29 @@ public class NotificationSender {
         }
 
 
-        StringRequest req=new StringRequest(Request.Method.POST, FCM_API, new Response.Listener<String>() {
+        StringRequest req=new StringRequest(Request.Method.POST, FCM_API, null, new Response.ErrorListener() {
             @Override
-            public void onResponse(String response) {
+            public void onErrorResponse(VolleyError error) {
 
             }
-           },null){
+        }){
+
 
             @Override
-            public String getBodyContentType() {
-                return "application/json; charset=utf-8";
+            public byte[] getBody() throws AuthFailureError {
+                try{
+                    return notification.toString().getBytes(StandardCharsets.UTF_8);
+                }
+                catch (Exception e){
+                    return null;
+                }
             }
 
-
             @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
+            public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String, String> params = new HashMap<>();
                 params.put("Authorization", "key="+serverKey);
                 params.put("Content-Type", contentType);
-                Log.d("DEBMES","called");
                 return params;
             }
         };

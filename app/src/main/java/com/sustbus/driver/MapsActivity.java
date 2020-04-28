@@ -182,7 +182,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         if(getIntent().getBooleanExtra("fromSchedule",false)){
 
-            new CountDownTimer(100000l,1000){
+            new CountDownTimer(60000,1000){
                 @Override
                 public void onFinish() {
 
