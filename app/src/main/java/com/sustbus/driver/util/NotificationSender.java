@@ -16,6 +16,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,28 +34,47 @@ public class NotificationSender {
         requestQueue= Volley.newRequestQueue(context.getApplicationContext());
     }
 
-    public void send(String passingThrough,String awayOrTowards){
+    public void send(String passingThrough,String awayOrTowards) {
 
 
-        JSONObject notification=new JSONObject();
-        JSONObject notificationBody=new JSONObject();
-        JSONObject data=new JSONObject();
-        String body="Hello";
-        if(awayOrTowards.equals("away")){
-            body="Going away from Campus";
+        String token1=MapUtil.removeSpace(passingThrough),token2=MapUtil.removeSpace(passingThrough);
+
+        String body = "Hello";
+        if (awayOrTowards.equals("away")) {
+            body = "Going away from Campus";
+            token1+=".away.";
+            token2+=".away.";
+        } else{
+            token1+=".towards.";
+            token2+=".towards.";
+            body = "Coming towards Campus";
         }
-        else body="Coming towards Campus";
+
+
+        token1+="00_00";
+        int hour=Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+
+        if(hour>=6 && hour<=9)token2+="06_09";
+        else if(hour>=9 && hour<=12)token2+="09_12";
+        else if(hour>=12 && hour<=15)token2+="12_15";
+        else if(hour>=15 && hour<=18)token2+="15_18";
+        else if(hour>=18 && hour<=22)token2+="18_22";
+
+         sendTo(passingThrough,body,token1);
+         sendTo(passingThrough,body,token2);
+    }
+    private void sendTo(String title ,String body,String token){
+
+        JSONObject notification = new JSONObject();
+        JSONObject notificationBody = new JSONObject();
+        JSONObject data = new JSONObject();
 
         try{
             data.put("markerKey",userId);
-
-
-
-
-            notificationBody.put("title", "Bus Passed "+passingThrough);
+            notificationBody.put("title", "Bus Passed "+title);
             notificationBody.put("body", body+" at "+DateTimeFormat.shortTime().print(DateTimeUtils.currentTimeMillis()));
 
-            notification.put("to", "/topics/"+MapUtil.removeSpace(passingThrough)+awayOrTowards);
+            notification.put("to", "/topics/"+token);
             notification.put("notification", notificationBody);
             notification.put("data", data);
 

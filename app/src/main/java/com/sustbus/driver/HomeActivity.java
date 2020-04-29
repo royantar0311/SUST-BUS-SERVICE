@@ -151,7 +151,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                     Log.w(TAG, "Listen failed.", e);
                     return;
                 }
-                if (documentSnapshot != null && documentSnapshot.exists()) {
+                if (documentSnapshot != null || documentSnapshot.exists()) {
                     UserInfo.setInstance(documentSnapshot.toObject(UserInfo.class));
                     userInfo = UserInfo.getInstance();
                     Log.d(TAG, userInfo.toString());
@@ -336,8 +336,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     public void handlePath(GeoCoordinates newLatLng) {
 
-        if (pathString.size() == 1) return;
-
         if (!pathOk) {
             determineCurrentLocation(newLatLng);
             return;
@@ -353,6 +351,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             }
             else notificationSender.send(pathString.get(0),"towards");
 
+            if(pathString.size()==1)return;
             pathString.remove(0);
             updatePath();
         }
