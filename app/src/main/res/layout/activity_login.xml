@@ -1,48 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_bus"
     tools:context=".LoginActivity">
+
 
     <TextView
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="0dp"
         android:fontFamily="@font/bungee_shade"
         android:text="BUS"
-        android:textColor="@color/ash_color"
-        android:textSize="34dp" />
+        android:textColor="@color/fui_bgGitHub"
+        android:textSize="34dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.06999999" />
 
     <TextView
         android:id="@+id/login_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="230dp"
+
+        android:layout_marginTop="44dp"
         android:fontFamily="@font/amiko_bold"
         android:text="Login"
         android:textColor="@color/dark_red"
-
-        android:textSize="30dp" />
+        android:textSize="30dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/title" />
 
     <studio.carbonylgroup.textfieldboxes.TextFieldBoxes
         android:id="@+id/username_tf"
         android:layout_width="266dp"
         android:layout_height="wrap_content"
         android:layout_below="@+id/login_tv"
-        android:layout_marginLeft="50dp"
-        android:layout_marginTop="20dp"
 
+        android:layout_marginTop="32dp"
         android:background="@drawable/edit_round"
         app:hasClearButton="true"
         app:helperText="enter email here"
         app:iconSignifier="@drawable/ic_account_circle_black_24dp"
         app:labelText="Email"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.42"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/login_tv"
         app:manualValidateError="true"
         app:maxCharacters="16"
         app:minCharacters="4"
@@ -58,24 +70,23 @@
             tools:layout_editor_absoluteY="206dp" />
     </studio.carbonylgroup.textfieldboxes.TextFieldBoxes>
 
-
     <studio.carbonylgroup.textfieldboxes.TextFieldBoxes
         android:id="@+id/password_tf"
         android:layout_width="266dp"
         android:layout_height="wrap_content"
         android:layout_below="@id/username_tf"
-        android:layout_marginLeft="50dp"
-        android:layout_marginTop="20dp"
+
+
+        android:layout_marginTop="16dp"
         android:background="@drawable/edit_round"
-
-
         app:hasClearButton="true"
         app:helperText="choose a password"
+
         app:iconSignifier="@drawable/ic_vpn_key_black_24dp"
         app:labelText="Password"
-        app:primaryColor="@color/A400red"
-
-        >
+        app:layout_constraintStart_toStartOf="@+id/username_tf"
+        app:layout_constraintTop_toBottomOf="@+id/username_tf"
+        app:primaryColor="@color/A400red">
 
         <studio.carbonylgroup.textfieldboxes.ExtendedEditText
 
@@ -94,12 +105,14 @@
         android:id="@+id/login_btn"
         android:layout_width="226dp"
         android:layout_height="48dp"
-        android:layout_below="@id/password_tf"
-        android:layout_marginLeft="92dp"
-        android:layout_marginTop="20dp"
 
+        android:layout_marginBottom="116dp"
         android:background="@drawable/custom_button"
-        android:text="login" />
+        android:text="login"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/sign_up_tv"
@@ -107,8 +120,26 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/login_btn"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="15dp"
-        android:text="don't have an account? \n           register here" />
+        android:layout_marginTop="16dp"
+        android:text="don't have an account? \n           register here"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/login_btn" />
+
+    <TextView
+        android:id="@+id/forgot_password_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="forgot password?"
+        android:textColor="@color/A400red"
+        app:layout_constraintBottom_toTopOf="@+id/login_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/password_tf"
+        app:layout_constraintVertical_bias="0.83" />
 
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

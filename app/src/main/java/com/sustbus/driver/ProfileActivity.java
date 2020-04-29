@@ -1,13 +1,20 @@
 package com.sustbus.driver;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.util.Patterns;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,7 +25,12 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
@@ -26,9 +38,12 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.sustbus.driver.util.UserInfo;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+
+import org.w3c.dom.Text;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -46,6 +61,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     private Button updateProfileBtn;
     private Button idChooserBtn;
     private TextView profileHelperTv;
+    private TextView changePasswordTv;
     private ImageButton backBtn;
     private EditText userNameEt;
     private EditText regiNoEt;
@@ -58,7 +74,6 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     private boolean userNameOk;
     private boolean regiNoOk;
     private DocumentReference db;
-    private byte[] dpBytes,idBytes;
     private Uri dpFilePath = null, idFilePath = null;
     private ProgressDialog progressDialog;
 
@@ -76,6 +91,8 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         idChooserBtn = findViewById(R.id.profile_id_chooser_btn);
         idAvailibilityTv = findViewById(R.id.profile_id_availability);
         profileHelperTv = findViewById(R.id.profile_helper_tv);
+        changePasswordTv = findViewById(R.id.profile_change_password_tv);
+        backBtn = findViewById(R.id.profile_back_btn);
 
         userInfo = UserInfo.getInstance();
         Log.d(TAG, "onCreate: " + userInfo.toString());
@@ -100,13 +117,76 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             }
         });
 
-        backBtn = findViewById(R.id.profile_back_btn);
-
         updateProfileBtn.setOnClickListener(this);
-
+        changePasswordTv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                initChangePasswordAD();
+            }
+        });
 
         progressDialog = new ProgressDialog(this);
         loadImage();
+    }
+
+    private void initChangePasswordAD() {
+        LayoutInflater inflater = getLayoutInflater();
+
+        View view = inflater.inflate(R.layout.forgot_password_alertdialog,null);
+        new AlertDialog.Builder(ProfileActivity.this)
+                .setTitle("Change Password")
+                .setView(view)
+                .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        EditText currentPasswordEt,newPasswordEt,confirmPasswordEt;
+                        currentPasswordEt = view.findViewById(R.id.change_pass_ad_current_password);
+                        newPasswordEt = view.findViewById(R.id.change_pass_ad_new_password);
+                        confirmPasswordEt = view.findViewById(R.id.change_pass_ad_confirm_password);
+                        String currentPass = currentPasswordEt.getText().toString().trim();
+                        FirebaseAuth.getInstance().getCurrentUser()
+                                .reauthenticate(EmailAuthProvider.getCredential(userInfo.getEmail(),currentPass))
+                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        Log.d(TAG, "onComplete: asche");
+                                        if(task.isSuccessful()){
+                                            if(newPasswordEt.getText().toString().equals(confirmPasswordEt.getText().toString())){
+                                                FirebaseAuth.getInstance().getCurrentUser().updatePassword(newPasswordEt.getText().toString())
+                                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<Void> task) {
+                                                            if(task.isSuccessful()){
+                                                                Toast.makeText(ProfileActivity.this,
+                                                                        "Password Changed\nPlease Log in again",
+                                                                        Toast.LENGTH_SHORT).show();
+                                                                FirebaseAuth.getInstance().signOut();
+                                                                Intent intent = new Intent(ProfileActivity.this,LoginActivity.class);
+                                                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                                startActivity(intent);
+                                                                finish();
+                                                            }
+                                                            else {
+                                                                Toast.makeText(ProfileActivity.this,
+                                                                        task.getException().getMessage(),
+                                                                        Toast.LENGTH_SHORT).show();
+                                                            }
+                                                        }
+                                                    });
+                                            }
+                                            else {
+                                                Toast.makeText(ProfileActivity.this,"passwords do not match",Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                        else {
+                                            Toast.makeText(ProfileActivity.this,task.getException().getMessage(),Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+                                });
+                    }
+                })
+                .setNegativeButton("cancel", null)
+                .show();
     }
 
     private void loadImage() {
@@ -125,12 +205,10 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         if (theNewText.length() < 4) {
             userNameTf.setHelperText("must contain 6 letters at least");
             userNameTf.setHelperTextColor(ContextCompat.getColor(com.sustbus.driver.ProfileActivity.this, R.color.A400red));
-            userNameTf.setCounterTextColor(ContextCompat.getColor(ProfileActivity.this, R.color.A400red));
             userNameTf.setPrimaryColor(ContextCompat.getColor(ProfileActivity.this, R.color.A400red));
             userNameOk = false;
         } else {
             userNameTf.setHelperText(" ");
-            userNameTf.setCounterTextColor(ContextCompat.getColor(ProfileActivity.this, R.color.sust));
             userNameTf.setPrimaryColor(ContextCompat.getColor(ProfileActivity.this, R.color.sust));
             userNameOk = true;
         }
@@ -141,12 +219,10 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         if (theNewText.length() != 10) {
             regiNoTf.setHelperText("registration number must contain 10 numbers");
             regiNoTf.setHelperTextColor(ContextCompat.getColor(ProfileActivity.this, R.color.A400red));
-            regiNoTf.setCounterTextColor(ContextCompat.getColor(ProfileActivity.this, R.color.A400red));
             regiNoTf.setPrimaryColor(ContextCompat.getColor(ProfileActivity.this, R.color.A400red));
             regiNoOk = false;
         } else {
             regiNoTf.setHelperText("");
-            regiNoTf.setCounterTextColor(ContextCompat.getColor(ProfileActivity.this, R.color.sust));
             regiNoTf.setPrimaryColor(ContextCompat.getColor(ProfileActivity.this, R.color.sust));
             regiNoOk = true;
         }
@@ -202,11 +278,11 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                             permissionPending();
                             userInfo.setProfileCompleted(true);
                             db.update(userInfo.toMap());
-
+                            Toast.makeText(ProfileActivity.this, "Requesting permission", Toast.LENGTH_SHORT).show();
                         } else if (userInfo.isPermitted()) {
                             permitted();
+                            Toast.makeText(ProfileActivity.this, "Profile Updated Successfully", Toast.LENGTH_SHORT).show();
                         }
-                        Toast.makeText(ProfileActivity.this, "Profile Updated Successfully", Toast.LENGTH_SHORT).show();
                     }
                 });
     }

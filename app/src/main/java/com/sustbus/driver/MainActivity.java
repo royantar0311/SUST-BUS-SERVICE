@@ -36,7 +36,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextFieldBoxes userNameEt;
     private TextFieldBoxes emailEt;
     private TextFieldBoxes passwordEt;
-    private String userName;
     private String email;
     private String password;
     private FirebaseAuth mAuth;
@@ -58,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         studentCb = findViewById(R.id.main_student_cb);
 
         progressDialog = new ProgressDialog(this);
+
 
         emailEt.setSimpleTextChangeWatcher(new SimpleTextChangedWatcher() {
             @Override
@@ -169,7 +169,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void emailIdValidator(String theNewText) {
         if (Patterns.EMAIL_ADDRESS.matcher(theNewText).matches()) {
             emailEt.setHelperText(" ");
-            emailEt.setCounterTextColor(ContextCompat.getColor(MainActivity.this, R.color.sust));
             emailEt.setPrimaryColor(ContextCompat.getColor(MainActivity.this, R.color.sust));
             email = theNewText;
             emailOk = true;
@@ -177,52 +176,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else {
             emailEt.setHelperText("please enter a valid email adress");
             emailEt.setHelperTextColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
-            emailEt.setCounterTextColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
             emailEt.setPrimaryColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
             emailOk = false;
         }
     }
 
-//    private void userNameValidator(String theNewText) {
-//        if (theNewText.length() < 4) {
-//
-//            userNameEt.setHelperText("user name must contain 6 letters at least");
-//            userNameEt.setHelperTextColor(ContextCompat.getColor(com.sustbus.driver.MainActivity.this, R.color.A400red));
-//            userNameEt.setCounterTextColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
-//            userNameEt.setPrimaryColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
-//            userNameOk = false;
-//        } else if (theNewText.contains(".") ||
-//                theNewText.contains("$") ||
-//                theNewText.contains("[") ||
-//                theNewText.contains("]") ||
-//                theNewText.contains("#") ||
-//                theNewText.contains("/")) {
-//
-//            userNameEt.setHelperText("\".$[]#/\" are not allowed");
-//            userNameEt.setHelperTextColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
-//            userNameEt.setCounterTextColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
-//            userNameEt.setPrimaryColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
-//            userNameOk = false;
-//
-//        } else {
-//            userNameEt.setHelperText(" ");
-//            userNameEt.setCounterTextColor(ContextCompat.getColor(MainActivity.this, R.color.sust));
-//            userNameEt.setPrimaryColor(ContextCompat.getColor(MainActivity.this, R.color.sust));
-//            userName = theNewText;
-//            userNameOk = true;
-//        }
-//    }
-
     private void passwordValidator(String theNewText) {
         if (theNewText.length() < 6) {
             passwordEt.setHelperText("user name must contain 6 letters at least");
             passwordEt.setHelperTextColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
-            passwordEt.setCounterTextColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
             passwordEt.setPrimaryColor(ContextCompat.getColor(MainActivity.this, R.color.A400red));
             passwordOk = false;
         } else {
             passwordEt.setHelperText(" ");
-            passwordEt.setCounterTextColor(ContextCompat.getColor(MainActivity.this, R.color.sust));
             passwordEt.setPrimaryColor(ContextCompat.getColor(MainActivity.this, R.color.sust));
             password = theNewText;
             passwordOk = true;
