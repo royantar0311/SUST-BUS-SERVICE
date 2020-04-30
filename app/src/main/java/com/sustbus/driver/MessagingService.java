@@ -5,6 +5,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
@@ -12,6 +13,9 @@ import android.os.Build;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
@@ -27,8 +31,14 @@ public class MessagingService extends FirebaseMessagingService {
     @Override
     public void onNewToken(@NonNull String s) {
         super.onNewToken(s);
-
         FirebaseMessaging.getInstance().subscribeToTopic("test");
+
+        SharedPreferences pref=getSharedPreferences("NOTIFICATIONS",MODE_PRIVATE);
+        Set<String> st=pref.getStringSet("tokenSet",new HashSet<>());
+
+        for(String tmp:st){
+            FirebaseMessaging.getInstance().subscribeToTopic(tmp);
+        }
     }
 
     private void sendNotification(RemoteMessage message) {

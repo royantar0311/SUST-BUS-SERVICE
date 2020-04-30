@@ -17,6 +17,7 @@ import com.here.sdk.core.GeoBox;
 import com.here.sdk.core.GeoCoordinates;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,7 @@ public class MapUtil {
     public static Map<String, GeoCoordinates> GeoCoordinatesMap = new HashMap<>();
     public static List<GeoBox> restrictionList = new ArrayList<>();
     public static MapUtil mapUtil = new MapUtil();
+    public static List<String> placeList;
 
     static {
         GeoCoordinatesMap.put(CAMPUS_GATE, new GeoCoordinates(24.911103, 91.832213));
@@ -63,12 +65,15 @@ public class MapUtil {
         GeoCoordinatesMap.put(LAKKATURA, new GeoCoordinates(24.925066, 91.871258));
 
         restrictionList.add(new GeoBox(new GeoCoordinates(24.921759, 91.82511), new GeoCoordinates(24.925740, 91.83950)));
+        placeList= Arrays.asList(CAMPUS_GATE,AMBORKHANA,MODINA_MARKET,SUBID_BAZAR,RIKABI_BAZAR,EIDGAH,KUMARPARA,TILAGOR,NAIORPUL,CHOWHATTA,LAKKATURA
+                                ,BALUCHAR);
     }
 
     public static String removeSpace(String s){
         String z= "";
         for(int i=0;i<s.length();i++){
             if(s.charAt(i)!=' ')z+=s.charAt(i);
+            else z+='_';
         }
         return z;
     }
