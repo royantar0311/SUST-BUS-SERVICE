@@ -131,8 +131,10 @@
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/profile_id_chooser_btn" />
+        app:layout_constraintTop_toBottomOf="@+id/profile_change_password_tv"
+        app:layout_constraintVertical_bias="0.708" />
 
     <Button
         android:id="@+id/profile_id_chooser_btn"
@@ -157,7 +159,18 @@
         android:textColor="@color/A400red"
         app:layout_constraintBottom_toTopOf="@+id/update_profile_btn"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.529"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/profile_change_password_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="change password here"
+        android:textColor="#100606"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/profile_id_chooser_btn" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -40,6 +40,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.here.sdk.core.GeoCoordinates;
 import com.sustbus.driver.util.MapUtil;
 import com.sustbus.driver.util.NotificationSender;
@@ -109,7 +110,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         signOut.setOnClickListener(this);
         FirebaseAuth.getInstance().addAuthStateListener(this);
 
-        shareRideTv.setEnabled(false);
+        //shareRideTv.setEnabled(false);
         userInfo = UserInfo.getInstance();
         mAuth = FirebaseAuth.getInstance();
         mapUtil = MapUtil.getInstance();
@@ -180,10 +181,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         if (userInfo.isDriver()) {
             Log.d(TAG, "onEvent: " + " ashena?");
             driverOrStudent.setText("Driver");
-            shareRideTv.setEnabled(true);
         } else {
             driverOrStudent.setText("Student");
-            shareRideTv.setEnabled(false);
         }
 
 
@@ -393,7 +392,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         int i = view.getId();
 
         if (i == R.id.ride_on_cv) {
-
             if (userInfo.isDriver()) {
                 if (!isRideShareOn){
                     boolean isGps = false;
