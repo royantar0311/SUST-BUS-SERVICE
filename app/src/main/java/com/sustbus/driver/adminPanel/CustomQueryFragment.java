@@ -1,4 +1,6 @@
 package com.sustbus.driver.adminPanel;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -7,7 +9,10 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -16,9 +21,13 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -29,7 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class CustomQueryFragment extends Fragment implements CustomQueryRecyclerAdapter.CheckChangedListener {
+public class CustomQueryFragment extends Fragment implements CheckChangedListener {
     private static final String TAG = "CustomQueryFragment";
     View view;
     Spinner driverSp,permissionSp,ascDescSp;
@@ -194,5 +203,59 @@ public class CustomQueryFragment extends Fragment implements CustomQueryRecycler
     @Override
     public void onSwitchStateChanged(boolean isChecked, DocumentSnapshot snapshot) {
         snapshot.getReference().update("permitted",isChecked);
+    }
+    @Override
+    public void onItemClicked(String uId) {
+        Log.d(TAG, "onItemClicked: " + uId);
+        LayoutInflater inflater = getLayoutInflater();
+        View view = inflater.inflate(R.layout.user_info_alertdialog,null);
+        EditText emailEt,userNameEt,regiNoEt;
+        TextView driverTv;
+        ImageView userEv;
+        Switch permittedSwitch,profileCompletedSwitch;
+        emailEt = view.findViewById(R.id.ad_email_et);
+        userNameEt = view.findViewById(R.id.ad_username_et);
+        regiNoEt = view.findViewById(R.id.ad_regino_et);
+        userEv = view.findViewById(R.id.ad_user_id_image_ev);
+        driverTv = view.findViewById(R.id.ad_driver_tv);
+        permittedSwitch = view.findViewById(R.id.ad_permitted_switch);
+        profileCompletedSwitch = view.findViewById(R.id.ad_profile_completed_switch);
+        DocumentReference documentReference = FirebaseFirestore.getInstance().collection("users")
+                .document(uId);
+        documentReference.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot snapshot) {
+                emailEt.setText(snapshot.getString("email"));
+                userNameEt.setText(snapshot.getString("userName"));
+                regiNoEt.setText(snapshot.getString("regiNo"));
+                permittedSwitch.setChecked(snapshot.getBoolean("permitted"));
+                profileCompletedSwitch.setChecked(snapshot.getBoolean("profileCompleted"));
+                driverTv.setText(snapshot.getBoolean("driver")?"Driver":"Student");
+                Glide.with(getContext())
+                        .load(snapshot.getString("idUrl"))
+                        .apply(new RequestOptions().override(200,200))
+                        .into(userEv);
+            }
+        });
+        new AlertDialog.Builder(getContext())
+                .setTitle("Change or Validate")
+                .setView(view)
+                .setPositiveButton("save", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String email,userName,regiNo;
+                        email = emailEt.getText().toString().trim();
+                        userName = userNameEt.getText().toString().trim();
+                        regiNo = regiNoEt.getText().toString().trim();
+                        Log.d(TAG, "onClick: " + email + " " + regiNo);
+                        documentReference.update("email",email);
+                        documentReference.update("userName",userName);
+                        documentReference.update("regiNo",regiNo);
+                        documentReference.update("permitted",permittedSwitch.isChecked());
+                        documentReference.update("profileCompleted",profileCompletedSwitch.isChecked());
+                    }
+                })
+                .setNegativeButton("cancel",null)
+                .show();
     }
 }

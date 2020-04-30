@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Base64;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
@@ -203,6 +205,9 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                     .apply(new RequestOptions().placeholder(R.drawable.loading))
                     .into(dpEv);
         }
+//        String img=userInfo.getIdUrl();
+//        byte[] imageAsBytes = Base64.decode(img.getBytes(), Base64.DEFAULT);
+//        dpEv.setImageBitmap(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
     }
 
 
@@ -373,6 +378,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     protected void onDestroy() {
         Log.d(TAG, "onDestroy: ");
+
         super.onDestroy();
     }
 
@@ -435,6 +441,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             super.onPostExecute(bytes);
             Log.d(TAG, "onPostExecute: done " + bytes.length);
             UploadTask uploadTask = storageReference.putBytes(bytes);
+
             uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
@@ -443,9 +450,13 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                         @Override
                         public void onSuccess(Uri uri) {
                             Log.d(TAG, "onSuccess: " + message + " upload Successful");
+                            //String encodedImage = Base64.encodeToString(bytes, Base64.NO_WRAP);
+                           // Log.d(TAG, "onSuccess: " + encodedImage);
                             if(message.equals("dp"))userInfo.setUrl(uri.toString());
                             else if(message.equals("id"))userInfo.setIdUrl(uri.toString());
                             db.update(userInfo.toMap());
+                            //Log.d(TAG, "onSuccess: " + userInfo.getIdUrl());
+
                         }
                     });
                 }

@@ -59,9 +59,14 @@ public class CustomQueryRecyclerAdapter extends FirestoreRecyclerAdapter<UserInf
                     checkChangedListener.onSwitchStateChanged(isChecked,getSnapshots().getSnapshot(getAdapterPosition()));
                 }
             });
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG, "onClick: ");
+                    checkChangedListener.onItemClicked(getSnapshots().getSnapshot(getAdapterPosition()).getString("uId"));
+                }
+            });
         }
     }
-    interface CheckChangedListener{
-        public void onSwitchStateChanged(boolean isChecked, DocumentSnapshot snapshot);
-    }
+
 }

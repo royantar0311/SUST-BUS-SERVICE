@@ -51,6 +51,14 @@ public class StudentsRecyclerAdapter extends FirestoreRecyclerAdapter<UserInfo,S
             regino = itemView.findViewById(R.id.row_item_regino_tv);
             aSwitch = itemView.findViewById(R.id.row_item_is_permitted_switch);
 
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG, "onClick: ");
+                    checkChangedListener.onItemClicked(getSnapshots().getSnapshot(getAdapterPosition()).getString("uId"));
+                }
+            });
+
             aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -60,7 +68,5 @@ public class StudentsRecyclerAdapter extends FirestoreRecyclerAdapter<UserInfo,S
             });
         }
     }
-    interface  CheckChangedListener{
-        public void onSwitchStateChanged(boolean isChecked, DocumentSnapshot snapshot);
-    }
+
 }
