@@ -14,7 +14,6 @@ public class UserInfo {
     public static final boolean PERMITTED = true;
     public static final boolean NOT_PERMITTED = false;
     public static final int PERMISSION_PENDING = -1;
-    public static boolean downNeeded = false;
     public static Builder builder = new Builder();
     private static UserInfo instance = new UserInfo();
     private String email;
@@ -27,6 +26,7 @@ public class UserInfo {
     private String uId;
     private String regiNo;
     private String url;
+    private String idUrl;
 
     public UserInfo() {
     }
@@ -69,6 +69,17 @@ public class UserInfo {
     * Creating a map of all the data to push to the database
     */
 
+    public void reset(){
+        email = null;
+        userName = null;
+        uId = null;
+        regiNo = null;
+        profileCompleted = false;
+        idUrl = null;
+        permitted = false;
+        driver = false;
+        url = null;
+    }
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("email", email);
@@ -79,6 +90,7 @@ public class UserInfo {
         map.put("uId", uId);
         map.put("regiNo", regiNo);
         map.put("url", url);
+        map.put("idUrl", idUrl);
         return map;
     }
 
@@ -90,6 +102,7 @@ public class UserInfo {
                 + "\nisProfileCompleted " + instance.isProfileCompleted()
                 + "\nemail " + instance.getEmail()
                 + "\nurl " + instance.getUrl()
+                + "\niDurl " + instance.getIdUrl()
                 + "\nregiNO " + instance.regiNo
                 + "\nuserName " + instance.userName;
     }
@@ -153,6 +166,14 @@ public class UserInfo {
     public void setLatLng(double lat, double lang){
         this.lat = lat;
         this.lang = lang;
+    }
+
+    public String getIdUrl() {
+        return idUrl;
+    }
+
+    public void setIdUrl(String idUrl) {
+        this.idUrl = idUrl;
     }
 
     public boolean isProfileCompleted() {

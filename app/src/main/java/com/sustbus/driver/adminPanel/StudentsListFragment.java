@@ -66,6 +66,6 @@ public class StudentsListFragment extends Fragment implements StudentsRecyclerAd
 
     @Override
     public void onSwitchStateChanged(boolean isChecked, DocumentSnapshot snapshot) {
-        snapshot.getReference().update("isStudentPermitted",isChecked?1:0);
+        snapshot.getReference().update("permitted",isChecked);
     }
 }

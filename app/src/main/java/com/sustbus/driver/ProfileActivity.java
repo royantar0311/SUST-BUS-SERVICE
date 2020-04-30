@@ -32,7 +32,11 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -57,23 +61,24 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     private static final int REQUESTING_DP = 1001;
     private static final int REQUESTING_ID = 1002;
 
-    private UserInfo userInfo;
+    UserInfo userInfo;
     private Button updateProfileBtn;
     private Button idChooserBtn;
+    private TextFieldBoxes userNameTf;
+    private TextFieldBoxes regiNoTf;
     private TextView profileHelperTv;
+    private TextView idAvailibilityTv;
     private TextView changePasswordTv;
     private ImageButton backBtn;
     private EditText userNameEt;
     private EditText regiNoEt;
-    private TextView idAvailibilityTv;
     private StorageReference storageReference;
     private CircleImageView dpEv;
-    private TextFieldBoxes userNameTf;
-    private TextFieldBoxes regiNoTf;
     private String userName = null, regiNo = null;
     private boolean userNameOk;
     private boolean regiNoOk;
     private DocumentReference db;
+    private ListenerRegistration listener;
     private Uri dpFilePath = null, idFilePath = null;
     private ProgressDialog progressDialog;
 
@@ -117,6 +122,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             }
         });
 
+
         updateProfileBtn.setOnClickListener(this);
         changePasswordTv.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -126,7 +132,6 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         });
 
         progressDialog = new ProgressDialog(this);
-        loadImage();
     }
 
     private void initChangePasswordAD() {
@@ -160,6 +165,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                                                                 Toast.makeText(ProfileActivity.this,
                                                                         "Password Changed\nPlease Log in again",
                                                                         Toast.LENGTH_SHORT).show();
+                                                                userInfo.reset();
                                                                 FirebaseAuth.getInstance().signOut();
                                                                 Intent intent = new Intent(ProfileActivity.this,LoginActivity.class);
                                                                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -236,24 +242,16 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             progressDialog.setMessage("Updating Profile");
             progressDialog.setCancelable(false);
             progressDialog.show();
-            if (userNameOk && regiNoOk &&
-                    (idFilePath != null) == (!userInfo.isProfileCompleted())) {
+            if (userNameOk && regiNoOk) {
 
                 if (dpFilePath != null) {
-                    Log.d(TAG, "onClick: filepath not null, file upload initializing");
-                    BackgroundImageUpload backgroundImageUpload = new BackgroundImageUpload();
+                    Log.d(TAG, "onClick: dp upload init");
+                    BackgroundImageUpload backgroundImageUpload = new BackgroundImageUpload(storageReference.child("dp.jpg"),"dp");
                     backgroundImageUpload.execute(dpFilePath);
-                    Log.d(TAG, "onClick: here");
                 }
                 if (idFilePath != null) {
-                    storageReference.child("id.jpg").putFile(idFilePath);
-                    storageReference.child("id.jpg").getDownloadUrl()
-                            .addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                @Override
-                                public void onSuccess(Uri uri) {
-                                    Log.d(TAG, "onSuccess: id upload successful");
-                                }
-                            });
+                    BackgroundImageUpload backgroundImageUpload = new BackgroundImageUpload(storageReference.child("id.jpg"),"id");
+                    backgroundImageUpload.execute(idFilePath);
                 }
                 updateRestOfTheData();
             } else {
@@ -312,6 +310,28 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     protected void onStart() {
         super.onStart();
+
+        listener = db.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w(TAG, "Listen failed.", e);
+                    return;
+                }
+                if (snapshot != null && snapshot.exists()) {
+                    UserInfo.setInstance(snapshot.toObject(UserInfo.class));
+                    userInfo = UserInfo.getInstance();
+                    Log.d(TAG, userInfo.toString());
+                    loadImage();
+                    initUi();
+                } else {
+                    Log.d(TAG, "Current data: null");
+                }
+            }
+        });
+    }
+
+    private void initUi() {
         backBtn.setVisibility(View.GONE);
         if (!userInfo.isPermitted() && !userInfo.isProfileCompleted()) {
             updateProfileBtn.setEnabled(true);
@@ -329,6 +349,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         userNameEt.setText(userName);
         regiNoEt.setText(regiNo);
     }
+
 
     private void permitted() {
         updateProfileBtn.setEnabled(true);
@@ -381,15 +402,17 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     }
     public class BackgroundImageUpload extends AsyncTask<Uri, Integer, byte[]>{
         Bitmap bitmap;
-
+        String message;
+        StorageReference storageReference;
+        BackgroundImageUpload(StorageReference storageReference, String message){
+            this.storageReference = storageReference;
+            this.message = message;
+        }
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
             Log.d(TAG, "onPreExecute: ");
         }
-
-
-
         @Override
         protected byte[] doInBackground(Uri... uris) {
             Log.d(TAG, "doInBackground: started");
@@ -411,7 +434,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         protected void onPostExecute(byte[] bytes) {
             super.onPostExecute(bytes);
             Log.d(TAG, "onPostExecute: done " + bytes.length);
-            UploadTask uploadTask = storageReference.child("dp.jpg").putBytes(bytes);
+            UploadTask uploadTask = storageReference.putBytes(bytes);
             uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
@@ -419,8 +442,10 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                     taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
                         public void onSuccess(Uri uri) {
-                            UserInfo.downNeeded=true;
-                            userInfo.setUrl(uri.toString());
+                            Log.d(TAG, "onSuccess: " + message + " upload Successful");
+                            if(message.equals("dp"))userInfo.setUrl(uri.toString());
+                            else if(message.equals("id"))userInfo.setIdUrl(uri.toString());
+                            db.update(userInfo.toMap());
                         }
                     });
                 }

@@ -13,6 +13,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.sustbus.driver.R;
 import com.sustbus.driver.util.UserInfo;
 
@@ -54,14 +56,24 @@ public class DriversRecyclerAdapter extends FirestoreRecyclerAdapter<UserInfo, D
             regino = itemView.findViewById(R.id.row_item_regino_tv);
             aSwitch = itemView.findViewById(R.id.row_item_is_permitted_switch);
 
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG, "onClick: ");
+                    checkChangedListener.onItemClicked(getSnapshots().getSnapshot(getAdapterPosition()));
+                }
+            });
+
             aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    Log.d(TAG, "onCheckedChanged: " + isChecked);
+                    checkChangedListener.onSwitchStateChanged(isChecked, getSnapshots().getSnapshot(getAdapterPosition()));
                 }
             });
         }
     }
     interface  CheckChangedListener{
+        void onSwitchStateChanged(boolean isChecked,DocumentSnapshot snapshot );
+        void onItemClicked(DocumentSnapshot snapshot);
     }
 }

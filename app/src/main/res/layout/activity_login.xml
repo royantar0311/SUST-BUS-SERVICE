@@ -63,7 +63,7 @@
         <studio.carbonylgroup.textfieldboxes.ExtendedEditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-
+            android:singleLine="true"
             tools:layout_conversion_absoluteHeight="20dp"
             tools:layout_conversion_absoluteWidth="14dp"
             tools:layout_editor_absoluteX="100dp"
@@ -93,6 +93,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:inputType="textPassword"
+            android:singleLine="true"
             tools:layout_conversion_absoluteHeight="20dp"
             tools:layout_conversion_absoluteWidth="14dp"
             tools:layout_editor_absoluteX="100dp"
@@ -131,15 +132,16 @@
         android:id="@+id/forgot_password_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:layout_marginBottom="16dp"
         android:text="forgot password?"
         android:textColor="@color/A400red"
         app:layout_constraintBottom_toTopOf="@+id/login_btn"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/password_tf"
-        app:layout_constraintVertical_bias="0.83" />
+        app:layout_constraintVertical_bias="0.801" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

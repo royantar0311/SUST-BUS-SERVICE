@@ -131,7 +131,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Ascending/Descending"
+        android:text="Order"
         android:textColor="#020000"
         android:textSize="10dp"
         app:layout_constraintBottom_toTopOf="@+id/cq_asc_desc_spinner"

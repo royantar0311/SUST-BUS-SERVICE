@@ -83,7 +83,7 @@ public class CustomQueryFragment extends Fragment implements CustomQueryRecycler
                 .whereGreaterThanOrEqualTo("regiNo",from)
                 .whereLessThanOrEqualTo("regiNo",to)
                 .whereEqualTo("driver",driver)
-                .whereEqualTo("isPermitted",permission)
+                .whereEqualTo("permitted",permission)
                 .whereEqualTo("profileCompleted",true);
         FirestoreRecyclerOptions<UserInfo> options = new FirestoreRecyclerOptions.Builder<UserInfo>()
                 .setQuery(query,UserInfo.class)
@@ -94,16 +94,13 @@ public class CustomQueryFragment extends Fragment implements CustomQueryRecycler
         recyclerAdapter.startListening();
     }
 
-    @Override
-    public void onSwitchStateChanged(boolean isChecked, DocumentSnapshot snapshot) {
-        snapshot.getReference().update("isStudentPermitted",isChecked?1:0);
-    }
+
 
     private void initAscDescSp() {
         List<String> ascDescSpElements = new ArrayList<>();
         ascDescSpElements.add(0,"Select");
-        ascDescSpElements.add(1,"True");
-        ascDescSpElements.add(2,"False");
+        ascDescSpElements.add(1,"Ascending");
+        ascDescSpElements.add(2,"Descending");
         ArrayAdapter<String> adapter = new ArrayAdapter<>(Objects.requireNonNull(getContext()),android.R.layout.simple_spinner_item,ascDescSpElements);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         ascDescSp.setAdapter(adapter);
@@ -120,7 +117,6 @@ public class CustomQueryFragment extends Fragment implements CustomQueryRecycler
                     qd = Query.Direction.DESCENDING;
                 }
             }
-
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
                 searchBtn.setEnabled(false);
@@ -195,6 +191,8 @@ public class CustomQueryFragment extends Fragment implements CustomQueryRecycler
             recyclerAdapter.stopListening();
         }
     }
-
-
+    @Override
+    public void onSwitchStateChanged(boolean isChecked, DocumentSnapshot snapshot) {
+        snapshot.getReference().update("permitted",isChecked);
+    }
 }

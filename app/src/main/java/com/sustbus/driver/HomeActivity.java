@@ -32,16 +32,21 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.here.sdk.core.GeoCoordinates;
+import com.sustbus.driver.adminPanel.AdminPanelActivity;
 import com.sustbus.driver.util.MapUtil;
 import com.sustbus.driver.util.NotificationSender;
 import com.sustbus.driver.util.PermissionsRequestor;
@@ -67,9 +72,12 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private TextView userNameTv;
     private TextView driverOrStudent;
     private CardView shareRideTv;
+    private CardView adminPanelCv;
     private ImageView dpEv;
     private DatabaseReference databaseReference,userLocationData, userPathReference;
     private FirebaseFirestore db;
+    private ListenerRegistration listener;
+    private DocumentReference userDoc;
     private FirebaseAuth mAuth;
     private ImageView rideShareIndicatorIV;
     private boolean isRideShareOn = false;
@@ -93,6 +101,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         rideShareIndicatorIV = findViewById(R.id.ride_share_iv);
 
         CardView openMapBtn = findViewById(R.id.track_buses_cv);
+        adminPanelCv = findViewById(R.id.admin_panel_cv);
         shareRideTv = findViewById(R.id.ride_on_cv);
         CardView scheduleBtn = findViewById(R.id.bus_schedule_cv);
         userNameTv = findViewById(R.id.row_item_user_name_tv);
@@ -100,6 +109,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         CardView profileCv = findViewById(R.id.profile_cv);
         CardView signOut = findViewById(R.id.help_center_cv);
         dpEv = findViewById(R.id.home_user_image_ev);
+
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
         findViewById(R.id.home_notifications_tv).setOnClickListener(this);
@@ -109,8 +119,15 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         profileCv.setOnClickListener(this);
         signOut.setOnClickListener(this);
         FirebaseAuth.getInstance().addAuthStateListener(this);
+        adminPanelCv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(HomeActivity.this, AdminPanelActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+            }
+        });
 
-        //shareRideTv.setEnabled(false);
         userInfo = UserInfo.getInstance();
         mAuth = FirebaseAuth.getInstance();
         mapUtil = MapUtil.getInstance();
@@ -125,7 +142,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                             .diskCacheStrategy(DiskCacheStrategy.NONE))
                     .thumbnail(Glide.with(HomeActivity.this).load(R.drawable.loading))
                     .into(dpEv);
-            UserInfo.downNeeded = false;
         }
     }
 
@@ -137,6 +153,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         databaseReference = FirebaseDatabase.getInstance().getReference();
         userUid = mAuth.getCurrentUser().getUid();
         db = FirebaseFirestore.getInstance();
+        userDoc = FirebaseFirestore.getInstance().collection("users").document(userUid);
         userLocationData = databaseReference.child("alive").child(userUid);
         userPathReference = databaseReference.child("destinations").child(userUid).child("path");
         userLocationData.onDisconnect().setValue(null);
@@ -145,7 +162,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         /**
          * getting data from cloud firestore
          * */
-        db.collection("users").document(userUid).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+       listener = userDoc.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
                 if (e != null) {
@@ -158,6 +175,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                     Log.d(TAG, userInfo.toString());
                     dashboardSetup();
                     loadImage();
+                    Log.d(TAG, "onEvent: " + userInfo.toString());
                     if(!userInfo.isProfileCompleted() || !userInfo.isPermitted()){
                         Intent intent = new Intent(HomeActivity.this, ProfileActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -237,8 +255,18 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             finish();
         }
         else {
+            FirebaseFirestore.getInstance().collection("admin")
+                    .document(firebaseAuth.getCurrentUser().getUid())
+                    .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if(task.isSuccessful() && task.getResult().exists() && task.getResult().getBoolean("active")){
+                        adminPanelCv.setVisibility(View.VISIBLE);
+                    }
+                    else adminPanelCv.setVisibility(View.GONE);
+                }
+            });
             updateDatabase();
-            Log.d(TAG, "onAuthStateChanged: " + userInfo.toString());
         }
     }
 
@@ -411,6 +439,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 Snackbar.make(findViewById(R.id.ride_on_cv), "You're not a Driver!", Snackbar.LENGTH_SHORT).show();
             }
         } else if (i == R.id.help_center_cv) {
+            userInfo.reset();
             FirebaseAuth.getInstance().signOut();
             Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -476,6 +505,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         permissionsRequestor.onRequestPermissionsResult(requestCode, grantResults);
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause: ");
+    }
 
     @Override
     protected void onDestroy() {
@@ -484,6 +518,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         if (isRideShareOn) {
             turnOffRideShare();
         }
+        if(listener != null) listener.remove();
         FirebaseAuth.getInstance().removeAuthStateListener(this);
     }
 }
