@@ -198,16 +198,17 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void loadImage() {
-        if (userInfo != null && userInfo.getUrl() != null) {
-            Glide.with(ProfileActivity.this)
-                    .load(userInfo.getUrl())
-                    .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.NONE))
-                    .apply(new RequestOptions().placeholder(R.drawable.loading))
-                    .into(dpEv);
-        }
-//        String img=userInfo.getIdUrl();
-//        byte[] imageAsBytes = Base64.decode(img.getBytes(), Base64.DEFAULT);
-//        dpEv.setImageBitmap(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
+//        if (userInfo != null && userInfo.getUrl() != null) {
+//            Glide.with(ProfileActivity.this)
+//                    .load(userInfo.getUrl())
+//                    .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.NONE))
+//                    .apply(new RequestOptions().placeholder(R.drawable.loading))
+//                    .into(dpEv);
+//        }
+        assert userInfo.getUrl() != null;
+        String img=userInfo.getUrl();
+        byte[] imageAsBytes = Base64.decode(img.getBytes(), Base64.DEFAULT);
+        dpEv.setImageBitmap(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
     }
 
 
@@ -440,27 +441,33 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         protected void onPostExecute(byte[] bytes) {
             super.onPostExecute(bytes);
             Log.d(TAG, "onPostExecute: done " + bytes.length);
-            UploadTask uploadTask = storageReference.putBytes(bytes);
+            String encodedImage = Base64.encodeToString(bytes, Base64.NO_WRAP);
 
-            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    Log.d(TAG, "onSuccess: dp compressed and uploaded");
-                    taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                        @Override
-                        public void onSuccess(Uri uri) {
-                            Log.d(TAG, "onSuccess: " + message + " upload Successful");
-                            //String encodedImage = Base64.encodeToString(bytes, Base64.NO_WRAP);
-                           // Log.d(TAG, "onSuccess: " + encodedImage);
-                            if(message.equals("dp"))userInfo.setUrl(uri.toString());
-                            else if(message.equals("id"))userInfo.setIdUrl(uri.toString());
-                            db.update(userInfo.toMap());
-                            //Log.d(TAG, "onSuccess: " + userInfo.getIdUrl());
+            if(message.equals("dp"))userInfo.setUrl(encodedImage);
+            else if(message.equals("id"))userInfo.setIdUrl(encodedImage);
+            db.update(userInfo.toMap());
+            Log.d(TAG, "onPostExecute: " + userInfo.toString());
+            //UploadTask uploadTask = storageReference.putBytes(bytes);
 
-                        }
-                    });
-                }
-            });
+//            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+//                @Override
+//                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+//                    Log.d(TAG, "onSuccess: dp compressed and uploaded");
+//                    taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+//                        @Override
+//                        public void onSuccess(Uri uri) {
+//                            Log.d(TAG, "onSuccess: " + message + " upload Successful");
+//                            //
+//                           // Log.d(TAG, "onSuccess: " + encodedImage);
+//                            if(message.equals("dp"))userInfo.setUrl(uri.toString());
+//                            else if(message.equals("id"))userInfo.setIdUrl(uri.toString());
+//                            db.update(userInfo.toMap());
+//                            //Log.d(TAG, "onSuccess: " + userInfo.getIdUrl());
+//
+//                        }
+//                    });
+//                }
+//            });
         }
     }
     public static byte[] getBytesFromBitmap(Bitmap bitmap, int quality){

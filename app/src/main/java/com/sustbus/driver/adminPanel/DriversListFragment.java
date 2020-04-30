@@ -2,9 +2,11 @@ package com.sustbus.driver.adminPanel;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.BitmapFactory;
 import android.hardware.SensorManager;
 import android.icu.lang.UScript;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -110,10 +112,14 @@ public class DriversListFragment extends Fragment implements CheckChangedListene
                 permittedSwitch.setChecked(snapshot.getBoolean("permitted"));
                 profileCompletedSwitch.setChecked(snapshot.getBoolean("profileCompleted"));
                 driverTv.setText(snapshot.getBoolean("driver")?"Driver":"Student");
-                Glide.with(getContext())
-                        .load(snapshot.getString("idUrl"))
-                        .apply(new RequestOptions().override(200,200))
-                        .into(userEv);
+                //                Glide.with(getContext())
+//                        .load(snapshot.getString("idUrl"))
+//                        .apply(new RequestOptions().override(200,200))
+//                        .into(userEv);
+
+                String img=snapshot.getString("idUrl");
+                byte[] imageAsBytes = Base64.decode(img.getBytes(), Base64.DEFAULT);
+                userEv.setImageBitmap(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
             }
         });
                 new AlertDialog.Builder(getContext())

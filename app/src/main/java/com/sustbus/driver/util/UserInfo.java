@@ -96,13 +96,13 @@ public class UserInfo {
 
     public String toString() {
         return "userInfo new datas"
+                + "\niDurl " + instance.getIdUrl()
                 + "\nisDriver " + instance.isDriver()
                 + "\nuid " + instance.getuId()
                 + "\nisPermitted " + instance.isPermitted()
                 + "\nisProfileCompleted " + instance.isProfileCompleted()
                 + "\nemail " + instance.getEmail()
                 + "\nurl " + instance.getUrl()
-                + "\niDurl " + instance.getIdUrl()
                 + "\nregiNO " + instance.regiNo
                 + "\nuserName " + instance.userName;
     }
