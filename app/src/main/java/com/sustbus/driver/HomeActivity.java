@@ -176,12 +176,12 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                     dashboardSetup();
                     loadImage();
                     Log.d(TAG, "onEvent: " + userInfo.toString());
-                    if(!userInfo.isProfileCompleted() || !userInfo.isPermitted()){
+                   /* if(!userInfo.isProfileCompleted() || !userInfo.isPermitted()){
                         Intent intent = new Intent(HomeActivity.this, ProfileActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);
                         finish();
-                    }
+                    }*/
                 } else {
                     Log.d(TAG, "Current data: null");
                 }

@@ -41,9 +41,11 @@ public class RouteInformation {
         int hour=Integer.parseInt(time.substring(0,2));
         int min=Integer.parseInt(time.substring(3,5));
         String ampm=time.substring(6,8);
+
         if(ampm.equals("pm") && hour!=12){
             hour+=12;
         }
+        else if(ampm.equals("am") && hour==12)hour=0;
 
         min-=5;
         if(min<0){

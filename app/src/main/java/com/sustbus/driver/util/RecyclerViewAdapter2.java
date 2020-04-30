@@ -107,9 +107,10 @@ public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapt
             Set<String> tmp=new HashSet<>(st);
 
             tmp.remove(tokenList.get(pos));
-            pref.edit().clear();
-            pref.edit().putStringSet("tokenSet",tmp);
-            pref.edit().commit();
+            SharedPreferences.Editor editor=pref.edit();
+
+            editor.putStringSet("tokenSet",tmp);
+            editor.commit();
 
             tokenList.remove(pos);
             notifyDataSetChanged();

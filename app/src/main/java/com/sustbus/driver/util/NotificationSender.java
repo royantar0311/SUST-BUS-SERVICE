@@ -66,16 +66,17 @@ public class NotificationSender {
     private void sendTo(String title ,String body,String token){
 
         JSONObject notification = new JSONObject();
-        JSONObject notificationBody = new JSONObject();
         JSONObject data = new JSONObject();
 
         try{
             data.put("markerKey",userId);
-            notificationBody.put("title", "Bus Passed "+title);
-            notificationBody.put("body", body+" at "+DateTimeFormat.shortTime().print(DateTimeUtils.currentTimeMillis()));
+            data.put("title", "Bus Passed "+title);
+            data.put("when", String.valueOf(DateTimeUtils.currentTimeMillis()));
+            data.put("body", body+" at "+DateTimeFormat.shortTime().print(DateTimeUtils.currentTimeMillis()));
 
             notification.put("to", "/topics/"+token);
-            notification.put("notification", notificationBody);
+            notification.put("time_to_live", 1800);
+            notification.put("priority", "high");
             notification.put("data", data);
 
         }

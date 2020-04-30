@@ -47,14 +47,14 @@ public class NotificationSettings extends AppCompatActivity {
         Set<String> keySet=sharedPreferences.getStringSet("tokenSet",new HashSet<>());
 
         for(String s:keySet) {
-             tokenList.add(s);
-             Log.d("DEBMES", s);
-         }
-         recyclerViewAdapter2=new RecyclerViewAdapter2(this,tokenList);
+            tokenList.add(s);
+            Log.d("DEBMES", s);
+        }
+        recyclerViewAdapter2=new RecyclerViewAdapter2(this,tokenList);
 
-         getSupportFragmentManager().beginTransaction().replace(R.id.notification_fragment_container,
-                 new ShowNotificationsFragment(new LinearLayoutManager(this),recyclerViewAdapter2))
-                 .commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.notification_fragment_container,
+                new ShowNotificationsFragment(new LinearLayoutManager(this),recyclerViewAdapter2))
+                .commit();
 
 
         fab.setOnClickListener(new View.OnClickListener() {

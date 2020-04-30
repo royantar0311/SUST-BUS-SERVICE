@@ -410,7 +410,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (MapUtil.rideShareStatus) {
             greenSignal("You are on this bus");
             if (markerMap.containsKey(userUid))
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(markerMap.get(userUid).getPosition(), 20));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(markerMap.get(userUid).getPosition(), 15));
             freeLocateMeButton = true;
             return;
         }
