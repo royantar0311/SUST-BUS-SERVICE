@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Base64;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
@@ -40,6 +42,7 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.sustbus.driver.util.RotateBitmap;
 import com.sustbus.driver.util.UserInfo;
 
 import androidx.annotation.NonNull;
@@ -47,11 +50,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
-import org.w3c.dom.Text;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
 import de.hdodenhof.circleimageview.CircleImageView;
 import studio.carbonylgroup.textfieldboxes.SimpleTextChangedWatcher;
 import studio.carbonylgroup.textfieldboxes.TextFieldBoxes;
@@ -64,6 +64,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     UserInfo userInfo;
     private Button updateProfileBtn;
     private Button idChooserBtn;
+    private Button dpChooserBtn;
     private TextFieldBoxes userNameTf;
     private TextFieldBoxes regiNoTf;
     private TextView profileHelperTv;
@@ -98,6 +99,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         profileHelperTv = findViewById(R.id.profile_helper_tv);
         changePasswordTv = findViewById(R.id.profile_change_password_tv);
         backBtn = findViewById(R.id.profile_back_btn);
+        dpChooserBtn = findViewById(R.id.dp_chooser_button);
 
         userInfo = UserInfo.getInstance();
         Log.d(TAG, "onCreate: " + userInfo.toString());
@@ -122,6 +124,24 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             }
         });
 
+        listener = db.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w(TAG, "Listen failed.", e);
+                    return;
+                }
+                if (snapshot != null && snapshot.exists()) {
+                    UserInfo.setInstance(snapshot.toObject(UserInfo.class));
+                    userInfo = UserInfo.getInstance();
+                    Log.d(TAG, userInfo.toString());
+                    loadImage();
+                    initUi();
+                } else {
+                    Log.d(TAG, "Current data: null");
+                }
+            }
+        });
 
         updateProfileBtn.setOnClickListener(this);
         changePasswordTv.setOnClickListener(new View.OnClickListener() {
@@ -196,13 +216,18 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void loadImage() {
-        if (userInfo != null && userInfo.getUrl() != null) {
-            Glide.with(ProfileActivity.this)
-                    .load(userInfo.getUrl())
-                    .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.NONE))
-                    .apply(new RequestOptions().placeholder(R.drawable.loading))
-                    .into(dpEv);
-        }
+//        if (userInfo != null && userInfo.getUrl() != null) {
+//            Glide.with(ProfileActivity.this)
+//                    .load(userInfo.getUrl())
+//                    .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.NONE))
+//                    .apply(new RequestOptions().placeholder(R.drawable.loading))
+//                    .into(dpEv);
+//        }
+        assert userInfo.getUrl() != null;
+        String img=userInfo.getUrl();
+        if(img==null)return;
+        byte[] imageAsBytes = Base64.decode(img.getBytes(), Base64.DEFAULT);
+        dpEv.setImageBitmap(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
     }
 
 
@@ -289,15 +314,16 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "onActivityResult: " + userName + " " + regiNo);
-        userNameEt.setText(userName);
-        regiNoEt.setText(regiNo);
+        
         if (requestCode == REQUESTING_DP && resultCode == RESULT_OK &&
                 data != null && data.getData() != null) {
             Log.d(TAG, "onActivityResult: " + data + "dp fetched");
+            dpChooserBtn.setText("change");
             dpFilePath = data.getData();
             Glide.with(this)
                     .load(dpFilePath)
                     .into(dpEv);
+
         } else if (requestCode == REQUESTING_ID && resultCode == RESULT_OK &&
                 data != null && data.getData() != null) {
             Log.d(TAG, "onActivityResult: " + data + "id fetched");
@@ -306,29 +332,19 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume: ");
+        userNameEt.setText(userName);
+        regiNoEt.setText(regiNo);
+    }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        listener = db.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    Log.w(TAG, "Listen failed.", e);
-                    return;
-                }
-                if (snapshot != null && snapshot.exists()) {
-                    UserInfo.setInstance(snapshot.toObject(UserInfo.class));
-                    userInfo = UserInfo.getInstance();
-                    Log.d(TAG, userInfo.toString());
-                    loadImage();
-                    initUi();
-                } else {
-                    Log.d(TAG, "Current data: null");
-                }
-            }
-        });
+
     }
 
     private void initUi() {
@@ -337,6 +353,8 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             updateProfileBtn.setEnabled(true);
             profileHelperTv.setText("Complete all the fields and request for permission");
             updateProfileBtn.setText("Request Permission");
+            idChooserBtn.setVisibility(View.VISIBLE);
+            idAvailibilityTv.setText("ID Not Detected");
             updateProfileBtn.setBackground(ContextCompat.getDrawable(ProfileActivity.this, R.drawable.custom_button));
 
         } else if (!userInfo.isPermitted() && userInfo.isProfileCompleted()) {
@@ -373,6 +391,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     protected void onDestroy() {
         Log.d(TAG, "onDestroy: ");
+
         super.onDestroy();
     }
 
@@ -382,11 +401,25 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         backButtonPressed(null);
     }
     public void backButtonPressed(View view) {
-        finish();
+        if(!userInfo.getUserName().equals(userName) || !userInfo.getRegiNo().equals(regiNo) ||
+                dpFilePath != null || idFilePath != null){
+            new AlertDialog.Builder(ProfileActivity.this)
+                    .setTitle("Save Profile")
+                    .setMessage("or your changes will be lost")
+                    .setPositiveButton("yes",null)
+                    .setNegativeButton("no", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            finish();
+                        }
+                    }).show();
+        }
+        else finish();
     }
 
     public void idChooserButtonPressed(View view) {
         Log.d(TAG, "onClick: " + "id chooser button clicked " + userName + " " + regiNo);
+        idChooserBtn.setText("change");
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
@@ -419,7 +452,9 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
             if(bitmap == null){
                 try {
-                    bitmap = MediaStore.Images.Media.getBitmap(ProfileActivity.this.getContentResolver(),uris[0]);
+                    RotateBitmap rotateBitmap = new RotateBitmap();
+                    //bitmap = MediaStore.Images.Media.getBitmap(ProfileActivity.this.getContentResolver(),uris[0]);
+                    bitmap = rotateBitmap.HandleSamplingAndRotationBitmap(ProfileActivity.this,uris[0]);
                 }
                 catch (IOException e){
                     e.printStackTrace();
@@ -434,22 +469,33 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         protected void onPostExecute(byte[] bytes) {
             super.onPostExecute(bytes);
             Log.d(TAG, "onPostExecute: done " + bytes.length);
-            UploadTask uploadTask = storageReference.putBytes(bytes);
-            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    Log.d(TAG, "onSuccess: dp compressed and uploaded");
-                    taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                        @Override
-                        public void onSuccess(Uri uri) {
-                            Log.d(TAG, "onSuccess: " + message + " upload Successful");
-                            if(message.equals("dp"))userInfo.setUrl(uri.toString());
-                            else if(message.equals("id"))userInfo.setIdUrl(uri.toString());
-                            db.update(userInfo.toMap());
-                        }
-                    });
-                }
-            });
+            String encodedImage = Base64.encodeToString(bytes, Base64.NO_WRAP);
+
+            if(message.equals("dp"))userInfo.setUrl(encodedImage);
+            else if(message.equals("id"))userInfo.setIdUrl(encodedImage);
+            db.update(userInfo.toMap());
+            Log.d(TAG, "onPostExecute: " + userInfo.toString());
+            //UploadTask uploadTask = storageReference.putBytes(bytes);
+
+//            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+//                @Override
+//                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+//                    Log.d(TAG, "onSuccess: dp compressed and uploaded");
+//                    taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+//                        @Override
+//                        public void onSuccess(Uri uri) {
+//                            Log.d(TAG, "onSuccess: " + message + " upload Successful");
+//                            //
+//                           // Log.d(TAG, "onSuccess: " + encodedImage);
+//                            if(message.equals("dp"))userInfo.setUrl(uri.toString());
+//                            else if(message.equals("id"))userInfo.setIdUrl(uri.toString());
+//                            db.update(userInfo.toMap());
+//                            //Log.d(TAG, "onSuccess: " + userInfo.getIdUrl());
+//
+//                        }
+//                    });
+//                }
+//            });
         }
     }
     public static byte[] getBytesFromBitmap(Bitmap bitmap, int quality){

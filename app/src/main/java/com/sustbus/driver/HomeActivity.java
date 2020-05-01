@@ -20,10 +20,12 @@ package com.sustbus.driver;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -135,14 +137,19 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void loadImage() {
-        if (userInfo != null && userInfo.getUrl() != null) {
-            Glide.with(HomeActivity.this)
-                    .load(userInfo.getUrl())
-                    .apply(new RequestOptions()
-                            .diskCacheStrategy(DiskCacheStrategy.NONE))
-                    .thumbnail(Glide.with(HomeActivity.this).load(R.drawable.loading))
-                    .into(dpEv);
-        }
+//        if (userInfo != null && userInfo.getUrl() != null) {
+//            Glide.with(HomeActivity.this)
+//                    .load(userInfo.getUrl())
+//                    .apply(new RequestOptions()
+//                            .diskCacheStrategy(DiskCacheStrategy.NONE))
+//                    .thumbnail(Glide.with(HomeActivity.this).load(R.drawable.loading))
+//                    .into(dpEv);
+//        }
+        assert userInfo.getUrl() != null;
+        String img=userInfo.getUrl();
+        if(img==null)return;
+        byte[] imageAsBytes = Base64.decode(img.getBytes(), Base64.DEFAULT);
+        dpEv.setImageBitmap(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
     }
 
     private void updateDatabase() {
@@ -235,7 +242,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume: ");
-        loadImage();
+
     }
 
     @Override

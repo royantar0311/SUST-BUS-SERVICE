@@ -60,7 +60,7 @@ public class DriversRecyclerAdapter extends FirestoreRecyclerAdapter<UserInfo, D
                 @Override
                 public void onClick(View v) {
                     Log.d(TAG, "onClick: ");
-                    checkChangedListener.onItemClicked(getSnapshots().getSnapshot(getAdapterPosition()));
+                    checkChangedListener.onItemClicked(getSnapshots().getSnapshot(getAdapterPosition()).getString("uId"));
                 }
             });
 
@@ -72,8 +72,5 @@ public class DriversRecyclerAdapter extends FirestoreRecyclerAdapter<UserInfo, D
             });
         }
     }
-    interface  CheckChangedListener{
-        void onSwitchStateChanged(boolean isChecked,DocumentSnapshot snapshot );
-        void onItemClicked(DocumentSnapshot snapshot);
-    }
+
 }
