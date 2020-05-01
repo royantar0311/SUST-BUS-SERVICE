@@ -68,6 +68,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
+            android:layout_marginBottom="28dp"
             android:alignmentMode="alignMargins"
             android:columnCount="2"
             android:columnOrderPreserved="false"
@@ -298,14 +299,15 @@
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
+
             <androidx.cardview.widget.CardView
                 android:id="@+id/admin_panel_cv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_rowWeight="1"
-                android:visibility="visible"
                 android:layout_columnWeight="1"
                 android:layout_margin="12dp"
+                android:visibility="visible"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="6dp">
 
@@ -329,6 +331,45 @@
                         android:layout_gravity="center"
                         android:layout_marginTop="12dp"
                         android:text="Admin Panel"
+                        android:textColor="@color/black"
+                        android:textSize="16sp"
+
+                        />
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/route_uploader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_rowWeight="1"
+                android:layout_columnWeight="1"
+                android:layout_margin="12dp"
+                android:visibility="visible"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="6dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <ImageView
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:layout_gravity="center"
+                        android:contentDescription=""
+                        app:srcCompat="@drawable/ic_cloud_upload_black_24dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="12dp"
+                        android:text="Manage route"
                         android:textColor="@color/black"
                         android:textSize="16sp"
 
