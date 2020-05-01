@@ -141,19 +141,16 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void loadImage() {
-//        if (userInfo != null && userInfo.getUrl() != null) {
-//            Glide.with(HomeActivity.this)
-//                    .load(userInfo.getUrl())
-//                    .apply(new RequestOptions()
-//                            .diskCacheStrategy(DiskCacheStrategy.NONE))
-//                    .thumbnail(Glide.with(HomeActivity.this).load(R.drawable.loading))
-//                    .into(dpEv);
-//        }
-        assert userInfo.getUrl() != null;
-        String img=userInfo.getUrl();
-        if(img==null)return;
-        byte[] imageAsBytes = Base64.decode(img.getBytes(), Base64.DEFAULT);
-        dpEv.setImageBitmap(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
+        try {
+            String img = userInfo.getUrl();
+            byte[] imageAsBytes = Base64.decode(img.getBytes(), Base64.DEFAULT);
+            dpEv.setImageBitmap(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
+        }
+        catch (NullPointerException e){
+        }
+        catch (IllegalArgumentException e){
+            Log.d(TAG, "onSuccess: " + e.getMessage());
+        }
     }
 
     private void updateDatabase() {
@@ -187,12 +184,12 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                     dashboardSetup();
                     loadImage();
                     Log.d(TAG, "onEvent: " + userInfo.toString());
-                   /* if(!userInfo.isProfileCompleted() || !userInfo.isPermitted()){
+                   if(!userInfo.isProfileCompleted() || !userInfo.isPermitted()){
                         Intent intent = new Intent(HomeActivity.this, ProfileActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);
                         finish();
-                    }*/
+                    }
                 } else {
                     Log.d(TAG, "Current data: null");
                 }

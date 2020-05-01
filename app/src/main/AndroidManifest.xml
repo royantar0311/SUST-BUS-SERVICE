@@ -20,8 +20,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".adminPanel.RouteManager"></activity>
+        <activity android:name=".util.AlarmActivity"></activity>
         <activity android:name=".NotificationSettings" />
+        <activity android:name=".adminPanel.RouteManager"></activity>
         <activity android:name=".ScheduleActivity" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
@@ -63,6 +64,8 @@
              sign the APK for publishing.
              You can define the keys for the debug and release targets in src/debug/ and src/release/.
         -->
+
+
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
