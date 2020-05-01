@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
@@ -282,7 +283,7 @@ public class ScheduleActivity extends AppCompatActivity {
 
       for(int i=0;i<next.size();i++){
           RouteInformation tmp=next.get(i);
-          //Log.d("DEB",tmp.comparableStartTime+" "+tmp.comparableEndTime+" "+nowTime);
+         // Log.d("DEBMES",tmp.comparableStartTime+" "+tmp.comparableEndTime+" "+nowTime);
           if(tmp.comparableEndTime.compareTo(nowTime)<=0){
               finished.add(0,tmp);
               next.remove(i);
@@ -371,6 +372,9 @@ public class ScheduleActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (currentProgressDialogue!=null) {
+            currentProgressDialogue.dismiss();
+        }
         if(countDownTimerForRefreshingLists!=null)countDownTimerForRefreshingLists.cancel();
         if(childEventListener!=null)FirebaseDatabase.getInstance().getReference().child("busesOnRoad").removeEventListener(childEventListener);
     }

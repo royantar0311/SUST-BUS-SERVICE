@@ -1,5 +1,6 @@
 package com.sustbus.driver;
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -19,6 +20,7 @@ import java.util.Set;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 
 public class MessagingService extends FirebaseMessagingService {
 
@@ -53,11 +55,18 @@ public class MessagingService extends FirebaseMessagingService {
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, channelId)
                         .setSmallIcon(R.drawable.ic_directions_bus_black_24dp)
-                        .setContentTitle(message.getNotification().getTitle())
-                        .setContentText(message.getNotification().getBody())
+                        .setContentTitle(message.getData().get("title"))
+                        .setContentText(message.getData().get("body"))
+                        .setColor(ContextCompat.getColor(this,R.color.A400red))
                         .setAutoCancel(true)
                         .setSound(defaultSoundUri)
-                        .setContentIntent(pendingIntent);
+                        .setContentIntent(pendingIntent)
+                        .setWhen(Long.parseLong(message.getData().get("when")))
+                        .setDefaults(Notification.DEFAULT_ALL)
+                        .setPriority(2)
+                        .setUsesChronometer(true)
+
+                ;
 
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
