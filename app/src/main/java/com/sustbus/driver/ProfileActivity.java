@@ -42,6 +42,7 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.sustbus.driver.util.RotateBitmap;
 import com.sustbus.driver.util.UserInfo;
 
 import androidx.annotation.NonNull;
@@ -49,11 +50,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
-import org.w3c.dom.Text;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
 import de.hdodenhof.circleimageview.CircleImageView;
 import studio.carbonylgroup.textfieldboxes.SimpleTextChangedWatcher;
 import studio.carbonylgroup.textfieldboxes.TextFieldBoxes;
@@ -354,6 +352,8 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             updateProfileBtn.setEnabled(true);
             profileHelperTv.setText("Complete all the fields and request for permission");
             updateProfileBtn.setText("Request Permission");
+            idChooserBtn.setVisibility(View.VISIBLE);
+            idAvailibilityTv.setText("ID Not Detected");
             updateProfileBtn.setBackground(ContextCompat.getDrawable(ProfileActivity.this, R.drawable.custom_button));
 
         } else if (!userInfo.isPermitted() && userInfo.isProfileCompleted()) {
@@ -400,7 +400,20 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         backButtonPressed(null);
     }
     public void backButtonPressed(View view) {
-        finish();
+        if(!userInfo.getUserName().equals(userName) || !userInfo.getRegiNo().equals(regiNo) ||
+                dpFilePath != null || idFilePath != null){
+            new AlertDialog.Builder(ProfileActivity.this)
+                    .setTitle("Save Profile")
+                    .setMessage("or your changes will be lost")
+                    .setPositiveButton("yes",null)
+                    .setNegativeButton("no", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            finish();
+                        }
+                    }).show();
+        }
+        else finish();
     }
 
     public void idChooserButtonPressed(View view) {
@@ -438,7 +451,9 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
             if(bitmap == null){
                 try {
-                    bitmap = MediaStore.Images.Media.getBitmap(ProfileActivity.this.getContentResolver(),uris[0]);
+                    RotateBitmap rotateBitmap = new RotateBitmap();
+                    //bitmap = MediaStore.Images.Media.getBitmap(ProfileActivity.this.getContentResolver(),uris[0]);
+                    bitmap = rotateBitmap.HandleSamplingAndRotationBitmap(ProfileActivity.this,uris[0]);
                 }
                 catch (IOException e){
                     e.printStackTrace();
