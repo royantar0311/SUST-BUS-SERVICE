@@ -2,6 +2,7 @@ package com.sustbus.driver.adminPanel;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.app.ProgressDialog;
@@ -36,6 +37,8 @@ public class RouteManager extends AppCompatActivity {
     private RecyclerViewAdapter mAdapter;
     private List<RouteInformation> routeList;
     private NextFragment viewFragment;
+    private RouteCreatorFragment routeCreatorFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,6 +48,7 @@ public class RouteManager extends AppCompatActivity {
         dialog = new ProgressDialog(this);
 
         dialog.setMessage("Fetching Routes..");
+        dialog.setCancelable(false);
         dialog.show();
         FirebaseFirestore.getInstance().collection("routes").get(Source.SERVER).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -70,15 +74,28 @@ public class RouteManager extends AppCompatActivity {
                     }
                 }
         });
-        addButton.setOnClickListener(new View.OnClickListener() {
+        new Thread(new Runnable() {
             @Override
-            public void onClick(View v) {
-                getSupportFragmentManager().beginTransaction().replace(R.id.rm_frame,new RouteCreatorFragment())
-                        .addToBackStack(null)
-                        .commit();
-                v.setVisibility(View.INVISIBLE);
+            public void run() {
+
+                routeCreatorFragment=new RouteCreatorFragment();
+                addButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(routeCreatorFragment==null){
+                            routeCreatorFragment=new RouteCreatorFragment();
+                        }
+                        getSupportFragmentManager().beginTransaction().replace(R.id.rm_frame,routeCreatorFragment)
+                                .addToBackStack(null)
+                                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                                .commit();
+                        v.setVisibility(View.INVISIBLE);
+                    }
+                });
+                addButton.setVisibility(View.VISIBLE);
             }
-        });
+        }).start();
+
     }
 
     void init(){
@@ -117,5 +134,9 @@ public class RouteManager extends AppCompatActivity {
 
     }
 
-
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        addButton.setVisibility(View.VISIBLE);
+    }
 }

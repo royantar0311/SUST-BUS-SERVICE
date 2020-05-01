@@ -224,10 +224,16 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 //                    .into(dpEv);
 //        }
         assert userInfo.getUrl() != null;
-        String img=userInfo.getUrl();
-        if(img==null)return;
-        byte[] imageAsBytes = Base64.decode(img.getBytes(), Base64.DEFAULT);
-        dpEv.setImageBitmap(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
+        try {
+            String img = userInfo.getUrl();
+            byte[] imageAsBytes = Base64.decode(img.getBytes(), Base64.DEFAULT);
+            dpEv.setImageBitmap(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
+        }
+        catch (NullPointerException e){
+        }
+        catch (IllegalArgumentException e){
+            Log.d(TAG, "onSuccess: " + e.getMessage());
+        }
     }
 
 
@@ -320,9 +326,14 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             Log.d(TAG, "onActivityResult: " + data + "dp fetched");
             dpChooserBtn.setText("change");
             dpFilePath = data.getData();
-            Glide.with(this)
-                    .load(dpFilePath)
-                    .into(dpEv);
+//            Glide.with(this)
+//                    .load(dpFilePath)
+//                    .into(dpEv);
+            try {
+                dpEv.setImageBitmap(MediaStore.Images.Media.getBitmap(ProfileActivity.this.getContentResolver(),dpFilePath));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
         } else if (requestCode == REQUESTING_ID && resultCode == RESULT_OK &&
                 data != null && data.getData() != null) {
@@ -453,7 +464,6 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             if(bitmap == null){
                 try {
                     RotateBitmap rotateBitmap = new RotateBitmap();
-                    //bitmap = MediaStore.Images.Media.getBitmap(ProfileActivity.this.getContentResolver(),uris[0]);
                     bitmap = rotateBitmap.HandleSamplingAndRotationBitmap(ProfileActivity.this,uris[0]);
                 }
                 catch (IOException e){
