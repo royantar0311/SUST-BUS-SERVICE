@@ -10,6 +10,7 @@
     <ImageView
         android:id="@+id/ad_user_id_image_ev"
         android:layout_width="match_parent"
+        android:src="@drawable/user_not_available_image"
         android:layout_height="200dp"
         android:layout_marginTop="8dp"
         />

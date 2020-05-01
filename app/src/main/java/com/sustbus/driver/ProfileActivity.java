@@ -66,6 +66,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     UserInfo userInfo;
     private Button updateProfileBtn;
     private Button idChooserBtn;
+    private Button dpChooserBtn;
     private TextFieldBoxes userNameTf;
     private TextFieldBoxes regiNoTf;
     private TextView profileHelperTv;
@@ -100,6 +101,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         profileHelperTv = findViewById(R.id.profile_helper_tv);
         changePasswordTv = findViewById(R.id.profile_change_password_tv);
         backBtn = findViewById(R.id.profile_back_btn);
+        dpChooserBtn = findViewById(R.id.dp_chooser_button);
 
         userInfo = UserInfo.getInstance();
         Log.d(TAG, "onCreate: " + userInfo.toString());
@@ -124,6 +126,24 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             }
         });
 
+        listener = db.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w(TAG, "Listen failed.", e);
+                    return;
+                }
+                if (snapshot != null && snapshot.exists()) {
+                    UserInfo.setInstance(snapshot.toObject(UserInfo.class));
+                    userInfo = UserInfo.getInstance();
+                    Log.d(TAG, userInfo.toString());
+                    loadImage();
+                    initUi();
+                } else {
+                    Log.d(TAG, "Current data: null");
+                }
+            }
+        });
 
         updateProfileBtn.setOnClickListener(this);
         changePasswordTv.setOnClickListener(new View.OnClickListener() {
@@ -295,15 +315,16 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "onActivityResult: " + userName + " " + regiNo);
-        userNameEt.setText(userName);
-        regiNoEt.setText(regiNo);
+        
         if (requestCode == REQUESTING_DP && resultCode == RESULT_OK &&
                 data != null && data.getData() != null) {
             Log.d(TAG, "onActivityResult: " + data + "dp fetched");
+            dpChooserBtn.setText("change");
             dpFilePath = data.getData();
             Glide.with(this)
                     .load(dpFilePath)
                     .into(dpEv);
+
         } else if (requestCode == REQUESTING_ID && resultCode == RESULT_OK &&
                 data != null && data.getData() != null) {
             Log.d(TAG, "onActivityResult: " + data + "id fetched");
@@ -312,29 +333,19 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume: ");
+        userNameEt.setText(userName);
+        regiNoEt.setText(regiNo);
+    }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        listener = db.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    Log.w(TAG, "Listen failed.", e);
-                    return;
-                }
-                if (snapshot != null && snapshot.exists()) {
-                    UserInfo.setInstance(snapshot.toObject(UserInfo.class));
-                    userInfo = UserInfo.getInstance();
-                    Log.d(TAG, userInfo.toString());
-                    loadImage();
-                    initUi();
-                } else {
-                    Log.d(TAG, "Current data: null");
-                }
-            }
-        });
+
     }
 
     private void initUi() {
@@ -394,6 +405,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
     public void idChooserButtonPressed(View view) {
         Log.d(TAG, "onClick: " + "id chooser button clicked " + userName + " " + regiNo);
+        idChooserBtn.setText("change");
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
