@@ -44,6 +44,9 @@ public class MessagingService extends FirebaseMessagingService {
     }
 
     private void sendNotification(RemoteMessage message) {
+
+
+        
         Intent intent = new Intent(this, HomeActivity.class);
         intent.putExtra("markerKey", message.getData().get("markerKey"));
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

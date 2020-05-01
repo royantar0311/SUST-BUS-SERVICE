@@ -427,8 +427,8 @@ public class ScheduleActivity extends AppCompatActivity {
           if(currentProgressDialogue!=null){
               currentProgressDialogue.dismiss();
           }
+          else currentProgressDialogue=new ProgressDialog(this);
 
-          currentProgressDialogue=new ProgressDialog(this);
           currentProgressDialogue.setMessage(msg);
           currentProgressDialogue.show();
 

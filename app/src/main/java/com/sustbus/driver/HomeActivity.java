@@ -49,6 +49,7 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.here.sdk.core.GeoCoordinates;
 import com.sustbus.driver.adminPanel.AdminPanelActivity;
+import com.sustbus.driver.adminPanel.RouteManager;
 import com.sustbus.driver.util.MapUtil;
 import com.sustbus.driver.util.NotificationSender;
 import com.sustbus.driver.util.PermissionsRequestor;
@@ -94,6 +95,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private GeoCoordinates previousPosition;
     private Location ridersPreviousLocation = null;
     private NotificationSender notificationSender;
+    private  CardView routeUploaderCv;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,6 +106,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
         CardView openMapBtn = findViewById(R.id.track_buses_cv);
         adminPanelCv = findViewById(R.id.admin_panel_cv);
+        routeUploaderCv=findViewById(R.id.route_uploader);
         shareRideTv = findViewById(R.id.ride_on_cv);
         CardView scheduleBtn = findViewById(R.id.bus_schedule_cv);
         userNameTv = findViewById(R.id.row_item_user_name_tv);
@@ -120,6 +123,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         shareRideTv.setOnClickListener(this);
         profileCv.setOnClickListener(this);
         signOut.setOnClickListener(this);
+        routeUploaderCv.setOnClickListener(this);
         FirebaseAuth.getInstance().addAuthStateListener(this);
         adminPanelCv.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -463,6 +467,10 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         else if(i==R.id.home_notifications_tv){
             startActivity(new Intent(HomeActivity.this, NotificationSettings.class));
         }
+        else if(i==R.id.route_uploader){
+            startActivity(new Intent(HomeActivity.this, RouteManager.class));
+        }
+
     }
 
     @Override

@@ -60,7 +60,6 @@ public class NotificationSettings extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                v.setVisibility(View.INVISIBLE);
                 FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                 transaction.replace(R.id.notification_fragment_container, new RegisterNotification(new CallBack() {
                     @Override
@@ -75,6 +74,7 @@ public class NotificationSettings extends AppCompatActivity {
                 }));
                 transaction.addToBackStack(null);
                 transaction.commit();
+                v.setVisibility(View.INVISIBLE);
             }
         });
     }

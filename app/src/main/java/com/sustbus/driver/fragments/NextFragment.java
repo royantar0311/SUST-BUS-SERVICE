@@ -21,10 +21,12 @@ public class NextFragment extends Fragment {
     private RecyclerView recyclerView;
     private TextView textView;
     private CountDownTimer countDownTimer;
+    private View root;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
 
-        View root =inflater.inflate(R.layout.fragment_next, container, false);
+        if(root!=null)return root;
+        root =inflater.inflate(R.layout.fragment_next, container, false);
         recyclerView=root.findViewById(R.id.next_recycler_view);
 
         recyclerView.setLayoutManager(mLayoutManager);

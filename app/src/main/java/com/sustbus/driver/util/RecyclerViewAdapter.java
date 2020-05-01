@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.sustbus.driver.R;
+import com.sustbus.driver.adminPanel.RouteManager;
 
 import java.util.List;
 
@@ -30,6 +31,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         this.callBack=callBack;
         this.id=from;
     }
+
+
 
     @NonNull
     @Override
@@ -85,7 +88,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         public void onClick(View v) {
 
             if(callBack!=null){
-                callBack.click(getLayoutPosition(),id);
+                callBack.click(getAdapterPosition(),id);
             }
         }
     }
