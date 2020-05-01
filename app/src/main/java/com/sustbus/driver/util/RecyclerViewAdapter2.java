@@ -2,10 +2,12 @@ package com.sustbus.driver.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapter2.ViewHolder2>  {
@@ -71,6 +74,10 @@ public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapt
         viewHolder.placeName.setText(place);
         viewHolder.ruleName.setText(rule);
 
+        boolean isAlarm=context.getSharedPreferences("NOTIFICATIONS",Context.MODE_PRIVATE).getBoolean(tokenList.get(position),false);
+        if (isAlarm) {
+            viewHolder.alarm.setColorFilter(ContextCompat.getColor(context,R.color.A400red));
+        }
     }
 
     @Override
@@ -83,12 +90,15 @@ public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapt
 
         public TextView placeName,ruleName,timeName;
         public ImageButton deleteButton;
+        public ImageView alarm;
         public ViewHolder2(@NonNull View itemView) {
             super(itemView);
             placeName=itemView.findViewById(R.id.place_name);
             ruleName=itemView.findViewById(R.id.rule_name);
             timeName=itemView.findViewById(R.id.time_name);
             deleteButton=itemView.findViewById(R.id.delete_notification);
+            alarm=itemView.findViewById(R.id.imageView_for_alarm);
+            alarm.setOnClickListener(this);
             deleteButton.setOnClickListener(this);
         }
 
@@ -100,16 +110,35 @@ public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapt
                 Toast.makeText(context,"Try again",Toast.LENGTH_LONG).show();
                 return;
             }
+            SharedPreferences pref=context.getSharedPreferences("NOTIFICATIONS",Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor=pref.edit();
+
+            if(v.getId()==R.id.imageView_for_alarm){
+                String token=tokenList.get(pos);
+                boolean isAlarmSet=pref.getBoolean(token,false);
+
+                if(!isAlarmSet){
+                    alarm.setColorFilter(ContextCompat.getColor(context,R.color.A400red));
+                    editor.putBoolean(token,true);
+                }
+                else {
+                    alarm.setColorFilter(ContextCompat.getColor(context,R.color.black));
+                    editor.putBoolean(token,false);
+                }
+
+                editor.commit();
+
+                return;
+            }
 
             FirebaseMessaging.getInstance().unsubscribeFromTopic(tokenList.get(pos));
-            SharedPreferences pref=context.getSharedPreferences("NOTIFICATIONS",Context.MODE_PRIVATE);
             Set<String> st=pref.getStringSet("tokenSet",new HashSet<>());
             Set<String> tmp=new HashSet<>(st);
 
             tmp.remove(tokenList.get(pos));
-            SharedPreferences.Editor editor=pref.edit();
 
             editor.putStringSet("tokenSet",tmp);
+            editor.remove(tokenList.get(pos));
             editor.commit();
 
             tokenList.remove(pos);

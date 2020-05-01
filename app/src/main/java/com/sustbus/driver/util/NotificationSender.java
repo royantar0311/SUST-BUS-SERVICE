@@ -71,6 +71,7 @@ public class NotificationSender {
         try{
             data.put("markerKey",userId);
             data.put("title", "Bus Passed "+title);
+            data.put("token", token);
             data.put("when", String.valueOf(DateTimeUtils.currentTimeMillis()));
             data.put("body", body+" at "+DateTimeFormat.shortTime().print(DateTimeUtils.currentTimeMillis()));
 
