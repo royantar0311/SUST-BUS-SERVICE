@@ -8,7 +8,7 @@
     android:layout_marginTop="10dp"
     android:layout_marginRight="10dp"
     android:layout_marginBottom="5dp"
-    app:cardBackgroundColor="@color/blue25"
+    app:cardBackgroundColor="@color/white"
     app:cardCornerRadius="15dp"
     app:cardElevation="8dp">
 
@@ -25,8 +25,12 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
-            android:text="Amborkhanakjhkjh kkhj"
+            android:background="@drawable/edit_round"
 
+            android:backgroundTint="#41F89D0B"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="Amborkhana"
             android:textAlignment="center"
             android:textSize="18sp"
             android:textStyle="bold"
@@ -67,7 +71,7 @@
             android:layout_width="0dp"
             android:layout_height="30dp"
             android:layout_marginTop="4dp"
-            android:backgroundTint="@color/blue25"
+            android:backgroundTint="@color/white"
             android:tint="#D65454"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

@@ -100,6 +100,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate: called");
+        setTheme(R.style.SplashTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         rideShareIndicatorIV = findViewById(R.id.ride_share_iv);
@@ -270,8 +271,12 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                     if(task.isSuccessful() && task.getResult().exists() && task.getResult().getBoolean("active")){
                         adminPanelCv.setVisibility(View.VISIBLE);
+                        routeUploaderCv.setVisibility(View.VISIBLE);
                     }
-                    else adminPanelCv.setVisibility(View.GONE);
+                    else {
+                        routeUploaderCv.setVisibility(View.GONE);
+                        adminPanelCv.setVisibility(View.GONE);
+                    }
                 }
             });
             updateDatabase();

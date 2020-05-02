@@ -76,7 +76,7 @@ public class NotificationSender {
             data.put("body", body+" at "+DateTimeFormat.shortTime().print(DateTimeUtils.currentTimeMillis()));
 
             notification.put("to", "/topics/"+token);
-            notification.put("time_to_live", 1800);
+            notification.put("time_to_live", 1200);
             notification.put("priority", "high");
             notification.put("data", data);
 

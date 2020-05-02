@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+import androidx.core.app.ComponentActivity;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +24,7 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.pchmn.materialchips.ChipsInput;
 import com.pchmn.materialchips.model.Chip;
@@ -110,6 +112,7 @@ public class RouteCreatorFragment extends Fragment implements TimePickerDialog.O
     @Override
     public void onStart() {
         super.onStart();
+        ((TextView)getActivity().findViewById(R.id.rm_appbar_tv)).setText("Route Creator");
     }
 
     @Override
@@ -144,8 +147,8 @@ public class RouteCreatorFragment extends Fragment implements TimePickerDialog.O
         submitButton.setClickable(false);
         List<PlaceChips> selected=(List<PlaceChips>)chipsInput.getSelectedChipList();
 
-        if(selected.size()<=2){
-            Snackbar.make(submitButton,"Enter Route properly",3000).show();
+        if(selected.size()<2|| selectedTimetv.getText().toString().trim().equals("_ _ : _ _ am")){
+            Snackbar.make(submitButton,"Enter Route and time properly",3000).show();
             submitButton.setClickable(true);
             return;
         }
@@ -162,15 +165,23 @@ public class RouteCreatorFragment extends Fragment implements TimePickerDialog.O
         data.put("time",selectedTimetv.getText().toString().trim());
         data.put("show",showInfoEditText.getText().toString().trim());
         ProgressDialog dialog=new ProgressDialog(getContext());
+        final String tmpp=path;
+        final String tmpt=title;
         dialog.setMessage("uploading..");
         dialog.show();
-        FirebaseFirestore.getInstance().collection("routes").document().set(data)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
+        FirebaseFirestore.getInstance().collection("routes").add(data)
+                .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
                     @Override
-                    public void onComplete(@NonNull Task<Void> task) {
+                    public void onComplete(@NonNull Task<DocumentReference> task) {
                      dialog.dismiss();
                         if(task.isSuccessful()){
                          Toast.makeText(getContext(),"Added",Toast.LENGTH_LONG).show();
+                         getActivity().getIntent().putExtra("added",true);
+                         getActivity().getIntent().putExtra("time",selectedTimetv.getText().toString().trim());
+                         getActivity().getIntent().putExtra("path",tmpp);
+                         getActivity().getIntent().putExtra("show",showInfoEditText.getText().toString().trim());
+                         getActivity().getIntent().putExtra("title",tmpt);
+                         getActivity().getIntent().putExtra("id",task.getResult().getId());
                          getActivity().onBackPressed();
                      }
                      else {

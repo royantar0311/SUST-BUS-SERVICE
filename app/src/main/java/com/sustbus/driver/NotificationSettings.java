@@ -54,6 +54,7 @@ public class NotificationSettings extends AppCompatActivity {
 
         getSupportFragmentManager().beginTransaction().replace(R.id.notification_fragment_container,
                 new ShowNotificationsFragment(new LinearLayoutManager(this),recyclerViewAdapter2))
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                 .commit();
 
 
@@ -72,6 +73,7 @@ public class NotificationSettings extends AppCompatActivity {
 
                     }
                 }));
+                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
                 transaction.addToBackStack(null);
                 transaction.commit();
                 v.setVisibility(View.INVISIBLE);
