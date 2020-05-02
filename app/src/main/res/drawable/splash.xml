@@ -3,11 +3,11 @@
 
     <item android:drawable="@color/white"></item>
     <item>
-        <bitmap android:src="@drawable/splash_photo"
-             android:gravity="center"
+        <bitmap
+            android:gravity="center"
+            android:src="@drawable/splash_photo"
 
-            >
-        </bitmap>
+            ></bitmap>
 
     </item>
 

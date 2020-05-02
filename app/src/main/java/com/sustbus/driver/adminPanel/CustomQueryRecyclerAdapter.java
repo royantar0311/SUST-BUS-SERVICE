@@ -8,19 +8,19 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.sustbus.driver.R;
 import com.sustbus.driver.util.UserInfo;
 
-public class CustomQueryRecyclerAdapter extends FirestoreRecyclerAdapter<UserInfo, CustomQueryRecyclerAdapter.CustomQueryRecyclerViewHolder>{
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+public class CustomQueryRecyclerAdapter extends FirestoreRecyclerAdapter<UserInfo, CustomQueryRecyclerAdapter.CustomQueryRecyclerViewHolder> {
     private static final String TAG = "CustomQueryRecyclerAdap";
     CheckChangedListener checkChangedListener;
-    public CustomQueryRecyclerAdapter(@NonNull FirestoreRecyclerOptions<UserInfo> options,CheckChangedListener checkChangedListener) {
+
+    public CustomQueryRecyclerAdapter(@NonNull FirestoreRecyclerOptions<UserInfo> options, CheckChangedListener checkChangedListener) {
         super(options);
         Log.d(TAG, "CustomQueryRecyclerAdapter: ");
         this.checkChangedListener = checkChangedListener;
@@ -39,14 +39,15 @@ public class CustomQueryRecyclerAdapter extends FirestoreRecyclerAdapter<UserInf
     public CustomQueryRecyclerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         Log.d(TAG, "onCreateViewHolder: ");
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View view = inflater.inflate(R.layout.row_item,parent,false);
+        View view = inflater.inflate(R.layout.row_item, parent, false);
         return new CustomQueryRecyclerViewHolder(view);
     }
 
     class CustomQueryRecyclerViewHolder extends RecyclerView.ViewHolder {
-        TextView username,regino;
+        TextView username, regino;
         Switch aSwitch;
-        public CustomQueryRecyclerViewHolder(View itemView){
+
+        public CustomQueryRecyclerViewHolder(View itemView) {
             super(itemView);
             Log.d(TAG, "CustomQueryRecyclerViewHolder: ");
             username = itemView.findViewById(R.id.row_item_user_name_tv);
@@ -56,7 +57,7 @@ public class CustomQueryRecyclerAdapter extends FirestoreRecyclerAdapter<UserInf
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     Log.d(TAG, "onCheckedChanged: " + isChecked);
-                    checkChangedListener.onSwitchStateChanged(isChecked,getSnapshots().getSnapshot(getAdapterPosition()));
+                    checkChangedListener.onSwitchStateChanged(isChecked, getSnapshots().getSnapshot(getAdapterPosition()));
                 }
             });
             itemView.setOnClickListener(new View.OnClickListener() {

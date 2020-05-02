@@ -53,6 +53,7 @@
                     android:src="@drawable/user_not_available_image"
                     app:civ_border_color="@color/black"
                     app:civ_border_width="2dp" />
+
                 <TextView
                     android:id="@+id/row_item_user_name_tv"
                     android:layout_width="wrap_content"

@@ -14,73 +14,73 @@ import androidx.core.content.ContextCompat;
 
 public class PermissionsRequestor {
 
-        private static final int PERMISSIONS_REQUEST_CODE = 42;
-        private final Activity activity;
-        private ResultListener resultListener;
+    private static final int PERMISSIONS_REQUEST_CODE = 42;
+    private final Activity activity;
+    private ResultListener resultListener;
 
-        public PermissionsRequestor(Activity activity) {
-            this.activity = activity;
+    public PermissionsRequestor(Activity activity) {
+        this.activity = activity;
+    }
+
+    public void request(ResultListener resultListener) {
+        this.resultListener = resultListener;
+
+        String[] missingPermissions = getPermissionsToRequest();
+        if (missingPermissions.length == 0) {
+            resultListener.permissionsGranted();
+        } else {
+            ActivityCompat.requestPermissions(activity, missingPermissions, PERMISSIONS_REQUEST_CODE);
         }
+    }
 
-        public void request(ResultListener resultListener) {
-            this.resultListener = resultListener;
-
-            String[] missingPermissions = getPermissionsToRequest();
-            if (missingPermissions.length == 0) {
-                resultListener.permissionsGranted();
-            } else {
-                ActivityCompat.requestPermissions(activity, missingPermissions, PERMISSIONS_REQUEST_CODE);
-            }
-        }
-
-        private String[] getPermissionsToRequest() {
-            ArrayList<String> permissionList = new ArrayList<>();
-            try {
-                PackageInfo packageInfo = activity.getPackageManager().getPackageInfo(
-                        activity.getPackageName(), PackageManager.GET_PERMISSIONS);
-                if (packageInfo.requestedPermissions != null) {
-                    for (String permission : packageInfo.requestedPermissions) {
-                        if (ContextCompat.checkSelfPermission(
-                                activity, permission) != PackageManager.PERMISSION_GRANTED) {
-                            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M &&
-                                    permission.equals(Manifest.permission.CHANGE_NETWORK_STATE)) {
-                                // Exclude CHANGE_NETWORK_STATE as it does not require explicit user approval.
-                                // This workaround is needed for devices running Android 6.0.0,
-                                // see https://issuetracker.google.com/issues/37067994
-                                continue;
-                            }
-                            permissionList.add(permission);
+    private String[] getPermissionsToRequest() {
+        ArrayList<String> permissionList = new ArrayList<>();
+        try {
+            PackageInfo packageInfo = activity.getPackageManager().getPackageInfo(
+                    activity.getPackageName(), PackageManager.GET_PERMISSIONS);
+            if (packageInfo.requestedPermissions != null) {
+                for (String permission : packageInfo.requestedPermissions) {
+                    if (ContextCompat.checkSelfPermission(
+                            activity, permission) != PackageManager.PERMISSION_GRANTED) {
+                        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M &&
+                                permission.equals(Manifest.permission.CHANGE_NETWORK_STATE)) {
+                            // Exclude CHANGE_NETWORK_STATE as it does not require explicit user approval.
+                            // This workaround is needed for devices running Android 6.0.0,
+                            // see https://issuetracker.google.com/issues/37067994
+                            continue;
                         }
+                        permissionList.add(permission);
                     }
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
-            return permissionList.toArray(new String[0]);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return permissionList.toArray(new String[0]);
+    }
+
+    public void onRequestPermissionsResult(int requestCode, @NonNull int[] grantResults) {
+        if (resultListener == null) {
+            return;
         }
 
-        public void onRequestPermissionsResult(int requestCode, @NonNull int[] grantResults) {
-            if (resultListener == null) {
-                return;
+        if (grantResults.length == 0) {
+            // Request was cancelled.
+            return;
+        }
+
+        if (requestCode == PERMISSIONS_REQUEST_CODE) {
+            boolean allGranted = true;
+            for (int result : grantResults) {
+                allGranted &= result == PackageManager.PERMISSION_GRANTED;
             }
 
-            if (grantResults.length == 0) {
-                // Request was cancelled.
-                return;
-            }
-
-            if (requestCode == PERMISSIONS_REQUEST_CODE) {
-                boolean allGranted = true;
-                for (int result : grantResults) {
-                    allGranted &= result == PackageManager.PERMISSION_GRANTED;
-                }
-
-                if (allGranted) {
-                    resultListener.permissionsGranted();
-                } else {
-                    resultListener.permissionsDenied();
-                }
+            if (allGranted) {
+                resultListener.permissionsGranted();
+            } else {
+                resultListener.permissionsDenied();
             }
         }
     }
+}
 

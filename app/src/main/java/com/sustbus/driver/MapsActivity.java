@@ -180,9 +180,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }.start();
         }
 
-        if(getIntent().getBooleanExtra("fromSchedule",false)){
+        if (getIntent().getBooleanExtra("fromSchedule", false)) {
 
-            new CountDownTimer(60000,1000){
+            new CountDownTimer(60000, 1000) {
                 @Override
                 public void onFinish() {
 
@@ -190,11 +190,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 @Override
                 public void onTick(long millisUntilFinished) {
-                          if(markerMap.containsKey(getIntent().getStringExtra("markerToShow"))){
-                              String markerKey=getIntent().getStringExtra("markerToShow");
-                              mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(markerMap.get(markerKey).getPosition(),16f));
-                              this.cancel();
-                          }
+                    if (markerMap.containsKey(getIntent().getStringExtra("markerToShow"))) {
+                        String markerKey = getIntent().getStringExtra("markerToShow");
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(markerMap.get(markerKey).getPosition(), 16f));
+                        this.cancel();
+                    }
                 }
             }.start();
 

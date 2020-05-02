@@ -22,40 +22,41 @@ public class ShowNotificationsFragment extends Fragment {
     private CountDownTimer countDownTimer;
     private TextView textView;
     private View root;
-    public ShowNotificationsFragment(RecyclerView.LayoutManager layoutManager, RecyclerViewAdapter2 mAdapter){
-        this.layoutManager=layoutManager;
-        this.mAdapter=mAdapter;
+
+    public ShowNotificationsFragment(RecyclerView.LayoutManager layoutManager, RecyclerViewAdapter2 mAdapter) {
+        this.layoutManager = layoutManager;
+        this.mAdapter = mAdapter;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d("DEBMES","oncreat");
+        Log.d("DEBMES", "oncreat");
 
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        if(root!=null)return root;
-        root =inflater.inflate(R.layout.fragment_show_notifications, container, false);
-        textView=root.findViewById(R.id.show_notification_tv);
-            recyclerView = root.findViewById(R.id.show_notification_recycleView);
-            recyclerView.setLayoutManager(layoutManager);
-            recyclerView.setAdapter(mAdapter);
+        if (root != null) return root;
+        root = inflater.inflate(R.layout.fragment_show_notifications, container, false);
+        textView = root.findViewById(R.id.show_notification_tv);
+        recyclerView = root.findViewById(R.id.show_notification_recycleView);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setAdapter(mAdapter);
 
-            countDownTimer = new CountDownTimer(1000000, 1000) {
-                @Override
-                public void onTick(long millisUntilFinished) {
-                    if (mAdapter.getItemCount() == 0) textView.setVisibility(View.VISIBLE);
-                    else textView.setVisibility(View.INVISIBLE);
-                }
+        countDownTimer = new CountDownTimer(1000000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                if (mAdapter.getItemCount() == 0) textView.setVisibility(View.VISIBLE);
+                else textView.setVisibility(View.INVISIBLE);
+            }
 
-                @Override
-                public void onFinish() {
+            @Override
+            public void onFinish() {
 
-                }
-            };
-            countDownTimer.start();
+            }
+        };
+        countDownTimer.start();
 
         return root;
     }
@@ -64,9 +65,9 @@ public class ShowNotificationsFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d("DEBMES","destroy");
+        Log.d("DEBMES", "destroy");
         countDownTimer.cancel();
-        layoutManager=null;
+        layoutManager = null;
         recyclerView.setLayoutManager(null);
         recyclerView.setAdapter(null);
     }

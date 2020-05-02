@@ -14,12 +14,6 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.RecyclerView;
-
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -31,17 +25,24 @@ import com.google.firebase.firestore.Query;
 import com.sustbus.driver.R;
 import com.sustbus.driver.util.UserInfo;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.RecyclerView;
+
 public class StudentsListFragment extends Fragment implements CheckChangedListener {
     private static final String TAG = "StudentsListFragment";
 
     View view;
     RecyclerView recyclerView;
     StudentsRecyclerAdapter recyclerAdapter;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_students_list,container,false);
-        return  view;
+        view = inflater.inflate(R.layout.fragment_students_list, container, false);
+        return view;
     }
 
     @Override
@@ -55,38 +56,40 @@ public class StudentsListFragment extends Fragment implements CheckChangedListen
     private void initRecyclerView(FirebaseUser currentUser) {
         Query query = FirebaseFirestore.getInstance()
                 .collection("users")
-                .whereEqualTo("driver",false)
-                .whereEqualTo("profileCompleted",true);;
+                .whereEqualTo("driver", false)
+                .whereEqualTo("profileCompleted", true);
+        ;
         FirestoreRecyclerOptions<UserInfo> options = new FirestoreRecyclerOptions.Builder<UserInfo>()
-                .setQuery(query,UserInfo.class)
+                .setQuery(query, UserInfo.class)
                 .build();
-        recyclerAdapter = new StudentsRecyclerAdapter(options,this);
+        recyclerAdapter = new StudentsRecyclerAdapter(options, this);
         recyclerView.setAdapter(recyclerAdapter);
-        recyclerView.addItemDecoration(new DividerItemDecoration(getContext(),DividerItemDecoration.VERTICAL));
+        recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
         recyclerAdapter.startListening();
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        if(recyclerAdapter != null){
+        if (recyclerAdapter != null) {
             recyclerAdapter.stopListening();
         }
     }
 
     @Override
     public void onSwitchStateChanged(boolean isChecked, DocumentSnapshot snapshot) {
-        snapshot.getReference().update("permitted",isChecked);
+        snapshot.getReference().update("permitted", isChecked);
     }
+
     @Override
     public void onItemClicked(String uId) {
         Log.d(TAG, "onItemClicked: " + uId);
         LayoutInflater inflater = getLayoutInflater();
-        View view = inflater.inflate(R.layout.user_info_alertdialog,null);
-        EditText emailEt,userNameEt,regiNoEt;
+        View view = inflater.inflate(R.layout.user_info_alertdialog, null);
+        EditText emailEt, userNameEt, regiNoEt;
         TextView driverTv;
         ImageView userEv;
-        Switch permittedSwitch,profileCompletedSwitch;
+        Switch permittedSwitch, profileCompletedSwitch;
         emailEt = view.findViewById(R.id.ad_email_et);
         userNameEt = view.findViewById(R.id.ad_username_et);
         regiNoEt = view.findViewById(R.id.ad_regino_et);
@@ -104,15 +107,13 @@ public class StudentsListFragment extends Fragment implements CheckChangedListen
                 regiNoEt.setText(snapshot.getString("regiNo"));
                 permittedSwitch.setChecked(snapshot.getBoolean("permitted"));
                 profileCompletedSwitch.setChecked(snapshot.getBoolean("profileCompleted"));
-                driverTv.setText(snapshot.getBoolean("driver")?"Driver":"Student");
+                driverTv.setText(snapshot.getBoolean("driver") ? "Driver" : "Student");
                 try {
                     String img = snapshot.getString("idUrl");
                     byte[] imageAsBytes = Base64.decode(img.getBytes(), Base64.DEFAULT);
                     userEv.setImageBitmap(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
-                }
-                catch (NullPointerException e){
-                }
-                catch (IllegalArgumentException e){
+                } catch (NullPointerException e) {
+                } catch (IllegalArgumentException e) {
                     Log.d(TAG, "onSuccess: " + e.getMessage());
                 }
             }
@@ -123,19 +124,19 @@ public class StudentsListFragment extends Fragment implements CheckChangedListen
                 .setPositiveButton("save", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        String email,userName,regiNo;
+                        String email, userName, regiNo;
                         email = emailEt.getText().toString().trim();
                         userName = userNameEt.getText().toString().trim();
                         regiNo = regiNoEt.getText().toString().trim();
                         Log.d(TAG, "onClick: " + email + " " + regiNo);
-                        documentReference.update("email",email);
-                        documentReference.update("userName",userName);
-                        documentReference.update("regiNo",regiNo);
-                        documentReference.update("permitted",permittedSwitch.isChecked());
-                        documentReference.update("profileCompleted",profileCompletedSwitch.isChecked());
+                        documentReference.update("email", email);
+                        documentReference.update("userName", userName);
+                        documentReference.update("regiNo", regiNo);
+                        documentReference.update("permitted", permittedSwitch.isChecked());
+                        documentReference.update("profileCompleted", profileCompletedSwitch.isChecked());
                     }
                 })
-                .setNegativeButton("cancel",null)
+                .setNegativeButton("cancel", null)
                 .show();
     }
 }

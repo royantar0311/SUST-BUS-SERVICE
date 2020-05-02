@@ -5,13 +5,12 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
-
 import android.util.Log;
-
-import androidx.exifinterface.media.ExifInterface;
 
 import java.io.IOException;
 import java.io.InputStream;
+
+import androidx.exifinterface.media.ExifInterface;
 
 /**
  * Created by User on 10/29/2017.
@@ -34,40 +33,6 @@ public class RotateBitmap {
         img.recycle();
         return rotatedImg;
     }
-
-    /**
-     * This method is responsible for solving the rotation issue if exist. Also scale the images to
-     * 1024x1024 resolution
-     *
-     * @param selectedImage The Image URI
-     * @return Bitmap image results
-     * @throws IOException
-     */
-    public Bitmap HandleSamplingAndRotationBitmap(Context context, Uri selectedImage)
-            throws IOException {
-        mContext = context;
-        int MAX_HEIGHT = 1024;
-        int MAX_WIDTH = 1024;
-
-        // First decode with inJustDecodeBounds=true to check dimensions
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        InputStream imageStream = context.getContentResolver().openInputStream(selectedImage);
-        BitmapFactory.decodeStream(imageStream, null, options);
-        imageStream.close();
-
-        // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, MAX_WIDTH, MAX_HEIGHT);
-
-        // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false;
-        imageStream = context.getContentResolver().openInputStream(selectedImage);
-        Bitmap img = BitmapFactory.decodeStream(imageStream, null, options);
-
-        img = rotateImageIfRequired(img, selectedImage);
-        return img;
-    }
-
 
     private static int calculateInSampleSize(BitmapFactory.Options options,
                                              int reqWidth, int reqHeight) {
@@ -102,6 +67,39 @@ public class RotateBitmap {
             }
         }
         return inSampleSize;
+    }
+
+    /**
+     * This method is responsible for solving the rotation issue if exist. Also scale the images to
+     * 1024x1024 resolution
+     *
+     * @param selectedImage The Image URI
+     * @return Bitmap image results
+     * @throws IOException
+     */
+    public Bitmap HandleSamplingAndRotationBitmap(Context context, Uri selectedImage)
+            throws IOException {
+        mContext = context;
+        int MAX_HEIGHT = 1024;
+        int MAX_WIDTH = 1024;
+
+        // First decode with inJustDecodeBounds=true to check dimensions
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        InputStream imageStream = context.getContentResolver().openInputStream(selectedImage);
+        BitmapFactory.decodeStream(imageStream, null, options);
+        imageStream.close();
+
+        // Calculate inSampleSize
+        options.inSampleSize = calculateInSampleSize(options, MAX_WIDTH, MAX_HEIGHT);
+
+        // Decode bitmap with inSampleSize set
+        options.inJustDecodeBounds = false;
+        imageStream = context.getContentResolver().openInputStream(selectedImage);
+        Bitmap img = BitmapFactory.decodeStream(imageStream, null, options);
+
+        img = rotateImageIfRequired(img, selectedImage);
+        return img;
     }
 
     /**

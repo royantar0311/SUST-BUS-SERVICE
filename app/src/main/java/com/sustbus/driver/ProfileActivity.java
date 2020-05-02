@@ -10,12 +10,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.text.Editable;
-import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.util.Base64;
 import android.util.Log;
-import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -24,13 +20,9 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -41,17 +33,16 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.sustbus.driver.util.RotateBitmap;
 import com.sustbus.driver.util.UserInfo;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import de.hdodenhof.circleimageview.CircleImageView;
 import studio.carbonylgroup.textfieldboxes.SimpleTextChangedWatcher;
 import studio.carbonylgroup.textfieldboxes.TextFieldBoxes;
@@ -82,6 +73,12 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     private ListenerRegistration listener;
     private Uri dpFilePath = null, idFilePath = null;
     private ProgressDialog progressDialog;
+
+    public static byte[] getBytesFromBitmap(Bitmap bitmap, int quality) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream);
+        return stream.toByteArray();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -157,55 +154,52 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     private void initChangePasswordAD() {
         LayoutInflater inflater = getLayoutInflater();
 
-        View view = inflater.inflate(R.layout.forgot_password_alertdialog,null);
+        View view = inflater.inflate(R.layout.forgot_password_alertdialog, null);
         new AlertDialog.Builder(ProfileActivity.this)
                 .setTitle("Change Password")
                 .setView(view)
                 .setPositiveButton("ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        EditText currentPasswordEt,newPasswordEt,confirmPasswordEt;
+                        EditText currentPasswordEt, newPasswordEt, confirmPasswordEt;
                         currentPasswordEt = view.findViewById(R.id.change_pass_ad_current_password);
                         newPasswordEt = view.findViewById(R.id.change_pass_ad_new_password);
                         confirmPasswordEt = view.findViewById(R.id.change_pass_ad_confirm_password);
                         String currentPass = currentPasswordEt.getText().toString().trim();
                         FirebaseAuth.getInstance().getCurrentUser()
-                                .reauthenticate(EmailAuthProvider.getCredential(userInfo.getEmail(),currentPass))
+                                .reauthenticate(EmailAuthProvider.getCredential(userInfo.getEmail(), currentPass))
                                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
                                         Log.d(TAG, "onComplete: asche");
-                                        if(task.isSuccessful()){
-                                            if(newPasswordEt.getText().toString().equals(confirmPasswordEt.getText().toString())){
+                                        if (task.isSuccessful()) {
+                                            if (newPasswordEt.getText().toString().equals(confirmPasswordEt.getText().toString())) {
                                                 FirebaseAuth.getInstance().getCurrentUser().updatePassword(newPasswordEt.getText().toString())
-                                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                        @Override
-                                                        public void onComplete(@NonNull Task<Void> task) {
-                                                            if(task.isSuccessful()){
-                                                                Toast.makeText(ProfileActivity.this,
-                                                                        "Password Changed\nPlease Log in again",
-                                                                        Toast.LENGTH_SHORT).show();
-                                                                userInfo.reset();
-                                                                FirebaseAuth.getInstance().signOut();
-                                                                Intent intent = new Intent(ProfileActivity.this,LoginActivity.class);
-                                                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                                                startActivity(intent);
-                                                                finish();
+                                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                            @Override
+                                                            public void onComplete(@NonNull Task<Void> task) {
+                                                                if (task.isSuccessful()) {
+                                                                    Toast.makeText(ProfileActivity.this,
+                                                                            "Password Changed\nPlease Log in again",
+                                                                            Toast.LENGTH_SHORT).show();
+                                                                    userInfo.reset();
+                                                                    FirebaseAuth.getInstance().signOut();
+                                                                    Intent intent = new Intent(ProfileActivity.this, LoginActivity.class);
+                                                                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                                    startActivity(intent);
+                                                                    finish();
+                                                                } else {
+                                                                    Toast.makeText(ProfileActivity.this,
+                                                                            task.getException().getMessage(),
+                                                                            Toast.LENGTH_SHORT).show();
+                                                                }
                                                             }
-                                                            else {
-                                                                Toast.makeText(ProfileActivity.this,
-                                                                        task.getException().getMessage(),
-                                                                        Toast.LENGTH_SHORT).show();
-                                                            }
-                                                        }
-                                                    });
+                                                        });
+                                            } else {
+                                                Toast.makeText(ProfileActivity.this, "passwords do not match", Toast.LENGTH_SHORT).show();
                                             }
-                                            else {
-                                                Toast.makeText(ProfileActivity.this,"passwords do not match",Toast.LENGTH_SHORT).show();
-                                            }
-                                        }
-                                        else {
-                                            Toast.makeText(ProfileActivity.this,task.getException().getMessage(),Toast.LENGTH_SHORT).show();
+                                        } else {
+                                            Toast.makeText(ProfileActivity.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                         }
                                     }
                                 });
@@ -228,14 +222,11 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             String img = userInfo.getUrl();
             byte[] imageAsBytes = Base64.decode(img.getBytes(), Base64.DEFAULT);
             dpEv.setImageBitmap(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
-        }
-        catch (NullPointerException e){
-        }
-        catch (IllegalArgumentException e){
+        } catch (NullPointerException e) {
+        } catch (IllegalArgumentException e) {
             Log.d(TAG, "onSuccess: " + e.getMessage());
         }
     }
-
 
     private void userNameValidator(String theNewText) {
         userName = theNewText;
@@ -277,11 +268,11 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
                 if (dpFilePath != null) {
                     Log.d(TAG, "onClick: dp upload init");
-                    BackgroundImageUpload backgroundImageUpload = new BackgroundImageUpload(storageReference.child("dp.jpg"),"dp");
+                    BackgroundImageUpload backgroundImageUpload = new BackgroundImageUpload(storageReference.child("dp.jpg"), "dp");
                     backgroundImageUpload.execute(dpFilePath);
                 }
                 if (idFilePath != null) {
-                    BackgroundImageUpload backgroundImageUpload = new BackgroundImageUpload(storageReference.child("id.jpg"),"id");
+                    BackgroundImageUpload backgroundImageUpload = new BackgroundImageUpload(storageReference.child("id.jpg"), "id");
                     backgroundImageUpload.execute(idFilePath);
                 }
                 updateRestOfTheData();
@@ -320,7 +311,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "onActivityResult: " + userName + " " + regiNo);
-        
+
         if (requestCode == REQUESTING_DP && resultCode == RESULT_OK &&
                 data != null && data.getData() != null) {
             Log.d(TAG, "onActivityResult: " + data + "dp fetched");
@@ -330,7 +321,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 //                    .load(dpFilePath)
 //                    .into(dpEv);
             try {
-                dpEv.setImageBitmap(MediaStore.Images.Media.getBitmap(ProfileActivity.this.getContentResolver(),dpFilePath));
+                dpEv.setImageBitmap(MediaStore.Images.Media.getBitmap(ProfileActivity.this.getContentResolver(), dpFilePath));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -379,7 +370,6 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         regiNoEt.setText(regiNo);
     }
 
-
     private void permitted() {
         updateProfileBtn.setEnabled(true);
         updateProfileBtn.setText("Update Profile");
@@ -411,21 +401,21 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         super.onBackPressed();
         backButtonPressed(null);
     }
+
     public void backButtonPressed(View view) {
-        if(!userInfo.getUserName().equals(userName) || !userInfo.getRegiNo().equals(regiNo) ||
-                dpFilePath != null || idFilePath != null){
+        if (!userInfo.getUserName().equals(userName) || !userInfo.getRegiNo().equals(regiNo) ||
+                dpFilePath != null || idFilePath != null) {
             new AlertDialog.Builder(ProfileActivity.this)
                     .setTitle("Save Profile")
                     .setMessage("or your changes will be lost")
-                    .setPositiveButton("yes",null)
+                    .setPositiveButton("yes", null)
                     .setNegativeButton("no", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             finish();
                         }
                     }).show();
-        }
-        else finish();
+        } else finish();
     }
 
     public void idChooserButtonPressed(View view) {
@@ -444,45 +434,49 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent, "Select Profile Photo"), REQUESTING_DP);
     }
-    public class BackgroundImageUpload extends AsyncTask<Uri, Integer, byte[]>{
+
+    public class BackgroundImageUpload extends AsyncTask<Uri, Integer, byte[]> {
         Bitmap bitmap;
         String message;
         StorageReference storageReference;
-        BackgroundImageUpload(StorageReference storageReference, String message){
+
+        BackgroundImageUpload(StorageReference storageReference, String message) {
             this.storageReference = storageReference;
             this.message = message;
         }
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
             Log.d(TAG, "onPreExecute: ");
         }
+
         @Override
         protected byte[] doInBackground(Uri... uris) {
             Log.d(TAG, "doInBackground: started");
 
-            if(bitmap == null){
+            if (bitmap == null) {
                 try {
                     RotateBitmap rotateBitmap = new RotateBitmap();
-                    bitmap = rotateBitmap.HandleSamplingAndRotationBitmap(ProfileActivity.this,uris[0]);
-                }
-                catch (IOException e){
+                    bitmap = rotateBitmap.HandleSamplingAndRotationBitmap(ProfileActivity.this, uris[0]);
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
-                
+
             }
             byte[] bytes;
-            bytes = getBytesFromBitmap(bitmap,20);
+            bytes = getBytesFromBitmap(bitmap, 20);
             return bytes;
         }
+
         @Override
         protected void onPostExecute(byte[] bytes) {
             super.onPostExecute(bytes);
             Log.d(TAG, "onPostExecute: done " + bytes.length);
             String encodedImage = Base64.encodeToString(bytes, Base64.NO_WRAP);
 
-            if(message.equals("dp"))userInfo.setUrl(encodedImage);
-            else if(message.equals("id"))userInfo.setIdUrl(encodedImage);
+            if (message.equals("dp")) userInfo.setUrl(encodedImage);
+            else if (message.equals("id")) userInfo.setIdUrl(encodedImage);
             db.update(userInfo.toMap());
             Log.d(TAG, "onPostExecute: " + userInfo.toString());
             //UploadTask uploadTask = storageReference.putBytes(bytes);
@@ -507,10 +501,5 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 //                }
 //            });
         }
-    }
-    public static byte[] getBytesFromBitmap(Bitmap bitmap, int quality){
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, quality,stream);
-        return stream.toByteArray();
     }
 }

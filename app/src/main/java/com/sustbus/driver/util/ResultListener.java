@@ -2,8 +2,8 @@ package com.sustbus.driver.util;
 
 public interface ResultListener {
 
-       void permissionsGranted();
+    void permissionsGranted();
 
-        void permissionsDenied();
+    void permissionsDenied();
 
 }

@@ -32,11 +32,12 @@ public class RegisterNotification extends Fragment implements CompoundButton.OnC
     private ChipsInput chipsInput;
     private List<PlaceChips> chipsList;
 
-    private CheckBox away,towards,_6to9,_9to12,_12to15,_15to18,_18to22,wholeday;
+    private CheckBox away, towards, _6to9, _9to12, _12to15, _15to18, _18to22, wholeday;
 
     private CallBack callBack;
-    public RegisterNotification(CallBack callBack){
-        this.callBack=callBack;
+
+    public RegisterNotification(CallBack callBack) {
+        this.callBack = callBack;
     }
 
     @Override
@@ -45,25 +46,25 @@ public class RegisterNotification extends Fragment implements CompoundButton.OnC
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View v=inflater.inflate(R.layout.fragment_register_notification, container, false);
-        chipsInput=v.findViewById(R.id.chips_for_registration);
-        away=v.findViewById(R.id.away_checkbox);
-        towards=v.findViewById(R.id.towards_checkbox);
-        _6to9=v.findViewById(R.id._6to9);
-        _9to12=v.findViewById(R.id._9to12);
-        _12to15=v.findViewById(R.id._12to15);
-        _15to18=v.findViewById(R.id._15to18);
-        _18to22=v.findViewById(R.id._18to22);
-        wholeday=v.findViewById(R.id._whole_day);
+        View v = inflater.inflate(R.layout.fragment_register_notification, container, false);
+        chipsInput = v.findViewById(R.id.chips_for_registration);
+        away = v.findViewById(R.id.away_checkbox);
+        towards = v.findViewById(R.id.towards_checkbox);
+        _6to9 = v.findViewById(R.id._6to9);
+        _9to12 = v.findViewById(R.id._9to12);
+        _12to15 = v.findViewById(R.id._12to15);
+        _15to18 = v.findViewById(R.id._15to18);
+        _18to22 = v.findViewById(R.id._18to22);
+        wholeday = v.findViewById(R.id._whole_day);
         v.findViewById(R.id.notification_register_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 register();
             }
         });
-        ((TextView)getActivity().findViewById(R.id.notification_setting_appbar_tv)).setText("Setup Registration");
+        ((TextView) getActivity().findViewById(R.id.notification_setting_appbar_tv)).setText("Setup Registration");
 
 
         _18to22.setOnCheckedChangeListener(this);
@@ -74,14 +75,14 @@ public class RegisterNotification extends Fragment implements CompoundButton.OnC
         wholeday.setOnCheckedChangeListener(this);
 
         chipsInput.setMaxRows(20);
-        chipsList=new ArrayList<>();
+        chipsList = new ArrayList<>();
 
-        for(String s: MapUtil.placeList){
+        for (String s : MapUtil.placeList) {
             chipsList.add(new PlaceChips(s));
         }
 
         chipsInput.setFilterableList(chipsList);
-        return  v;
+        return v;
 
 
     }
@@ -92,89 +93,86 @@ public class RegisterNotification extends Fragment implements CompoundButton.OnC
         super.onDestroy();
         getActivity().findViewById(R.id.notification_setting_fab).setVisibility(View.VISIBLE);
         chipsInput.addChip(chipsList.get(0));
-        ((TextView)getActivity().findViewById(R.id.notification_setting_appbar_tv)).setText("Notification Rules");
+        ((TextView) getActivity().findViewById(R.id.notification_setting_appbar_tv)).setText("Notification Rules");
     }
 
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-        if(isChecked && buttonView.getId()==R.id._whole_day){
+        if (isChecked && buttonView.getId() == R.id._whole_day) {
             _18to22.setChecked(false);
             _15to18.setChecked(false);
             _12to15.setChecked(false);
             _9to12.setChecked(false);
             _6to9.setChecked(false);
 
-        }
-        else if(isChecked){
+        } else if (isChecked) {
             wholeday.setChecked(false);
         }
 
     }
-    public void register(){
+
+    public void register() {
 
         List<PlaceChips> selectedPlaces;
-        selectedPlaces= (List<PlaceChips>) chipsInput.getSelectedChipList();
-        if(selectedPlaces.size()==0){
-            Snackbar.make(chipsInput,"Please Enter at least one valid place",4000).show();
+        selectedPlaces = (List<PlaceChips>) chipsInput.getSelectedChipList();
+        if (selectedPlaces.size() == 0) {
+            Snackbar.make(chipsInput, "Please Enter at least one valid place", 4000).show();
             return;
         }
-        if(!away.isChecked() && !towards.isChecked()){
-            Snackbar.make(chipsInput,"Please Choose at least one rule",4000).show();
-            return;
-        }
-
-        if(!_18to22.isChecked() && !_12to15.isChecked() && !_6to9.isChecked() && !_9to12.isChecked() && !_15to18.isChecked() && !wholeday.isChecked() ){
-            Snackbar.make(chipsInput,"Please Choose at least one time",4000).show();
+        if (!away.isChecked() && !towards.isChecked()) {
+            Snackbar.make(chipsInput, "Please Choose at least one rule", 4000).show();
             return;
         }
 
+        if (!_18to22.isChecked() && !_12to15.isChecked() && !_6to9.isChecked() && !_9to12.isChecked() && !_15to18.isChecked() && !wholeday.isChecked()) {
+            Snackbar.make(chipsInput, "Please Choose at least one time", 4000).show();
+            return;
+        }
 
 
-        List<String> tokenList=new ArrayList<>();
+        List<String> tokenList = new ArrayList<>();
 
-        for(int i=0;i<selectedPlaces.size();i++){
+        for (int i = 0; i < selectedPlaces.size(); i++) {
 
-            String name=MapUtil.removeSpace(selectedPlaces.get(i).getInfo());
+            String name = MapUtil.removeSpace(selectedPlaces.get(i).getInfo());
 
-            if(away.isChecked()){
-                String topic=name+".away.";
+            if (away.isChecked()) {
+                String topic = name + ".away.";
 
-                if(wholeday.isChecked()){
-                    tokenList.add(topic+"00_00");
-                }
-                else {
-                    if(_6to9.isChecked())tokenList.add(topic+"06_09");
-                    if(_9to12.isChecked())tokenList.add(topic+"09_12");
-                    if(_12to15.isChecked())tokenList.add(topic+"12_15");
-                    if(_15to18.isChecked())tokenList.add(topic+"15_18");
-                    if(_18to22.isChecked())tokenList.add(topic+"18_22");
+                if (wholeday.isChecked()) {
+                    tokenList.add(topic + "00_00");
+                } else {
+                    if (_6to9.isChecked()) tokenList.add(topic + "06_09");
+                    if (_9to12.isChecked()) tokenList.add(topic + "09_12");
+                    if (_12to15.isChecked()) tokenList.add(topic + "12_15");
+                    if (_15to18.isChecked()) tokenList.add(topic + "15_18");
+                    if (_18to22.isChecked()) tokenList.add(topic + "18_22");
                 }
             }
 
-            if(towards.isChecked()){
-                String topic=name+".towards.";
+            if (towards.isChecked()) {
+                String topic = name + ".towards.";
 
-                if(wholeday.isChecked()){
-                    tokenList.add(topic+"00_00");
-                }
-                else {
-                    if(_6to9.isChecked())tokenList.add(topic+"06_09");
-                    if(_9to12.isChecked())tokenList.add(topic+"09_12");
-                    if(_12to15.isChecked())tokenList.add(topic+"12_15");
-                    if(_15to18.isChecked())tokenList.add(topic+"15_18");
-                    if(_18to22.isChecked())tokenList.add(topic+"18_22");
+                if (wholeday.isChecked()) {
+                    tokenList.add(topic + "00_00");
+                } else {
+                    if (_6to9.isChecked()) tokenList.add(topic + "06_09");
+                    if (_9to12.isChecked()) tokenList.add(topic + "09_12");
+                    if (_12to15.isChecked()) tokenList.add(topic + "12_15");
+                    if (_15to18.isChecked()) tokenList.add(topic + "15_18");
+                    if (_18to22.isChecked()) tokenList.add(topic + "18_22");
                 }
             }
         }
-        SharedPreferences sharedPreferences=getActivity().getSharedPreferences("NOTIFICATIONS", Context.MODE_PRIVATE);
-        Set<String> keySet=sharedPreferences.getStringSet("tokenSet",new HashSet<>());
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("NOTIFICATIONS", Context.MODE_PRIVATE);
+        Set<String> keySet = sharedPreferences.getStringSet("tokenSet", new HashSet<>());
 
-        Set<String> tmp=new HashSet<>(keySet);
+        Set<String> tmp = new HashSet<>(keySet);
 
-        for(int i=0;i<tokenList.size();i++){
-            if(!keySet.contains(tokenList.get(i))) {
+        for (int i = 0; i < tokenList.size(); i++) {
+            if (!keySet.contains(tokenList.get(i))) {
                 FirebaseMessaging.getInstance().subscribeToTopic(tokenList.get(i));
                 tmp.add(tokenList.get(i));
                 //Log.d("DEBMES","added "+tokenList.get(i));
@@ -183,8 +181,8 @@ public class RegisterNotification extends Fragment implements CompoundButton.OnC
         }
 
 
-        SharedPreferences.Editor editor=sharedPreferences.edit();
-        editor.putStringSet("tokenSet",tmp);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putStringSet("tokenSet", tmp);
         editor.commit();
 
 
@@ -196,9 +194,11 @@ public class RegisterNotification extends Fragment implements CompoundButton.OnC
     class PlaceChips implements ChipInterface {
 
         String place;
-        PlaceChips(String name){
-            place=name;
+
+        PlaceChips(String name) {
+            place = name;
         }
+
         @Override
         public Object getId() {
             return null;
