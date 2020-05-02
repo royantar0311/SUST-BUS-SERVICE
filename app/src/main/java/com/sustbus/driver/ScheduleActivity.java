@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.animation.CycleInterpolator;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.snackbar.Snackbar;
@@ -86,6 +87,7 @@ public class ScheduleActivity extends AppCompatActivity {
                     if (currentProgressDialogue != null) currentProgressDialogue.dismiss();
                     if (forRideShare) init(R.id.menu_item_on_road);
                     else init(R.id.menu_item_next);
+                    Toast.makeText(getApplicationContext(),"Updated",Toast.LENGTH_LONG).show();
                 }
 
                 @Override
@@ -251,11 +253,12 @@ public class ScheduleActivity extends AppCompatActivity {
                 init(bottomNav.getSelectedItemId());
                 refreshImagebutton.animate().cancel();
                 refreshImagebutton.clearAnimation();
+                Toast.makeText(getApplicationContext(),"Updated",Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void notOk() {
-                Snackbar.make(findViewById(R.id.frame_container), "Check Connection and Try Again", 4000).show();
+                Snackbar.make(findViewById(R.id.frame_container), "Check Connection and Try Again", 3000).show();
                 init(bottomNav.getSelectedItemId());
                 refreshImagebutton.animate().cancel();
                 refreshImagebutton.clearAnimation();
@@ -271,7 +274,9 @@ public class ScheduleActivity extends AppCompatActivity {
             RouteInformation tmp = onRoad.get(i);
             if (tmp.comparableEndTime.compareTo(nowTime) <= 0) {
                 finished.add(0, tmp);
+                finishedAdapter.notifyItemInserted(0);
                 onRoad.remove(i);
+                onadapter.notifyItemRemoved(i);
                 i--;
             }
         }
@@ -281,25 +286,35 @@ public class ScheduleActivity extends AppCompatActivity {
             // Log.d("DEBMES",tmp.comparableStartTime+" "+tmp.comparableEndTime+" "+nowTime);
             if (tmp.comparableEndTime.compareTo(nowTime) <= 0) {
                 finished.add(0, tmp);
+                finishedAdapter.notifyItemInserted(0);
                 next.remove(i);
+                nextAdapter.notifyItemRemoved(i);
                 i--;
             } else if (tmp.comparableStartTime.compareTo(nowTime) <= 0) {
                 onRoad.add(0, tmp);
+                onadapter.notifyItemInserted(0);
                 next.remove(i);
+                nextAdapter.notifyItemRemoved(i);
                 i--;
             }
         }
-
+        int i=0;
         for (RouteInformation tmp : onRoad) {
-            if (onRoadMap.containsKey(tmp.getRouteId())) {
-                tmp.setMarkerId(onRoadMap.get(tmp.getRouteId()));
-            } else tmp.setMarkerId(null);
+            String id=tmp.getMarkerId();
+            String currentId=onRoadMap.get(tmp.getRouteId());
+            if(id==null){
+                if(currentId!=null){
+                    tmp.setMarkerId(currentId);
+                    onadapter.notifyItemChanged(i);
+                }
+            }
+            else if (!id.equals(currentId)) {
+                tmp.setMarkerId(currentId);
+                onadapter.notifyItemChanged(i);
+            }
+            i++;
         }
 
-
-        nextAdapter.notifyDataSetChanged();
-        finishedAdapter.notifyDataSetChanged();
-        onadapter.notifyDataSetChanged();
     }
 
     public void onRoadClickEvent(int position) {

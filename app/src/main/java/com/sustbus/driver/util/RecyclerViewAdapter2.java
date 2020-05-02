@@ -141,8 +141,7 @@ public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapt
             editor.commit();
 
             tokenList.remove(pos);
-            notifyDataSetChanged();
-
+            notifyItemRemoved(pos);
         }
     }
 

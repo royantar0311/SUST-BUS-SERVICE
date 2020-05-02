@@ -94,35 +94,35 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="30dp"
-            android:text="6am - 9am" />
+            android:text="06:00 am - 08:59 am" />
 
         <androidx.appcompat.widget.AppCompatCheckBox
             android:id="@+id/_9to12"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="30dp"
-            android:text="9am - 12pm" />
+            android:text="09:00 am - 11:59 pm" />
 
         <androidx.appcompat.widget.AppCompatCheckBox
             android:id="@+id/_12to15"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="30dp"
-            android:text="12pm - 3pm" />
+            android:text="12:00 pm - 02:59 pm" />
 
         <androidx.appcompat.widget.AppCompatCheckBox
             android:id="@+id/_15to18"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="30dp"
-            android:text="3pm - 6pm" />
+            android:text="03:00 pm - 05:59 pm" />
 
         <androidx.appcompat.widget.AppCompatCheckBox
             android:id="@+id/_18to22"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="30dp"
-            android:text="6pm - 10pm" />
+            android:text="06:00 pm - 11:00 pm" />
 
         <androidx.appcompat.widget.AppCompatCheckBox
             android:id="@+id/_whole_day"

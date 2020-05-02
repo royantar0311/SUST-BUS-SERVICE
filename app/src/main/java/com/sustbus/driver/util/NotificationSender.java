@@ -54,12 +54,14 @@ public class NotificationSender {
         token1 += "00_00";
         int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
 
-        if (hour >= 6 && hour <= 9) token2 += "06_09";
-        else if (hour >= 9 && hour <= 12) token2 += "09_12";
-        else if (hour >= 12 && hour <= 15) token2 += "12_15";
-        else if (hour >= 15 && hour <= 18) token2 += "15_18";
+        if (hour >= 6 && hour < 9) token2 += "06_09";
+        else if (hour >= 9 && hour < 12) token2 += "09_12";
+        else if (hour >= 12 && hour < 15) token2 += "12_15";
+        else if (hour >= 15 && hour < 18) token2 += "15_18";
         else if (hour >= 18 && hour <= 22) token2 += "18_22";
 
+        //Log.d("DEBMES","Send "+token1);
+        //Log.d("DEBMES","send "+token2);
         sendTo(passingThrough, body, token1);
         sendTo(passingThrough, body, token2);
     }
@@ -82,7 +84,7 @@ public class NotificationSender {
             notification.put("data", data);
 
         } catch (Exception e) {
-            Log.d("DEBMES", e.getMessage());
+          //  Log.d("DEBMES", e.getMessage());
             e.printStackTrace();
         }
 
@@ -91,12 +93,12 @@ public class NotificationSender {
             @Override
             public void onResponse(String response) {
 
-                Log.d("DEBMES", response);
+            //    Log.d("DEBMES", response);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.d("DEBMES", error.getMessage());
+              //  Log.d("DEBMES", error.getMessage());
             }
         }) {
 

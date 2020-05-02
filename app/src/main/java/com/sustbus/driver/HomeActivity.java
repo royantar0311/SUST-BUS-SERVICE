@@ -500,7 +500,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             for (int i = 0; i < path.length(); i++) {
                 if (path.charAt(i) == ';') {
                     pathString.add(path.substring(last, i));
-                    Log.d("DEB", path.substring(last, i));
+                    //Log.d("DEB", path.substring(last, i));
                     last = i + 1;
                 }
             }
