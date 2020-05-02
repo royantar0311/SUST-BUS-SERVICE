@@ -40,7 +40,6 @@ public class MapUtil {
     public static final String LAKKATURA = "Lakkatura";
     public static final String CAMPUS_GATE = "Campus Gate";
 
-
     public static boolean rideShareStatus = false;
 
     public static Map<String, GeoCoordinates> GeoCoordinatesMap = new HashMap<>();
