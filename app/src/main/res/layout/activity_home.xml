@@ -208,7 +208,7 @@
                         android:layout_height="60dp"
                         android:layout_gravity="center"
                         android:contentDescription=""
-                        android:src="@drawable/setting_icon"
+                        app:srcCompat="@drawable/ic_notifications_black_24dp"
                         tools:srcCompat="@drawable/ic_notifications_black_24dp" />
 
                     <TextView
@@ -307,7 +307,7 @@
                 android:layout_rowWeight="1"
                 android:layout_columnWeight="1"
                 android:layout_margin="12dp"
-                android:visibility="visible"
+                android:visibility="invisible"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="6dp">
 
@@ -346,7 +346,7 @@
                 android:layout_rowWeight="1"
                 android:layout_columnWeight="1"
                 android:layout_margin="12dp"
-                android:visibility="visible"
+                android:visibility="invisible"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="6dp">
 

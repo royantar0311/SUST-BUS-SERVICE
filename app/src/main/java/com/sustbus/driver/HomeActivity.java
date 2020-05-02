@@ -270,8 +270,12 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                     if(task.isSuccessful() && task.getResult().exists() && task.getResult().getBoolean("active")){
                         adminPanelCv.setVisibility(View.VISIBLE);
+                        routeUploaderCv.setVisibility(View.VISIBLE);
                     }
-                    else adminPanelCv.setVisibility(View.GONE);
+                    else {
+                        routeUploaderCv.setVisibility(View.GONE);
+                        adminPanelCv.setVisibility(View.GONE);
+                    }
                 }
             });
             updateDatabase();

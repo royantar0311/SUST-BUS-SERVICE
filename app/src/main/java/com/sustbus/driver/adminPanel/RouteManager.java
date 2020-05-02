@@ -10,6 +10,7 @@ import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -76,7 +77,7 @@ public class RouteManager extends AppCompatActivity {
                 }
                 else{
                     dialog.dismiss();
-                    //Snackbar.make(findViewById(R.id.rm_frame),"Check Connection and try again.", BaseTransientBottomBar.LENGTH_INDEFINITE).show();
+                    Snackbar.make(findViewById(R.id.rm_frame),"Check Connection and try again.", BaseTransientBottomBar.LENGTH_INDEFINITE).show();
                     }
                 }
         });
@@ -237,5 +238,24 @@ public class RouteManager extends AppCompatActivity {
     public void onBackPressed() {
         super.onBackPressed();
         addButton.setVisibility(View.VISIBLE);
+        appbarTv.setText("Manage Routes");
+
+        if(getIntent().getBooleanExtra("added",false)){
+
+            RouteInformation tmp=new RouteInformation();
+            Intent i=getIntent();
+            tmp.setTime(i.getStringExtra("time"));
+            tmp.setTitle(i.getStringExtra("title"));
+            tmp.setPath(i.getStringExtra("path"));
+            tmp.setShow(i.getStringExtra("show"));
+            tmp.setRouteId(i.getStringExtra("id"));
+            routeList.add(0,tmp);
+            mAdapter.notifyDataSetChanged();
+            i.removeExtra("added");
+            i.removeExtra("time");
+            i.removeExtra("title");
+            i.removeExtra("path");
+            i.removeExtra("id");
+        }
     }
 }
