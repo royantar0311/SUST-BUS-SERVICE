@@ -31,9 +31,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
@@ -46,7 +43,6 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.messaging.FirebaseMessaging;
 import com.here.sdk.core.GeoCoordinates;
 import com.sustbus.driver.adminPanel.AdminPanelActivity;
 import com.sustbus.driver.adminPanel.RouteManager;
@@ -77,7 +73,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private CardView shareRideTv;
     private CardView adminPanelCv;
     private ImageView dpEv;
-    private DatabaseReference databaseReference,userLocationData, userPathReference;
+    private DatabaseReference databaseReference, userLocationData, userPathReference;
     private FirebaseFirestore db;
     private ListenerRegistration listener;
     private DocumentReference userDoc;
@@ -86,7 +82,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private boolean isRideShareOn = false;
     private LocationManager locationManager;
     private LocationListener locationListener;
-    private String userUid,routeIdCurrentlySharing;
+    private String userUid, routeIdCurrentlySharing;
     private MapUtil mapUtil;
     private PermissionsRequestor permissionsRequestor;
     private List<String> pathString;
@@ -95,8 +91,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private GeoCoordinates previousPosition;
     private Location ridersPreviousLocation = null;
     private NotificationSender notificationSender;
-    private  CardView routeUploaderCv;
-    private String SERVER_KEY="hello";
+    private CardView routeUploaderCv;
+    private String SERVER_KEY = "hello";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,7 +104,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
         CardView openMapBtn = findViewById(R.id.track_buses_cv);
         adminPanelCv = findViewById(R.id.admin_panel_cv);
-        routeUploaderCv=findViewById(R.id.route_uploader);
+        routeUploaderCv = findViewById(R.id.route_uploader);
         shareRideTv = findViewById(R.id.ride_on_cv);
         CardView scheduleBtn = findViewById(R.id.bus_schedule_cv);
         userNameTv = findViewById(R.id.row_item_user_name_tv);
@@ -147,10 +143,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             String img = userInfo.getUrl();
             byte[] imageAsBytes = Base64.decode(img.getBytes(), Base64.DEFAULT);
             dpEv.setImageBitmap(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
-        }
-        catch (NullPointerException e){
-        }
-        catch (IllegalArgumentException e){
+        } catch (NullPointerException e) {
+        } catch (IllegalArgumentException e) {
             Log.d(TAG, "onSuccess: " + e.getMessage());
         }
     }
@@ -176,13 +170,13 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         FirebaseFirestore.getInstance().collection("key").document("key").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-               if(task.isSuccessful()){
-                   SERVER_KEY=task.getResult().getString("SERVER");
-               }
+                if (task.isSuccessful()) {
+                    SERVER_KEY = task.getResult().getString("SERVER");
+                }
             }
         });
 
-       listener = userDoc.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+        listener = userDoc.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
                 if (e != null) {
@@ -196,7 +190,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                     dashboardSetup();
                     loadImage();
                     Log.d(TAG, "onEvent: " + userInfo.toString());
-                   if(!userInfo.isProfileCompleted() || !userInfo.isPermitted()){
+                    if (!userInfo.isProfileCompleted() || !userInfo.isPermitted()) {
                         Intent intent = new Intent(HomeActivity.this, ProfileActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);
@@ -224,11 +218,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         }
 
 
-        if(getIntent().getStringExtra("markerKey")!=null){
+        if (getIntent().getStringExtra("markerKey") != null) {
 
-            Intent intent=new Intent(HomeActivity.this,MapsActivity.class);
-            intent.putExtra("fromSchedule",true);
-            intent.putExtra("markerToShow",getIntent().getStringExtra("markerKey"));
+            Intent intent = new Intent(HomeActivity.this, MapsActivity.class);
+            intent.putExtra("fromSchedule", true);
+            intent.putExtra("markerToShow", getIntent().getStringExtra("markerKey"));
             startActivity(intent);
         }
 
@@ -273,18 +267,16 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
             finish();
-        }
-        else {
+        } else {
             FirebaseFirestore.getInstance().collection("admin")
                     .document(firebaseAuth.getCurrentUser().getUid())
                     .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                    if(task.isSuccessful() && task.getResult().exists() && task.getResult().getBoolean("active")){
+                    if (task.isSuccessful() && task.getResult().exists() && task.getResult().getBoolean("active")) {
                         adminPanelCv.setVisibility(View.VISIBLE);
                         routeUploaderCv.setVisibility(View.VISIBLE);
-                    }
-                    else {
+                    } else {
                         routeUploaderCv.setVisibility(View.GONE);
                         adminPanelCv.setVisibility(View.GONE);
                     }
@@ -299,7 +291,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         MapUtil.rideShareStatus = true;
         isRideShareOn = true;
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.end_ride));
-        notificationSender=new NotificationSender(this,userUid,SERVER_KEY);
+        notificationSender = new NotificationSender(this, userUid, SERVER_KEY);
 
         locationListener = new LocationListener() {
 
@@ -397,18 +389,16 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
         if (newLatLng.distanceTo(toCheck) <= 100) {
 
-            String toNotify=pathString.get(0);
+            String toNotify = pathString.get(0);
             pathString.remove(0);
 
-            if(pathString.contains(mapUtil.CAMPUS)){
-                if(pathString.contains(toNotify)){
-                    notificationSender.send(toNotify,"away");
+            if (pathString.contains(mapUtil.CAMPUS)) {
+                if (pathString.contains(toNotify)) {
+                    notificationSender.send(toNotify, "away");
+                } else {
+                    notificationSender.send(toNotify, "towards");
                 }
-                else{
-                    notificationSender.send(toNotify,"towards");
-                }
-            }
-            else notificationSender.send(toNotify,"away");
+            } else notificationSender.send(toNotify, "away");
 
 
             updatePath();
@@ -418,7 +408,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void initializePath() {
-        startActivityForResult(new Intent(this,ScheduleActivity.class).putExtra("forRideShare",true),100);
+        startActivityForResult(new Intent(this, ScheduleActivity.class).putExtra("forRideShare", true), 100);
     }
 
     public void updatePath() {
@@ -427,7 +417,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             path += (s + ";");
         }
 
-        if(path.isEmpty())path="NA;";
+        if (path.isEmpty()) path = "NA;";
         userPathReference.setValue(path);
     }
 
@@ -437,7 +427,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     public void turnOffRideShare() {
         notificationSender.destroy();
-        notificationSender=null;
+        notificationSender = null;
         MapUtil.rideShareStatus = isRideShareOn = false;
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.start_ride));
         locationManager.removeUpdates(locationListener);
@@ -454,19 +444,18 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
         if (i == R.id.ride_on_cv) {
             if (userInfo.isDriver()) {
-                if (!isRideShareOn){
+                if (!isRideShareOn) {
                     boolean isGps = false;
                     try {
                         isGps = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-                    } catch (Exception e) {}
+                    } catch (Exception e) {
+                    }
 
                     if (!isGps) {
                         mapUtil.enableGPS(getApplicationContext(), this, 101);
-                    }
-                    else initializePath();
+                    } else initializePath();
 
-                }
-                else turnOffRideShare();
+                } else turnOffRideShare();
             } else {
                 Snackbar.make(findViewById(R.id.ride_on_cv), "You're not a Driver!", Snackbar.LENGTH_SHORT).show();
             }
@@ -485,11 +474,9 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             startActivity(new Intent(HomeActivity.this, ProfileActivity.class));
         } else if (i == R.id.bus_schedule_cv) {
             startActivity(new Intent(HomeActivity.this, ScheduleActivity.class));
-        }
-        else if(i==R.id.home_notifications_tv){
+        } else if (i == R.id.home_notifications_tv) {
             startActivity(new Intent(HomeActivity.this, NotificationSettings.class));
-        }
-        else if(i==R.id.route_uploader){
+        } else if (i == R.id.route_uploader) {
             startActivity(new Intent(HomeActivity.this, RouteManager.class));
         }
 
@@ -500,31 +487,29 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 101) {
             if (resultCode == Activity.RESULT_OK) initializePath();
-        }
-        else if(requestCode==100 && data!=null){
+        } else if (requestCode == 100 && data != null) {
 
 
             pathString = new ArrayList<>();
-            String path=data.getStringExtra("path");
-            String routeId=data.getStringExtra("routeId");
-            String title=data.getStringExtra("title");
-            if(path==null || routeId==null || title==null)return;
+            String path = data.getStringExtra("path");
+            String routeId = data.getStringExtra("routeId");
+            String title = data.getStringExtra("title");
+            if (path == null || routeId == null || title == null) return;
 
-            int last=0;
-            for (int i = 0; i <path.length(); i++) {
-                if(path.charAt(i)==';'){
-                    pathString.add(path.substring(last,i));
-                    Log.d("DEB",path.substring(last,i));
-                    last=i+1;
+            int last = 0;
+            for (int i = 0; i < path.length(); i++) {
+                if (path.charAt(i) == ';') {
+                    pathString.add(path.substring(last, i));
+                    Log.d("DEB", path.substring(last, i));
+                    last = i + 1;
                 }
             }
-
 
 
             userLocationData.child("title").setValue(title);
             databaseReference.child("busesOnRoad").child(routeId).onDisconnect().setValue(null);
             databaseReference.child("busesOnRoad").child(routeId).child("key").setValue(userUid);
-            routeIdCurrentlySharing=routeId;
+            routeIdCurrentlySharing = routeId;
             userPathReference.setValue("NA;");
             pathOk = false;
             determineCallCount = 0;
@@ -554,7 +539,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         if (isRideShareOn) {
             turnOffRideShare();
         }
-        if(listener != null) listener.remove();
+        if (listener != null) listener.remove();
         FirebaseAuth.getInstance().removeAuthStateListener(this);
     }
 }

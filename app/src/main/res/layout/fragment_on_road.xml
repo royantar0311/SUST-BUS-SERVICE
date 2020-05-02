@@ -8,8 +8,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/onroad_recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        />
+        android:layout_height="match_parent" />
 
     <TextView
         android:id="@+id/onroad_frag_tv"
@@ -20,7 +19,6 @@
         android:textAlignment="center"
         android:textColor="@color/A400red"
         android:textSize="25sp"
-        android:visibility="invisible"
-        />
+        android:visibility="invisible" />
 
 </FrameLayout>

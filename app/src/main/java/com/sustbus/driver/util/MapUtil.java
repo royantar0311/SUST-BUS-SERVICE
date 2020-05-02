@@ -41,7 +41,6 @@ public class MapUtil {
     public static final String CAMPUS_GATE = "Gate";
 
 
-
     public static boolean rideShareStatus = false;
 
     public static Map<String, GeoCoordinates> GeoCoordinatesMap = new HashMap<>();
@@ -65,15 +64,15 @@ public class MapUtil {
         GeoCoordinatesMap.put(LAKKATURA, new GeoCoordinates(24.925066, 91.871258));
 
         restrictionList.add(new GeoBox(new GeoCoordinates(24.921759, 91.82511), new GeoCoordinates(24.925740, 91.83950)));
-        placeList= Arrays.asList(CAMPUS_GATE,AMBORKHANA,MODINA_MARKET,SUBID_BAZAR,RIKABI_BAZAR,EIDGAH,KUMARPARA,TILAGOR,NAIORPUL,CHOWHATTA,LAKKATURA
-                                ,BALUCHAR,CAMPUS);
+        placeList = Arrays.asList(CAMPUS_GATE, AMBORKHANA, MODINA_MARKET, SUBID_BAZAR, RIKABI_BAZAR, EIDGAH, KUMARPARA, TILAGOR, NAIORPUL, CHOWHATTA, LAKKATURA
+                , BALUCHAR, CAMPUS);
     }
 
-    public static String removeSpace(String s){
-        String z= "";
-        for(int i=0;i<s.length();i++){
-            if(s.charAt(i)!=' ')z+=s.charAt(i);
-            else z+='_';
+    public static String removeSpace(String s) {
+        String z = "";
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) != ' ') z += s.charAt(i);
+            else z += '_';
         }
         return z;
     }

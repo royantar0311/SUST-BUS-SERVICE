@@ -1,168 +1,166 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
 
     >
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".adminPanel.RouteCreatorFragment"
-    android:orientation="vertical"
-    android:paddingTop="20dp"
-    android:paddingBottom="400dp"
-    >
- <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="5dp"
-        android:textStyle="bold"
-        android:text="CREATE PATH"
-        android:textSize="18sp" />
-    <com.pchmn.materialchips.ChipsInput
-        android:id="@+id/route_chips"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        app:maxRows="100"
-        app:maxHeight="5000dp"
-        app:hint="Type Checkpoints"
-        />
 
-    <androidx.appcompat.widget.LinearLayoutCompat
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:backgroundTint="?attr/colorControlHighlight"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/time_chooser"
-            android:layout_width="150dp"
-            android:layout_height="32dp"
-            android:layout_marginLeft="32dp"
-            android:background="@drawable/transparent_button"
-            android:text="Choose Time" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingTop="20dp"
+        android:paddingBottom="400dp"
+        tools:context=".adminPanel.RouteCreatorFragment">
 
         <TextView
-            android:id="@+id/chosen_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="70dp"
-            android:layout_marginTop="2dp"
-            android:text="_ _ : _ _ am"
-            android:textColor="#F2DF0464"
-            android:textSize="20sp"
+            android:layout_gravity="center"
+            android:layout_marginTop="5dp"
+            android:text="CREATE PATH"
+            android:textSize="18sp"
             android:textStyle="bold" />
 
-    </androidx.appcompat.widget.LinearLayoutCompat>
+        <com.pchmn.materialchips.ChipsInput
+            android:id="@+id/route_chips"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            app:hint="Type Checkpoints"
+            app:maxHeight="5000dp"
+            app:maxRows="100" />
 
-    <androidx.appcompat.widget.LinearLayoutCompat
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:backgroundTint="@color/blue25"
-        android:orientation="horizontal">
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:backgroundTint="?attr/colorControlHighlight"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/time_chooser"
+                android:layout_width="150dp"
+                android:layout_height="32dp"
+                android:layout_marginLeft="32dp"
+                android:background="@drawable/transparent_button"
+                android:text="Choose Time" />
+
+            <TextView
+                android:id="@+id/chosen_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="70dp"
+                android:layout_marginTop="2dp"
+                android:text="_ _ : _ _ am"
+                android:textColor="#F2DF0464"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:backgroundTint="@color/blue25"
+            android:orientation="horizontal">
+
+            <TextView
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_marginLeft="63dp"
+                android:layout_marginBottom="5dp"
+                android:text="FROM    :"
+                android:textSize="14sp"
+                android:textStyle="bold"
+
+                />
+
+            <EditText
+                android:id="@+id/from_chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="130dp"
+                android:hint="Type" />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:backgroundTint="@color/blue25"
+            android:orientation="horizontal">
+
+            <TextView
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_marginLeft="63dp"
+                android:layout_marginBottom="5dp"
+                android:text="TO          :"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/to_chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="130dp"
+                android:hint="Type" />
+        </androidx.appcompat.widget.LinearLayoutCompat>
 
         <TextView
-
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="63dp"
-            android:layout_gravity="bottom"
-            android:layout_marginBottom="5dp"
-            android:text="FROM    :"
+            android:layout_gravity="center"
+            android:layout_marginTop="50dp"
+            android:layout_marginBottom="20dp"
+            android:text="DETAILS TO SHOW"
             android:textSize="14sp"
-            android:textStyle="bold"
+            android:textStyle="bold" />
+
+        <com.google.android.material.textfield.TextInputEditText
+
+            android:id="@+id/information_to_edittext"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:hint="Type Information"
+            android:textAlignment="center"
 
             />
 
-        <EditText
+        <CheckBox
+            android:id="@+id/add_route_details"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="130dp"
-            android:id="@+id/from_chip"
-            android:hint="Type"
-            />
-    </androidx.appcompat.widget.LinearLayoutCompat>
-
-    <androidx.appcompat.widget.LinearLayoutCompat
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:backgroundTint="@color/blue25"
-        android:orientation="horizontal">
-
-        <TextView
-
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="63dp"
-            android:layout_gravity="bottom"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp"
-            android:text="TO          :"
-            android:textSize="14sp"
-            android:textStyle="bold"
+            android:text="Add route details"
+
             />
 
-        <EditText
-            android:layout_width="wrap_content"
+        <Button
+
+            android:id="@+id/submit_route"
+
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="130dp"
-            android:id="@+id/to_chip"
-            android:hint="Type"
-            />
-    </androidx.appcompat.widget.LinearLayoutCompat>
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="70dp"
+            android:layout_marginRight="16dp"
+            android:backgroundTint="@color/A400red"
+            android:text="Upload" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="50dp"
-        android:layout_marginBottom="20dp"
-        android:text="DETAILS TO SHOW"
-        android:textStyle="bold"
-        android:textSize="14sp" />
-
-    <com.google.android.material.textfield.TextInputEditText
-
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/information_to_edittext"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:textAlignment="center"
-        android:hint="Type Information"
-
-        />
-
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Add route details"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"
-        android:id="@+id/add_route_details"
-
-        />
-    <Button
-
-        android:layout_width="match_parent"
-
-        android:layout_marginTop="70dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_height="wrap_content"
-        android:text="Upload"
-        android:id="@+id/submit_route"
-        android:backgroundTint="@color/A400red"
-        />
-
-</LinearLayout>
+    </LinearLayout>
 </ScrollView>

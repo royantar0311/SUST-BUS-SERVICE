@@ -37,10 +37,11 @@ public class DriversListFragment extends Fragment implements CheckChangedListene
     View view;
     RecyclerView recyclerView;
     DriversRecyclerAdapter recyclerAdapter;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_drivers_list,container,false);
+        view = inflater.inflate(R.layout.fragment_drivers_list, container, false);
         return view;
     }
 
@@ -55,37 +56,39 @@ public class DriversListFragment extends Fragment implements CheckChangedListene
     private void initRecyclerView(FirebaseUser currentUser) {
         Query query = FirebaseFirestore.getInstance()
                 .collection("users")
-                .whereEqualTo("driver",true)
-                .whereEqualTo("profileCompleted",true);
+                .whereEqualTo("driver", true)
+                .whereEqualTo("profileCompleted", true);
         FirestoreRecyclerOptions<UserInfo> options = new FirestoreRecyclerOptions.Builder<UserInfo>()
-                .setQuery(query,UserInfo.class)
+                .setQuery(query, UserInfo.class)
                 .build();
-        recyclerAdapter = new DriversRecyclerAdapter(options,this);
+        recyclerAdapter = new DriversRecyclerAdapter(options, this);
         recyclerView.setAdapter(recyclerAdapter);
-        recyclerView.addItemDecoration(new DividerItemDecoration(getContext(),DividerItemDecoration.VERTICAL));
+        recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
         recyclerAdapter.startListening();
     }
+
     @Override
     public void onStop() {
         super.onStop();
-        if(recyclerAdapter != null){
+        if (recyclerAdapter != null) {
             recyclerAdapter.stopListening();
         }
     }
+
     @Override
     public void onSwitchStateChanged(boolean isChecked, DocumentSnapshot snapshot) {
-        snapshot.getReference().update("permitted",isChecked);
+        snapshot.getReference().update("permitted", isChecked);
     }
 
     @Override
     public void onItemClicked(String uId) {
         Log.d(TAG, "onItemClicked: " + uId);
         LayoutInflater inflater = getLayoutInflater();
-        View view = inflater.inflate(R.layout.user_info_alertdialog,null);
-        EditText emailEt,userNameEt,regiNoEt;
+        View view = inflater.inflate(R.layout.user_info_alertdialog, null);
+        EditText emailEt, userNameEt, regiNoEt;
         TextView driverTv;
         ImageView userEv;
-        Switch permittedSwitch,profileCompletedSwitch;
+        Switch permittedSwitch, profileCompletedSwitch;
         emailEt = view.findViewById(R.id.ad_email_et);
         userNameEt = view.findViewById(R.id.ad_username_et);
         regiNoEt = view.findViewById(R.id.ad_regino_et);
@@ -103,38 +106,36 @@ public class DriversListFragment extends Fragment implements CheckChangedListene
                 regiNoEt.setText(snapshot.getString("regiNo"));
                 permittedSwitch.setChecked(snapshot.getBoolean("permitted"));
                 profileCompletedSwitch.setChecked(snapshot.getBoolean("profileCompleted"));
-                driverTv.setText(snapshot.getBoolean("driver")?"Driver":"Student");
+                driverTv.setText(snapshot.getBoolean("driver") ? "Driver" : "Student");
                 try {
                     String img = snapshot.getString("idUrl");
                     byte[] imageAsBytes = Base64.decode(img.getBytes(), Base64.DEFAULT);
                     userEv.setImageBitmap(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
-                }
-                catch (NullPointerException e){
-                }
-                catch (IllegalArgumentException e){
+                } catch (NullPointerException e) {
+                } catch (IllegalArgumentException e) {
                     Log.d(TAG, "onSuccess: " + e.getMessage());
                 }
             }
         });
-                new AlertDialog.Builder(getContext())
+        new AlertDialog.Builder(getContext())
                 .setTitle("Change or Validate")
                 .setView(view)
                 .setPositiveButton("save", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        String email,userName,regiNo;
+                        String email, userName, regiNo;
                         email = emailEt.getText().toString().trim();
                         userName = userNameEt.getText().toString().trim();
                         regiNo = regiNoEt.getText().toString().trim();
                         Log.d(TAG, "onClick: " + email + " " + regiNo);
-                        documentReference.update("email",email);
-                        documentReference.update("userName",userName);
-                        documentReference.update("regiNo",regiNo);
-                        documentReference.update("permitted",permittedSwitch.isChecked());
-                        documentReference.update("profileCompleted",profileCompletedSwitch.isChecked());
+                        documentReference.update("email", email);
+                        documentReference.update("userName", userName);
+                        documentReference.update("regiNo", regiNo);
+                        documentReference.update("permitted", permittedSwitch.isChecked());
+                        documentReference.update("profileCompleted", profileCompletedSwitch.isChecked());
                     }
                 })
-                .setNegativeButton("cancel",null)
+                .setNegativeButton("cancel", null)
                 .show();
     }
 }

@@ -21,24 +21,24 @@ public class FinishedFragment extends Fragment {
     private RecyclerView recyclerView;
     private CountDownTimer countDownTimer;
     private TextView textView;
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
 
-        View root =inflater.inflate(R.layout.fragment_finished, container, false);
-        recyclerView=root.findViewById(R.id.finished_recycler_view);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        View root = inflater.inflate(R.layout.fragment_finished, container, false);
+        recyclerView = root.findViewById(R.id.finished_recycler_view);
 
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(mAdapter);
         recyclerView.setNestedScrollingEnabled(false);
-        textView=root.findViewById(R.id.finished_frag_tv);
-        countDownTimer=new CountDownTimer(1000000000l,1000) {
+        textView = root.findViewById(R.id.finished_frag_tv);
+        countDownTimer = new CountDownTimer(1000000000l, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
-                if(mAdapter.getItemCount()==0){
+                if (mAdapter.getItemCount() == 0) {
                     textView.setVisibility(View.VISIBLE);
-                }
-                else{
+                } else {
                     textView.setVisibility(View.INVISIBLE);
                 }
             }
@@ -56,11 +56,10 @@ public class FinishedFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mLayoutManager=null;
+        mLayoutManager = null;
         recyclerView.setAdapter(null);
         countDownTimer.cancel();
     }
-
 
 
 }

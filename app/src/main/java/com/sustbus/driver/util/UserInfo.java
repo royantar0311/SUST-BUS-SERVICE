@@ -9,11 +9,10 @@ import java.util.Map;
 
 public class UserInfo {
 
-    private static final String TAG = "UserInfo";
-
     public static final boolean PERMITTED = true;
     public static final boolean NOT_PERMITTED = false;
     public static final int PERMISSION_PENDING = -1;
+    private static final String TAG = "UserInfo";
     public static Builder builder = new Builder();
     private static UserInfo instance = new UserInfo();
     private String email;
@@ -66,10 +65,10 @@ public class UserInfo {
     }
 
     /**
-    * Creating a map of all the data to push to the database
-    */
+     * Creating a map of all the data to push to the database
+     */
 
-    public void reset(){
+    public void reset() {
         email = null;
         userName = null;
         uId = null;
@@ -80,6 +79,7 @@ public class UserInfo {
         driver = false;
         url = null;
     }
+
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("email", email);
@@ -163,7 +163,7 @@ public class UserInfo {
         this.uId = uId;
     }
 
-    public void setLatLng(double lat, double lang){
+    public void setLatLng(double lat, double lang) {
         this.lat = lat;
         this.lang = lang;
     }
@@ -184,8 +184,8 @@ public class UserInfo {
         this.profileCompleted = profileCompleted;
     }
 
-    public LatLng getLatLang(){
-        return new LatLng(lat,lang);
+    public LatLng getLatLang() {
+        return new LatLng(lat, lang);
     }
 
     /**
@@ -214,6 +214,7 @@ public class UserInfo {
             this.permitted = permitted;
             return this;
         }
+
         public Builder setProfileCompleted(boolean profileCompleted) {
             this.profileCompleted = profileCompleted;
             return this;

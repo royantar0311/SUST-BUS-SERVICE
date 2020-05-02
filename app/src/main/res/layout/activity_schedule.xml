@@ -56,7 +56,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar"/>
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/navigation"
@@ -65,9 +65,9 @@
         android:layout_gravity="bottom"
         android:background="?android:attr/windowBackground"
         app:elevation="10dp"
-        app:itemIconSize="25dp"
-
         app:itemHorizontalTranslationEnabled="true"
+
+        app:itemIconSize="25dp"
         app:itemTextColor="@android:color/background_dark"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

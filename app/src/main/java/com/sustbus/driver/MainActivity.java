@@ -29,8 +29,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final String TAG = "MainActivity";
     boolean emailOk = false;
-    private CheckBox driverCb,studentCb;
     boolean passwordOk = false;
+    private CheckBox driverCb, studentCb;
     private TextView signInTv;
     private Button signUpBtn;
     private TextFieldBoxes userNameEt;
@@ -76,13 +76,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         studentCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked && driverCb.isChecked())driverCb.setChecked(false);
+                if (isChecked && driverCb.isChecked()) driverCb.setChecked(false);
             }
         });
         driverCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked && studentCb.isChecked())studentCb.setChecked(false);
+                if (isChecked && studentCb.isChecked()) studentCb.setChecked(false);
             }
         });
 

@@ -34,26 +34,26 @@ public class NotificationSettings extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notification_settings);
-        appBartv=findViewById(R.id.notification_setting_appbar_tv);
-        fab=findViewById(R.id.notification_setting_fab);
-        tokenList=new ArrayList<>();
+        appBartv = findViewById(R.id.notification_setting_appbar_tv);
+        fab = findViewById(R.id.notification_setting_fab);
+        tokenList = new ArrayList<>();
 
         init();
 
     }
 
-    public void init(){
-        SharedPreferences sharedPreferences=getSharedPreferences("NOTIFICATIONS", Context.MODE_PRIVATE);
-        Set<String> keySet=sharedPreferences.getStringSet("tokenSet",new HashSet<>());
+    public void init() {
+        SharedPreferences sharedPreferences = getSharedPreferences("NOTIFICATIONS", Context.MODE_PRIVATE);
+        Set<String> keySet = sharedPreferences.getStringSet("tokenSet", new HashSet<>());
 
-        for(String s:keySet) {
+        for (String s : keySet) {
             tokenList.add(s);
             Log.d("DEBMES", s);
         }
-        recyclerViewAdapter2=new RecyclerViewAdapter2(this,tokenList);
+        recyclerViewAdapter2 = new RecyclerViewAdapter2(this, tokenList);
 
         getSupportFragmentManager().beginTransaction().replace(R.id.notification_fragment_container,
-                new ShowNotificationsFragment(new LinearLayoutManager(this),recyclerViewAdapter2))
+                new ShowNotificationsFragment(new LinearLayoutManager(this), recyclerViewAdapter2))
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                 .commit();
 
@@ -81,12 +81,12 @@ public class NotificationSettings extends AppCompatActivity {
         });
     }
 
-    public void reCheck(){
-        SharedPreferences sharedPreferences=getSharedPreferences("NOTIFICATIONS", Context.MODE_PRIVATE);
-        Set<String> keySet=sharedPreferences.getStringSet("tokenSet",new HashSet<>());
+    public void reCheck() {
+        SharedPreferences sharedPreferences = getSharedPreferences("NOTIFICATIONS", Context.MODE_PRIVATE);
+        Set<String> keySet = sharedPreferences.getStringSet("tokenSet", new HashSet<>());
 
-        for(String s:keySet) {
-            if(!tokenList.contains(s))tokenList.add(s);
+        for (String s : keySet) {
+            if (!tokenList.contains(s)) tokenList.add(s);
         }
         recyclerViewAdapter2.notifyDataSetChanged();
     }

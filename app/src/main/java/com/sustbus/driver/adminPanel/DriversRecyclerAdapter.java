@@ -8,32 +8,31 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.sustbus.driver.R;
 import com.sustbus.driver.util.UserInfo;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class DriversRecyclerAdapter extends FirestoreRecyclerAdapter<UserInfo, DriversRecyclerAdapter.DriversViewHolder> {
     private static final String TAG = "DriversRecyclerAdapter";
     CheckChangedListener checkChangedListener;
+
+    public DriversRecyclerAdapter(@NonNull FirestoreRecyclerOptions<UserInfo> options, CheckChangedListener checkChangedListener) {
+        super(options);
+        Log.d(TAG, "DriversRecyclerAdapter: ");
+        this.checkChangedListener = checkChangedListener;
+    }
+
     @NonNull
     @Override
     public DriversViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         Log.d(TAG, "onCreateViewHolder: ");
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-        View view = layoutInflater.inflate(R.layout.row_item,parent,false);
+        View view = layoutInflater.inflate(R.layout.row_item, parent, false);
         return new DriversViewHolder(view);
-    }
-
-    public DriversRecyclerAdapter(@NonNull FirestoreRecyclerOptions<UserInfo> options,CheckChangedListener checkChangedListener) {
-        super(options);
-        Log.d(TAG, "DriversRecyclerAdapter: ");
-        this.checkChangedListener = checkChangedListener;
     }
 
     @Override
@@ -45,10 +44,10 @@ public class DriversRecyclerAdapter extends FirestoreRecyclerAdapter<UserInfo, D
     }
 
 
-
-    class DriversViewHolder extends RecyclerView.ViewHolder{
-        TextView username,regino;
+    class DriversViewHolder extends RecyclerView.ViewHolder {
+        TextView username, regino;
         Switch aSwitch;
+
         public DriversViewHolder(@NonNull View itemView) {
             super(itemView);
             Log.d(TAG, "DriversViewHolder: ");

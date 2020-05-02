@@ -8,19 +8,19 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.sustbus.driver.R;
 import com.sustbus.driver.util.UserInfo;
 
-public class StudentsRecyclerAdapter extends FirestoreRecyclerAdapter<UserInfo,StudentsRecyclerAdapter.StudentsViewHolder> {
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+public class StudentsRecyclerAdapter extends FirestoreRecyclerAdapter<UserInfo, StudentsRecyclerAdapter.StudentsViewHolder> {
     private static final String TAG = "StudentsRecyclerAdapter";
     CheckChangedListener checkChangedListener;
-    public StudentsRecyclerAdapter(@NonNull FirestoreRecyclerOptions<UserInfo> options,CheckChangedListener checkChangedListener) {
+
+    public StudentsRecyclerAdapter(@NonNull FirestoreRecyclerOptions<UserInfo> options, CheckChangedListener checkChangedListener) {
         super(options);
         this.checkChangedListener = checkChangedListener;
     }
@@ -30,7 +30,7 @@ public class StudentsRecyclerAdapter extends FirestoreRecyclerAdapter<UserInfo,S
     public StudentsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         Log.d(TAG, "onCreateViewHolder: ");
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-        View view = layoutInflater.inflate(R.layout.row_item,parent,false);
+        View view = layoutInflater.inflate(R.layout.row_item, parent, false);
         return new StudentsViewHolder(view);
     }
 
@@ -42,9 +42,10 @@ public class StudentsRecyclerAdapter extends FirestoreRecyclerAdapter<UserInfo,S
     }
 
 
-    class StudentsViewHolder extends RecyclerView.ViewHolder{
-        TextView username,regino;
+    class StudentsViewHolder extends RecyclerView.ViewHolder {
+        TextView username, regino;
         Switch aSwitch;
+
         public StudentsViewHolder(@NonNull View itemView) {
             super(itemView);
             username = itemView.findViewById(R.id.row_item_user_name_tv);
@@ -63,7 +64,7 @@ public class StudentsRecyclerAdapter extends FirestoreRecyclerAdapter<UserInfo,S
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     Log.d(TAG, "onCheckedChanged: " + isChecked);
-                    checkChangedListener.onSwitchStateChanged(isChecked,getSnapshots().getSnapshot(getAdapterPosition()));
+                    checkChangedListener.onSwitchStateChanged(isChecked, getSnapshots().getSnapshot(getAdapterPosition()));
                 }
             });
         }

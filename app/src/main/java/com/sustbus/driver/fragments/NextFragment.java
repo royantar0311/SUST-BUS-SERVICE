@@ -22,26 +22,26 @@ public class NextFragment extends Fragment {
     private TextView textView;
     private CountDownTimer countDownTimer;
     private View root;
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
 
-        if(root!=null)return root;
-        root =inflater.inflate(R.layout.fragment_next, container, false);
-        recyclerView=root.findViewById(R.id.next_recycler_view);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        if (root != null) return root;
+        root = inflater.inflate(R.layout.fragment_next, container, false);
+        recyclerView = root.findViewById(R.id.next_recycler_view);
 
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(mAdapter);
         recyclerView.setNestedScrollingEnabled(false);
 
-        textView=root.findViewById(R.id.next_frag_tv);
-        countDownTimer=new CountDownTimer(1000000000l,1000) {
+        textView = root.findViewById(R.id.next_frag_tv);
+        countDownTimer = new CountDownTimer(1000000000l, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
-                if(mAdapter.getItemCount()==0){
+                if (mAdapter.getItemCount() == 0) {
                     textView.setVisibility(View.VISIBLE);
-                }
-                else{
+                } else {
                     textView.setVisibility(View.INVISIBLE);
                 }
             }
@@ -60,7 +60,8 @@ public class NextFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mLayoutManager=null;recyclerView.setAdapter(null);
+        mLayoutManager = null;
+        recyclerView.setAdapter(null);
         countDownTimer.cancel();
     }
 }
