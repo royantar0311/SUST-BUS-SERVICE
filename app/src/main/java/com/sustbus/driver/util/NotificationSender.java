@@ -22,15 +22,16 @@ import java.util.Map;
 
 public class NotificationSender {
     public String FCM_API = "https://fcm.googleapis.com/fcm/send";
-    public String serverKey = "AAAARdR9Avs:APA91bHJPAkbsTVnULi3VlSmz7rQ3n2vdgZSpbpeVEeDQT5b--CD6yAbqt4bZlsuRPwkDkV5J6Vm35s8x-95eGW69MUA0RbCj__YfCtCq0aULuBrItKrpBAvaYYgIa-kYPRgWmbPH1qV";
+    public String serverKey = "";
     public String contentType = "application/json";
     private Context context;
     private String userId;
     private RequestQueue requestQueue;
 
-    public NotificationSender(Context ctx,String userId){
+    public NotificationSender(Context ctx,String userId,String server){
         context=ctx;
         this.userId=userId;
+        this.serverKey=server;
         requestQueue= Volley.newRequestQueue(context.getApplicationContext());
     }
 

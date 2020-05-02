@@ -96,6 +96,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private Location ridersPreviousLocation = null;
     private NotificationSender notificationSender;
     private  CardView routeUploaderCv;
+    private String SERVER_KEY="hello";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -171,6 +172,16 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         /**
          * getting data from cloud firestore
          * */
+
+        FirebaseFirestore.getInstance().collection("key").document("key").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+               if(task.isSuccessful()){
+                   SERVER_KEY=task.getResult().getString("SERVER");
+               }
+            }
+        });
+
        listener = userDoc.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
@@ -288,7 +299,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         MapUtil.rideShareStatus = true;
         isRideShareOn = true;
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.end_ride));
-        notificationSender=new NotificationSender(this,userUid);
+        notificationSender=new NotificationSender(this,userUid,SERVER_KEY);
 
         locationListener = new LocationListener() {
 
