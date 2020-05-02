@@ -84,7 +84,6 @@ public class ScheduleActivity extends AppCompatActivity {
                 @Override
                 public void ok() {
                     if(currentProgressDialogue!=null)currentProgressDialogue.dismiss();
-                    Snackbar.make(findViewById(R.id.frame_container), "Schedules updated", Snackbar.LENGTH_LONG).show();
                     if (forRideShare) init(R.id.menu_item_on_road);
                     else init(R.id.menu_item_next);
                 }
@@ -252,7 +251,6 @@ public class ScheduleActivity extends AppCompatActivity {
         routeDatabaseManager.checkForUpdate(new CallBack() {
             @Override
             public void ok() {
-                Snackbar.make(findViewById(R.id.frame_container),"Update Complete",3000).show();
                 init(bottomNav.getSelectedItemId());
                 refreshImagebutton.animate().cancel();
                 refreshImagebutton.clearAnimation();
@@ -332,7 +330,7 @@ public class ScheduleActivity extends AppCompatActivity {
                      if (!dataSnapshot.hasChild(tmp.getRouteId())) {
                          giveResult(position);
                      } else {
-                         Snackbar.make(findViewById(R.id.frame_container), "This Schedule is Already Running", 4000).show();
+                         Snackbar.make(findViewById(R.id.frame_container), "This Schedule is Already Running", 2000).show();
                      }
 
                  }
@@ -340,7 +338,7 @@ public class ScheduleActivity extends AppCompatActivity {
                  @Override
                  public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                     Snackbar.make(findViewById(R.id.frame_container), "Please Check your Internet Connection", 4000).show();
+                     Snackbar.make(findViewById(R.id.frame_container), "Please Check your Internet Connection", 2000).show();
                  }
              });
          }

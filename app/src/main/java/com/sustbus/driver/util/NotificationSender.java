@@ -73,7 +73,7 @@ public class NotificationSender {
             data.put("title", "Bus Passed "+title);
             data.put("token", token);
             data.put("when", String.valueOf(DateTimeUtils.currentTimeMillis()));
-            data.put("body", body+" at "+DateTimeFormat.shortTime().print(DateTimeUtils.currentTimeMillis()));
+            data.put("body", body+", Hurry Up!");
 
             notification.put("to", "/topics/"+token);
             notification.put("time_to_live", 1200);
@@ -87,10 +87,16 @@ public class NotificationSender {
         }
 
 
-        StringRequest req=new StringRequest(Request.Method.POST, FCM_API, null, new Response.ErrorListener() {
+        StringRequest req=new StringRequest(Request.Method.POST, FCM_API, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+
+                Log.d("DEBMES",response);
+            }
+        }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-
+                Log.d("DEBMES", error.getMessage());
             }
         }){
 

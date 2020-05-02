@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -27,6 +28,7 @@ public class MessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
+        Log.d("DEBMES",remoteMessage.getData().toString());
         sendNotification(remoteMessage);
     }
 
@@ -34,10 +36,9 @@ public class MessagingService extends FirebaseMessagingService {
     public void onNewToken(@NonNull String s) {
         super.onNewToken(s);
         FirebaseMessaging.getInstance().subscribeToTopic("test");
-
+        Log.d("DEBMES","New Token");
         SharedPreferences pref=getSharedPreferences("NOTIFICATIONS",MODE_PRIVATE);
         Set<String> st=pref.getStringSet("tokenSet",new HashSet<>());
-
         for(String tmp:st){
             FirebaseMessaging.getInstance().subscribeToTopic(tmp);
         }
@@ -67,9 +68,8 @@ public class MessagingService extends FirebaseMessagingService {
                         .setWhen(Long.parseLong(message.getData().get("when")))
                         .setDefaults(Notification.DEFAULT_ALL)
                         .setPriority(2)
-                        .setUsesChronometer(true)
-
-                ;
+                        .setShowWhen(true)
+                        ;
 
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);

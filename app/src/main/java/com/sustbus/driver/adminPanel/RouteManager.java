@@ -198,7 +198,7 @@ public class RouteManager extends AppCompatActivity {
                      if(task.isSuccessful()){
                          Toast.makeText(getApplicationContext(),"Changed time",Toast.LENGTH_SHORT).show();
                          routeList.get(pos).setTime(tmp);
-                         mAdapter.notifyDataSetChanged();
+                         mAdapter.notifyItemChanged(pos);
                      }
                      else {
                          Toast.makeText(getApplicationContext(),"Can't perform action",Toast.LENGTH_LONG).show();
@@ -223,7 +223,7 @@ public class RouteManager extends AppCompatActivity {
              if(task.isSuccessful()){
                  Toast.makeText(getApplicationContext(),"Deleted",Toast.LENGTH_SHORT).show();
                  routeList.remove(pos);
-                 mAdapter.notifyDataSetChanged();
+                 mAdapter.notifyItemRemoved(pos);
              }
              else {
                  Toast.makeText(getApplicationContext(),"Can't delete now",Toast.LENGTH_LONG).show();

@@ -66,7 +66,7 @@ public class MapUtil {
 
         restrictionList.add(new GeoBox(new GeoCoordinates(24.921759, 91.82511), new GeoCoordinates(24.925740, 91.83950)));
         placeList= Arrays.asList(CAMPUS_GATE,AMBORKHANA,MODINA_MARKET,SUBID_BAZAR,RIKABI_BAZAR,EIDGAH,KUMARPARA,TILAGOR,NAIORPUL,CHOWHATTA,LAKKATURA
-                                ,BALUCHAR);
+                                ,BALUCHAR,CAMPUS);
     }
 
     public static String removeSpace(String s){

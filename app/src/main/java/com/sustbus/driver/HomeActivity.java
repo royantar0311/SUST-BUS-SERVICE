@@ -385,14 +385,21 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         GeoCoordinates toCheck = MapUtil.GeoCoordinatesMap.get(pathString.get(0));
 
         if (newLatLng.distanceTo(toCheck) <= 100) {
-            GeoCoordinates campus=MapUtil.GeoCoordinatesMap.get(MapUtil.CAMPUS);
-            if(toCheck.distanceTo(campus)>newLatLng.distanceTo(campus)){
-                notificationSender.send(pathString.get(0),"away");
-            }
-            else notificationSender.send(pathString.get(0),"towards");
 
-            if(pathString.size()==1)return;
+            String toNotify=pathString.get(0);
             pathString.remove(0);
+
+            if(pathString.contains(mapUtil.CAMPUS)){
+                if(pathString.contains(toNotify)){
+                    notificationSender.send(toNotify,"away");
+                }
+                else{
+                    notificationSender.send(toNotify,"towards");
+                }
+            }
+            else notificationSender.send(toNotify,"away");
+
+
             updatePath();
         }
 
@@ -408,6 +415,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         for (String s : pathString) {
             path += (s + ";");
         }
+
+        if(path.isEmpty())path="NA;";
         userPathReference.setValue(path);
     }
 
