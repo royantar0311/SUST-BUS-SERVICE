@@ -17,6 +17,8 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import org.joda.time.DateTimeUtils;
+
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
@@ -50,9 +52,12 @@ public class MessagingService extends FirebaseMessagingService {
 
         String token = message.getData().get("token");
 
-        Boolean giveAlarm = getSharedPreferences("NOTIFICATIONS", MODE_PRIVATE).getBoolean(token, false);
+        SharedPreferences pref=getSharedPreferences("NOTIFICATIONS", MODE_PRIVATE);
+        Boolean giveAlarm=pref.getBoolean(token, false);
 
-        if (giveAlarm) {
+          long currentTime=DateTimeUtils.currentTimeMillis();
+          long lastAlarmTime=pref.getLong("lastAlarmTime",currentTime-10*60000);
+        if (giveAlarm && currentTime-lastAlarmTime>=5*60000) {
 
             Intent alarm = new Intent(AlarmClock.ACTION_SET_ALARM);
             alarm.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -70,6 +75,11 @@ public class MessagingService extends FirebaseMessagingService {
             alarm.putExtra(AlarmClock.EXTRA_SKIP_UI, true);
             alarm.putExtra(AlarmClock.EXTRA_MESSAGE, (String) message.getData().get("title") + ", Hurry up!");
             startActivity(alarm);
+            SharedPreferences.Editor editor=pref.edit();
+
+            editor.remove("lastAlarmTime");
+            editor.putLong("lastAlarmTime",DateTimeUtils.currentTimeMillis());
+            editor.commit();
 
         }
 
