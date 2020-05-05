@@ -19,6 +19,7 @@
 package com.sustbus.driver;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.location.Location;
@@ -54,6 +55,7 @@ import com.sustbus.driver.util.UserInfo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -373,6 +375,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
+
         determineCallCount = 1;
 
     }
@@ -383,14 +386,18 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             determineCurrentLocation(newLatLng);
             return;
         }
-
-
-        GeoCoordinates toCheck = MapUtil.GeoCoordinatesMap.get(pathString.get(0));
-
-        if (newLatLng.distanceTo(toCheck) <= 100) {
+        Log.d(TAG, "handlePath: " + pathString.toString());
+        GeoCoordinates toCheck = null;
+            try {
+                toCheck = MapUtil.GeoCoordinatesMap.get(pathString.get(0));
+            }
+            catch (IndexOutOfBoundsException e){
+                turnOffRideShare();
+            }
+            double distance = newLatLng.distanceTo(toCheck);
+        if ( distance <= 50) {
 
             String toNotify = pathString.get(0);
-            pathString.remove(0);
 
             if (pathString.contains(mapUtil.CAMPUS)) {
                 if (pathString.contains(toNotify)) {
@@ -400,7 +407,9 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 }
             } else notificationSender.send(toNotify, "away");
 
+            if(pathString.size() == 1)turnOffRideShare();
 
+            pathString.remove(0);
             updatePath();
         }
 
@@ -426,6 +435,12 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void turnOffRideShare() {
+        new AlertDialog.Builder(getActivity())
+                .setTitle("Ride Ended")
+                .setMessage("you have reached your destination")
+                .setNegativeButton("close",null)
+                .setCancelable(false)
+                .show();
         notificationSender.destroy();
         notificationSender = null;
         MapUtil.rideShareStatus = isRideShareOn = false;
