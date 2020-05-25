@@ -89,7 +89,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private ImageView rideShareIndicatorIV;
     private boolean isRideShareOn = false;
     private LocationManager locationManager;
-    private LocationListener locationListener;
+
     private String userUid, routeIdCurrentlySharing;
     private MapUtil mapUtil;
     private PermissionsRequestor permissionsRequestor;
@@ -307,6 +307,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             public void onLocationResult(LocationResult location) {
                 super.onLocationResult(location);
                 Log.d(TAG, "onLocationResult:  asche");
+                userInfo.setLatLng(location.getLastLocation().getLatitude(),location.getLastLocation().getLongitude());
                 userLocationData.child("lat").setValue(location.getLastLocation().getLatitude());
                 userLocationData.child("lng").setValue(location.getLastLocation().getLongitude());
                 float rotation = 0;
@@ -318,42 +319,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 handlePath(new GeoCoordinates(location.getLastLocation().getLatitude(), location.getLastLocation().getLongitude()));
             }
         },getMainLooper());
-//        locationListener = new LocationListener() {
-//
-//            @Override
-//            public void onLocationChanged(Location location) {
-//                userLocationData.child("lat").setValue(location.getLatitude());
-//                userLocationData.child("lng").setValue(location.getLongitude());
-//                float rotation = 0;
-//                if (ridersPreviousLocation != null) {
-//                    rotation = location.bearingTo(ridersPreviousLocation);
-//                }
-//                ridersPreviousLocation = location;
-//                userLocationData.child("rotation").setValue(rotation);
-//                handlePath(new GeoCoordinates(location.getLatitude(), location.getLongitude()));
-//            }
-//
-//            @Override
-//            public void onStatusChanged(String s, int i, Bundle bundle) {
-//            }
-//
-//            @Override
-//            public void onProviderEnabled(String s) {
-//            }
-//
-//            @Override
-//            public void onProviderDisabled(String s) {
-//                mapUtil.enableGPS(getApplicationContext(), getActivity(), 101);
-//                turnOffRideShare();
-//            }
-//        };
-//
-//
-//        try {
-//            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DIST, locationListener);
-//        } catch (SecurityException e) {
-//            Snackbar.make(findViewById(R.id.home_scrollview), e.getMessage(), Snackbar.LENGTH_SHORT).show();
-//        }
+
     }
 
     public void determineCurrentLocation(GeoCoordinates latLng) {
@@ -464,11 +430,12 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 .setNegativeButton("close",null)
                 .setCancelable(false)
                 .show();
+        userDoc.update("lat",userInfo.getLatLang().latitude);
+        userDoc.update("lng",userInfo.getLatLang().longitude);
         notificationSender.destroy();
         notificationSender = null;
         MapUtil.rideShareStatus = isRideShareOn = false;
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.start_ride));
-        locationListener = null;
         userLocationData.setValue(null);
         userPathReference.setValue(null);
         databaseReference.child("busesOnRoad").child(routeIdCurrentlySharing).setValue(null);
@@ -571,6 +538,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             turnOffRideShare();
         }
         if (listener != null) listener.remove();
+        locationManager = null;
         FirebaseAuth.getInstance().removeAuthStateListener(this);
     }
 }

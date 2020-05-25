@@ -110,7 +110,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private boolean freeLocateMeButton = true;
     private Marker myLocationMarker;
     private LocationManager locationManager;
-    private LocationListener locationListener;
     private String userUid;
     private boolean isCalculatingBusRout = false;
     private CardView informationCard;
@@ -529,41 +528,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         },getMainLooper());
 
-//        locationListener = new LocationListener() {
-//
-//            @Override
-//            public void onLocationChanged(Location location) {
-//                if (myLocationMarker == null)
-//                    myLocationMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude()))
-//                            .icon(bitmapDescriptorFromVector(R.drawable.ic_radio_button))
-//                            .flat(true));
-//                else
-//                    myLocationMarker.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
-//            }
-//
-//            @Override
-//            public void onStatusChanged(String s, int i, Bundle bundle) {
-//
-//            }
-//
-//            @Override
-//            public void onProviderEnabled(String s) {
-//
-//            }
-//
-//            @Override
-//            public void onProviderDisabled(String s) {
-//                mapUtil.enableGPS(getApplicationContext(), getActivity(), 101);
-//            }
-//        };
-//
-//
-//        try {
-//            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DIST, locationListener);
-//        } catch (SecurityException e) {
-//            Snackbar.make(findViewById(R.id.home_scrollview), e.getMessage(), Snackbar.LENGTH_SHORT).show();
-//        }
-
     }
 
     @Override
@@ -657,16 +621,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            Toast.makeText(this, "press back again to exit", Toast.LENGTH_SHORT).show();
+            if(!ok)Toast.makeText(this, "press back again to exit", Toast.LENGTH_SHORT).show();
             if (ok) {
 
                 databaseReference.child("alive").removeEventListener(childEventListener);
                 databaseReference.child("destinations").removeEventListener(pathChangeListner);
                 databaseReference = null;
-                if (locationManager != null) locationManager.removeUpdates(locationListener);
-                locationManager = null;
-                locationListener = null;
-                markerMap.clear();
+                locationManager = null;markerMap.clear();
                 pathInformationMap.clear();
                 finish();
             }
