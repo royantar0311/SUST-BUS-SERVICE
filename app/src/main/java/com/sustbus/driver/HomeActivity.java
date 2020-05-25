@@ -32,6 +32,12 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
@@ -69,7 +75,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private static final String TAG = "HomeActivity";
     private static final int LOCATION_PERMISSION_CODE = 1;
     UserInfo userInfo = null;
-    Intent intent;
+
     private TextView userNameTv;
     private TextView driverOrStudent;
     private CardView shareRideTv;
@@ -95,6 +101,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private NotificationSender notificationSender;
     private CardView routeUploaderCv;
     private String SERVER_KEY = "hello";
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private LocationRequest locationRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,6 +141,12 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(intent);
             }
         });
+
+        fusedLocationProviderClient = new FusedLocationProviderClient(this);
+        locationRequest = new LocationRequest();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setInterval(10000);
+        locationRequest.setFastestInterval(5000);
 
         userInfo = UserInfo.getInstance();
         mAuth = FirebaseAuth.getInstance();
@@ -247,12 +261,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d(TAG, "onResume: ");
-
-    }
 
     @Override
     protected void onStop() {
@@ -294,47 +302,62 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         isRideShareOn = true;
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.end_ride));
         notificationSender = new NotificationSender(this, userUid, SERVER_KEY);
-
-        locationListener = new LocationListener() {
-
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest,new LocationCallback(){
             @Override
-            public void onLocationChanged(Location location) {
-                userLocationData.child("lat").setValue(location.getLatitude());
-                userLocationData.child("lng").setValue(location.getLongitude());
+            public void onLocationResult(LocationResult location) {
+                super.onLocationResult(location);
+                Log.d(TAG, "onLocationResult:  asche");
+                userLocationData.child("lat").setValue(location.getLastLocation().getLatitude());
+                userLocationData.child("lng").setValue(location.getLastLocation().getLongitude());
                 float rotation = 0;
                 if (ridersPreviousLocation != null) {
-                    rotation = location.bearingTo(ridersPreviousLocation);
+                    rotation = location.getLastLocation().bearingTo(ridersPreviousLocation);
                 }
-                ridersPreviousLocation = location;
+                ridersPreviousLocation = location.getLastLocation();
                 userLocationData.child("rotation").setValue(rotation);
-                handlePath(new GeoCoordinates(location.getLatitude(), location.getLongitude()));
+                handlePath(new GeoCoordinates(location.getLastLocation().getLatitude(), location.getLastLocation().getLongitude()));
             }
-
-            @Override
-            public void onStatusChanged(String s, int i, Bundle bundle) {
-            }
-
-            @Override
-            public void onProviderEnabled(String s) {
-            }
-
-            @Override
-            public void onProviderDisabled(String s) {
-                mapUtil.enableGPS(getApplicationContext(), getActivity(), 101);
-                turnOffRideShare();
-            }
-        };
-
-
-        try {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DIST, locationListener);
-        } catch (SecurityException e) {
-            Snackbar.make(findViewById(R.id.home_scrollview), e.getMessage(), Snackbar.LENGTH_SHORT).show();
-        }
+        },getMainLooper());
+//        locationListener = new LocationListener() {
+//
+//            @Override
+//            public void onLocationChanged(Location location) {
+//                userLocationData.child("lat").setValue(location.getLatitude());
+//                userLocationData.child("lng").setValue(location.getLongitude());
+//                float rotation = 0;
+//                if (ridersPreviousLocation != null) {
+//                    rotation = location.bearingTo(ridersPreviousLocation);
+//                }
+//                ridersPreviousLocation = location;
+//                userLocationData.child("rotation").setValue(rotation);
+//                handlePath(new GeoCoordinates(location.getLatitude(), location.getLongitude()));
+//            }
+//
+//            @Override
+//            public void onStatusChanged(String s, int i, Bundle bundle) {
+//            }
+//
+//            @Override
+//            public void onProviderEnabled(String s) {
+//            }
+//
+//            @Override
+//            public void onProviderDisabled(String s) {
+//                mapUtil.enableGPS(getApplicationContext(), getActivity(), 101);
+//                turnOffRideShare();
+//            }
+//        };
+//
+//
+//        try {
+//            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DIST, locationListener);
+//        } catch (SecurityException e) {
+//            Snackbar.make(findViewById(R.id.home_scrollview), e.getMessage(), Snackbar.LENGTH_SHORT).show();
+//        }
     }
 
     public void determineCurrentLocation(GeoCoordinates latLng) {
-
+        Log.d(TAG, "determineCurrentLocation: called");
         if (determineCallCount == 0) previousPosition = latLng;
         else if (latLng.distanceTo(previousPosition) >= 5) {
             int rem = 0;
@@ -445,7 +468,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         notificationSender = null;
         MapUtil.rideShareStatus = isRideShareOn = false;
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.start_ride));
-        locationManager.removeUpdates(locationListener);
         locationListener = null;
         userLocationData.setValue(null);
         userPathReference.setValue(null);
@@ -520,7 +542,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
 
-
+            Log.d(TAG, "onActivityResult: " + pathString.toString());
             userLocationData.child("title").setValue(title);
             databaseReference.child("busesOnRoad").child(routeId).onDisconnect().setValue(null);
             databaseReference.child("busesOnRoad").child(routeId).child("key").setValue(userUid);
@@ -539,12 +561,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         permissionsRequestor.onRequestPermissionsResult(requestCode, grantResults);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.d(TAG, "onPause: ");
     }
 
     @Override

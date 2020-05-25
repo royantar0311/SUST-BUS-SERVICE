@@ -29,6 +29,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
@@ -36,6 +37,10 @@ import android.view.animation.Animation;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -82,10 +87,12 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, View.OnClickListener, GoogleMap.OnMarkerClickListener {
-
-    public static final int MIN_TIME = 1000;
+    private static final String TAG = "MapsActivity";
+    public static final int MIN_TIME = 2000;
     public static final int MIN_DIST = 5;
     private GoogleMap mMap;
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private LocationRequest locationRequest;
     private FloatingActionButton locateMeBtn;
     private FirebaseAuth mAuth;
     private DatabaseReference databaseReference;
@@ -124,6 +131,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         databaseReference = FirebaseDatabase.getInstance().getReference();
         mAuth = FirebaseAuth.getInstance();
+
+        fusedLocationProviderClient = new FusedLocationProviderClient(this);
+        locationRequest = new LocationRequest();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setInterval(10000);
+        locationRequest.setFastestInterval(5000);
 
 
         if (mAuth.getCurrentUser() == null) {
@@ -416,7 +429,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         if (myLocationMarker == null) {
-            blinkRed("Please check your Location Setting!");
+            blinkRed("Please check your Location Settings!");
             freeLocateMeButton = true;
             return;
         }
@@ -501,42 +514,55 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             locationManager = null;
             return;
         }
-
-
-        locationListener = new LocationListener() {
-
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest,new LocationCallback(){
             @Override
-            public void onLocationChanged(Location location) {
+            public void onLocationResult(LocationResult location) {
+                super.onLocationResult(location);
+                Log.d(TAG, "onLocationResult:  asche");
                 if (myLocationMarker == null)
-                    myLocationMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude()))
+                    myLocationMarker = mMap.addMarker(new MarkerOptions()
+                            .position(new LatLng(location.getLastLocation().getLatitude(), location.getLastLocation().getLongitude()))
                             .icon(bitmapDescriptorFromVector(R.drawable.ic_radio_button))
                             .flat(true));
                 else
-                    myLocationMarker.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
+                    myLocationMarker.setPosition(new LatLng(location.getLastLocation().getLatitude(), location.getLastLocation().getLongitude()));
             }
+        },getMainLooper());
 
-            @Override
-            public void onStatusChanged(String s, int i, Bundle bundle) {
-
-            }
-
-            @Override
-            public void onProviderEnabled(String s) {
-
-            }
-
-            @Override
-            public void onProviderDisabled(String s) {
-                mapUtil.enableGPS(getApplicationContext(), getActivity(), 101);
-            }
-        };
-
-
-        try {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DIST, locationListener);
-        } catch (SecurityException e) {
-            Snackbar.make(findViewById(R.id.home_scrollview), e.getMessage(), Snackbar.LENGTH_SHORT).show();
-        }
+//        locationListener = new LocationListener() {
+//
+//            @Override
+//            public void onLocationChanged(Location location) {
+//                if (myLocationMarker == null)
+//                    myLocationMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude()))
+//                            .icon(bitmapDescriptorFromVector(R.drawable.ic_radio_button))
+//                            .flat(true));
+//                else
+//                    myLocationMarker.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
+//            }
+//
+//            @Override
+//            public void onStatusChanged(String s, int i, Bundle bundle) {
+//
+//            }
+//
+//            @Override
+//            public void onProviderEnabled(String s) {
+//
+//            }
+//
+//            @Override
+//            public void onProviderDisabled(String s) {
+//                mapUtil.enableGPS(getApplicationContext(), getActivity(), 101);
+//            }
+//        };
+//
+//
+//        try {
+//            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DIST, locationListener);
+//        } catch (SecurityException e) {
+//            Snackbar.make(findViewById(R.id.home_scrollview), e.getMessage(), Snackbar.LENGTH_SHORT).show();
+//        }
 
     }
 
@@ -545,6 +571,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 101) {
             if (resultCode == Activity.RESULT_OK) showUserLocation();
+            else finish();
         }
     }
 

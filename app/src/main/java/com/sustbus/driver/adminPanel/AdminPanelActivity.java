@@ -1,5 +1,7 @@
 package com.sustbus.driver.adminPanel;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import com.google.android.material.tabs.TabLayout;
@@ -9,6 +11,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
+
+import java.util.Locale;
 
 public class AdminPanelActivity extends AppCompatActivity {
     private TabLayout tabLayout;
