@@ -7,9 +7,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.CycleInterpolator;
+import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -343,9 +345,7 @@ public class ScheduleActivity extends AppCompatActivity {
                         currentProgressDialogue.dismiss();
                         Snackbar.make(findViewById(R.id.frame_container), "This Schedule is Already Running", 2000).show();
                     }
-
                 }
-
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
                     currentProgressDialogue.dismiss();
@@ -367,6 +367,13 @@ public class ScheduleActivity extends AppCompatActivity {
 
                         }
                     })
+                    .setNeutralButton("Report", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            alertDialog.cancel();
+                            openReportAd(tmp.getTitle());
+                        }
+                    })
                     .setNegativeButton("cancel", null)
                     .create();
 
@@ -375,7 +382,30 @@ public class ScheduleActivity extends AppCompatActivity {
         }
 
     }
-
+    private void openReportAd(String title){
+        LayoutInflater inflater = getLayoutInflater();
+        View view = inflater.inflate(R.layout.open_report_alertdialog, null);
+        CheckBox busPosiErrorCb = view.findViewById(R.id.report_bus_posi_error_cb);
+        new  AlertDialog.Builder(this)
+                .setTitle("Report")
+                .setMessage("Select an issue")
+                .setView(view)
+                .setPositiveButton("Submit", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if(busPosiErrorCb.isChecked()) {
+                            FirebaseDatabase.getInstance()
+                                    .getReference()
+                                    .child("reports")
+                                    .child(title)
+                                    .setValue("location error");
+                            Toast.makeText(ScheduleActivity.this, "Youre Report will be reviewed",Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                })
+                .setNegativeButton("Cancel",null)
+                .show();
+    }
 
     @Override
     protected void onDestroy() {
