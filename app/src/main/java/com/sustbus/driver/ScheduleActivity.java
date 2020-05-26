@@ -340,6 +340,7 @@ public class ScheduleActivity extends AppCompatActivity {
                     if (!dataSnapshot.hasChild(tmp.getRouteId())) {
                         giveResult(position);
                     } else {
+                        currentProgressDialogue.dismiss();
                         Snackbar.make(findViewById(R.id.frame_container), "This Schedule is Already Running", 2000).show();
                     }
 
@@ -347,7 +348,7 @@ public class ScheduleActivity extends AppCompatActivity {
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                    currentProgressDialogue.dismiss();
                     Snackbar.make(findViewById(R.id.frame_container), "Please Check your Internet Connection", 2000).show();
                 }
             });
