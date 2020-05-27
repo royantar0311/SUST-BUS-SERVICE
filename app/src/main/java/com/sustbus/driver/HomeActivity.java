@@ -20,6 +20,7 @@ package com.sustbus.driver;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.location.Location;
@@ -447,22 +448,25 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         int i = view.getId();
 
         if (i == R.id.ride_on_cv) {
-            if (userInfo.isDriver()) {
                 if (!isRideShareOn) {
-                    boolean isGps = false;
-                    try {
-                        isGps = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-                    } catch (Exception e) {
+                    if (!userInfo.isDriver()) {
+                        new AlertDialog.Builder(this)
+                                .setTitle("Warning!")
+                                .setMessage("Since you are not a Driver, if you misuse this feature legal actions will be taken against you")
+                                .setPositiveButton("I understand", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        gotoSchedule();
+                                    }
+                                })
+                                .setNegativeButton("cancel", null)
+                                .show();
                     }
-
-                    if (!isGps) {
-                        mapUtil.enableGPS(getApplicationContext(), this, 101);
-                    } else initializePath();
+                    else gotoSchedule();
 
                 } else turnOffRideShare();
-            } else {
-                Snackbar.make(findViewById(R.id.ride_on_cv), "You're not a Driver!", Snackbar.LENGTH_SHORT).show();
-            }
+
+
         } else if (i == R.id.help_center_cv) {
             userInfo.reset();
             FirebaseAuth.getInstance().signOut();
@@ -484,6 +488,18 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             startActivity(new Intent(HomeActivity.this, RouteManager.class));
         }
 
+    }
+
+    private void gotoSchedule() {
+        boolean isGps = false;
+        try {
+            isGps = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        } catch (Exception ignored) {
+        }
+
+        if (!isGps) {
+            mapUtil.enableGPS(getApplicationContext(), this, 101);
+        } else initializePath();
     }
 
     @Override
