@@ -156,14 +156,23 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void loadImage() {
-        try {
-            String img = userInfo.getUrl();
-            byte[] imageAsBytes = Base64.decode(img.getBytes(), Base64.DEFAULT);
-            dpEv.setImageBitmap(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
-        } catch (NullPointerException e) {
-        } catch (IllegalArgumentException e) {
-            Log.d(TAG, "onSuccess: " + e.getMessage());
-        }
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String img = userInfo.getUrl();
+                    byte[] imageAsBytes = Base64.decode(img.getBytes(), Base64.DEFAULT);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            dpEv.setImageBitmap(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
+                        }
+                    });
+                } catch (Exception ignored) {
+                }
+            }
+        });
+        thread.start();
     }
 
     private void updateDatabase() {

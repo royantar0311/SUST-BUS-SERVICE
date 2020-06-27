@@ -33,6 +33,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.sustbus.driver.util.CallBack;
 import com.sustbus.driver.util.RotateBitmap;
 import com.sustbus.driver.util.UserInfo;
 
@@ -287,24 +288,27 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
         userInfo.setUserName(userName);
         userInfo.setRegiNo(regiNo);
-        Log.d(TAG, userInfo.toString());
-        db.update(userInfo.toMap())
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d(TAG, "onSuccess: " + "profile updated");
-                        progressDialog.hide();
-                        if (!userInfo.isProfileCompleted()) {
-                            permissionPending();
-                            userInfo.setProfileCompleted(true);
-                            db.update(userInfo.toMap());
-                            Toast.makeText(ProfileActivity.this, "Requesting permission", Toast.LENGTH_SHORT).show();
-                        } else if (userInfo.isPermitted()) {
-                            permitted();
-                            Toast.makeText(ProfileActivity.this, "Profile Updated Successfully", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
+        userInfo.updateToDbase(new CallBack() {
+            @Override
+            public void ok() {
+                Log.d(TAG, "onSuccess: " + "profile updated");
+                progressDialog.hide();
+                if (!userInfo.isProfileCompleted()) {
+                    permissionPending();
+                    userInfo.setProfileCompleted(true);
+                    db.update(userInfo.toMap());
+                    Toast.makeText(ProfileActivity.this, "Requesting permission", Toast.LENGTH_SHORT).show();
+                } else if (userInfo.isPermitted()) {
+                    permitted();
+                    Toast.makeText(ProfileActivity.this, "Profile Updated Successfully", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void notOk() {
+                Toast.makeText(ProfileActivity.this, "something went wrong", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
@@ -392,8 +396,12 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     protected void onDestroy() {
         Log.d(TAG, "onDestroy: ");
-
         super.onDestroy();
+        progressDialog.dismiss();
+        progressDialog = null;
+        listener = null;
+        db = null;
+        storageReference = null;
     }
 
     @Override
