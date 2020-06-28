@@ -8,6 +8,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +20,7 @@ public class UserInfo {
     public static final int PERMISSION_PENDING = -1;
     private static final String TAG = "UserInfo";
     public static Builder builder = new Builder();
-    private static UserInfo instance = new UserInfo();
+    private static UserInfo instance;
     private String email;
     private boolean permitted;
     private String userName;
@@ -31,11 +32,13 @@ public class UserInfo {
     private String regiNo;
     private String url;
     private String idUrl;
-
     public UserInfo() {
     }
 
     public static UserInfo getInstance() {
+        if(instance == null){
+            instance = new UserInfo();
+        }
         return instance;
     }
 
@@ -43,6 +46,35 @@ public class UserInfo {
         instance = i;
         Log.d(TAG, "setInstance: " + i.toString());
     }
+    public void updateToDbase(CallBack callBack)  {
+        Log.d(TAG, "updateToDbase: " + Thread.currentThread().getName());
+        Thread t1 = new Thread(() ->{
+            Log.d(TAG, "updateToDbase: " + Thread.currentThread().getName());
+            FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(this.uId)
+                    .update(this.toMap())
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            callBack.ok();
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            callBack.notOk();
+                        }
+                    });
+        });
+        t1.start();
+    }
+//    class getFromDB implements Runnable {
+//        @Override
+//        public void run() {
+//             ListenerRegistration listener;
+//        }
+//    }
 
     /**
      * Private method needed for the builder
@@ -254,27 +286,5 @@ public class UserInfo {
             return userInfo(builder);
         }
     }
-    public void updateToDbase(CallBack callBack)  {
-        Log.d(TAG, "updateToDbase: " + Thread.currentThread().getName());
-        Thread t1 = new Thread(() ->{
-            Log.d(TAG, "updateToDbase: " + Thread.currentThread().getName());
-            FirebaseFirestore.getInstance()
-                    .collection("users")
-                    .document(this.uId)
-                    .update(this.toMap())
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            callBack.ok();
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            callBack.notOk();
-                        }
-                    });
-        });
-        t1.start();
-    }
+
 }

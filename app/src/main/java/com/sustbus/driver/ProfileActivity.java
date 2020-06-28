@@ -21,7 +21,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
@@ -75,12 +74,6 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     private Uri dpFilePath = null, idFilePath = null;
     private ProgressDialog progressDialog;
 
-    public static byte[] getBytesFromBitmap(Bitmap bitmap, int quality) {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream);
-        return stream.toByteArray();
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,6 +93,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         dpChooserBtn = findViewById(R.id.dp_chooser_button);
 
         userInfo = UserInfo.getInstance();
+        initUi();
         Log.d(TAG, "onCreate: " + userInfo.toString());
         db = FirebaseFirestore.getInstance()
                 .collection("users")
@@ -122,24 +116,24 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             }
         });
 
-        listener = db.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    Log.w(TAG, "Listen failed.", e);
-                    return;
-                }
-                if (snapshot != null && snapshot.exists()) {
-                    UserInfo.setInstance(snapshot.toObject(UserInfo.class));
-                    userInfo = UserInfo.getInstance();
-                    Log.d(TAG, userInfo.toString());
-                    loadImage();
-                    initUi();
-                } else {
-                    Log.d(TAG, "Current data: null");
-                }
-            }
-        });
+//        listener = db.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+//            @Override
+//            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException e) {
+//                if (e != null) {
+//                    Log.w(TAG, "Listen failed.", e);
+//                    return;
+//                }
+//                if (snapshot != null && snapshot.exists()) {
+//                    UserInfo.setInstance(snapshot.toObject(UserInfo.class));
+//                    userInfo = UserInfo.getInstance();
+//                    Log.d(TAG, userInfo.toString());
+//                    loadImage();
+//                    initUi();
+//                } else {
+//                    Log.d(TAG, "Current data: null");
+//                }
+//            }
+//        });
 
         updateProfileBtn.setOnClickListener(this);
         changePasswordTv.setOnClickListener(new View.OnClickListener() {
@@ -349,8 +343,6 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     protected void onStart() {
         super.onStart();
-
-
     }
 
     private void initUi() {
@@ -372,6 +364,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         regiNo = userInfo.getRegiNo();
         userNameEt.setText(userName);
         regiNoEt.setText(regiNo);
+        loadImage();
     }
 
     private void permitted() {
@@ -402,7 +395,9 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         listener = null;
         db = null;
         storageReference = null;
+        System.gc();
     }
+    
 
     @Override
     public void onBackPressed() {
@@ -474,6 +469,21 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             }
             byte[] bytes;
             bytes = getBytesFromBitmap(bitmap, 20);
+            String encodedImage = Base64.encodeToString(bytes, Base64.NO_WRAP);
+
+            if (message.equals("dp")) userInfo.setUrl(encodedImage);
+            else if (message.equals("id")) userInfo.setIdUrl(encodedImage);
+            userInfo.updateToDbase(new CallBack() {
+                @Override
+                public void ok() {
+                    Log.d(TAG, "ok: uploaded via singleton");
+                }
+
+                @Override
+                public void notOk() {
+                    Log.d(TAG, "notOk: error");
+                }
+            });
             return bytes;
         }
 
@@ -481,33 +491,15 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         protected void onPostExecute(byte[] bytes) {
             super.onPostExecute(bytes);
             Log.d(TAG, "onPostExecute: done " + bytes.length);
-            String encodedImage = Base64.encodeToString(bytes, Base64.NO_WRAP);
-
-            if (message.equals("dp")) userInfo.setUrl(encodedImage);
-            else if (message.equals("id")) userInfo.setIdUrl(encodedImage);
-            db.update(userInfo.toMap());
+            
             Log.d(TAG, "onPostExecute: " + userInfo.toString());
-            //UploadTask uploadTask = storageReference.putBytes(bytes);
 
-//            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-//                @Override
-//                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-//                    Log.d(TAG, "onSuccess: dp compressed and uploaded");
-//                    taskSnapshot.getStorage().getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-//                        @Override
-//                        public void onSuccess(Uri uri) {
-//                            Log.d(TAG, "onSuccess: " + message + " upload Successful");
-//                            //
-//                           // Log.d(TAG, "onSuccess: " + encodedImage);
-//                            if(message.equals("dp"))userInfo.setUrl(uri.toString());
-//                            else if(message.equals("id"))userInfo.setIdUrl(uri.toString());
-//                            db.update(userInfo.toMap());
-//                            //Log.d(TAG, "onSuccess: " + userInfo.getIdUrl());
-//
-//                        }
-//                    });
-//                }
-//            });
         }
     }
+    public static byte[] getBytesFromBitmap(Bitmap bitmap, int quality) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream);
+        return stream.toByteArray();
+    }
+  
 }
