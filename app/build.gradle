@@ -15,12 +15,21 @@ android {
     buildTypes {
         release {
             minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
         sourceCompatibility 1.8
         targetCompatibility 1.8
+    }
+    packagingOptions {
+        exclude '/lib/armeabi-v7a/libNanumGothicFontPkg.so'
+        exclude '/lib/armeabi-v7a/libLohitIndicFontPkg.so'
+        exclude '/lib/armeabi-v7a/libChineseFontPkg.so'
+        exclude '/lib/arm64-v8a/libNanumGothicFontPkg.so'
+        exclude '/lib/arm64-v8a/libLohitIndicFontPkg.so'
+        exclude '/lib/arm64-v8a/libChineseFontPkg.so'
     }
 }
 
