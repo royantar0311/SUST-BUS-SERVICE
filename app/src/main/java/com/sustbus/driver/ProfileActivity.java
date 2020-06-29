@@ -94,7 +94,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
         userInfo = UserInfo.getInstance();
         initUi();
-        Log.d(TAG, "onCreate: " + userInfo.toString());
+
         db = FirebaseFirestore.getInstance()
                 .collection("users")
                 .document(userInfo.getuId());
@@ -115,26 +115,6 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                 regiNoValidator(theNewText);
             }
         });
-
-//        listener = db.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-//            @Override
-//            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException e) {
-//                if (e != null) {
-//                    Log.w(TAG, "Listen failed.", e);
-//                    return;
-//                }
-//                if (snapshot != null && snapshot.exists()) {
-//                    UserInfo.setInstance(snapshot.toObject(UserInfo.class));
-//                    userInfo = UserInfo.getInstance();
-//                    Log.d(TAG, userInfo.toString());
-//                    loadImage();
-//                    initUi();
-//                } else {
-//                    Log.d(TAG, "Current data: null");
-//                }
-//            }
-//        });
-
         updateProfileBtn.setOnClickListener(this);
         changePasswordTv.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -148,7 +128,6 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
     private void initChangePasswordAD() {
         LayoutInflater inflater = getLayoutInflater();
-
         View view = inflater.inflate(R.layout.forgot_password_alertdialog, null);
         new AlertDialog.Builder(ProfileActivity.this)
                 .setTitle("Change Password")
@@ -205,13 +184,6 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void loadImage() {
-//        if (userInfo != null && userInfo.getUrl() != null) {
-//            Glide.with(ProfileActivity.this)
-//                    .load(userInfo.getUrl())
-//                    .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.NONE))
-//                    .apply(new RequestOptions().placeholder(R.drawable.loading))
-//                    .into(dpEv);
-//        }
         assert userInfo.getUrl() != null;
         try {
             String img = userInfo.getUrl();
@@ -265,10 +237,12 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                     Log.d(TAG, "onClick: dp upload init");
                     BackgroundImageUpload backgroundImageUpload = new BackgroundImageUpload(storageReference.child("dp.jpg"), "dp");
                     backgroundImageUpload.execute(dpFilePath);
+                    dpFilePath = null;
                 }
                 if (idFilePath != null) {
                     BackgroundImageUpload backgroundImageUpload = new BackgroundImageUpload(storageReference.child("id.jpg"), "id");
                     backgroundImageUpload.execute(idFilePath);
+                    idFilePath = null;
                 }
                 updateRestOfTheData();
             } else {
@@ -347,6 +321,8 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
     private void initUi() {
         backBtn.setVisibility(View.GONE);
+        userNameValidator(userInfo.getUserName());
+        regiNoValidator(userInfo.getRegiNo());
         if (!userInfo.isPermitted() && !userInfo.isProfileCompleted()) {
             updateProfileBtn.setEnabled(true);
             profileHelperTv.setText("Complete all the fields and request for permission");

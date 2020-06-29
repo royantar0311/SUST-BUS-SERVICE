@@ -24,7 +24,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Base64;
@@ -37,8 +36,6 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
@@ -47,13 +44,13 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.here.sdk.core.GeoCoordinates;
 import com.sustbus.driver.adminPanel.AdminPanelActivity;
 import com.sustbus.driver.adminPanel.RouteManager;
+import com.sustbus.driver.util.CallBack;
+import com.sustbus.driver.util.DbListener;
 import com.sustbus.driver.util.MapUtil;
 import com.sustbus.driver.util.NotificationSender;
 import com.sustbus.driver.util.PermissionsRequestor;
@@ -62,15 +59,11 @@ import com.sustbus.driver.util.UserInfo;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-
-import static com.sustbus.driver.MapsActivity.MIN_DIST;
-import static com.sustbus.driver.MapsActivity.MIN_TIME;
 
 public class HomeActivity extends AppCompatActivity implements View.OnClickListener, FirebaseAuth.AuthStateListener {
     private static final String TAG = "HomeActivity";
@@ -90,7 +83,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private ImageView rideShareIndicatorIV;
     private boolean isRideShareOn = false;
     private LocationManager locationManager;
-
     private String userUid, routeIdCurrentlySharing;
     private MapUtil mapUtil;
     private PermissionsRequestor permissionsRequestor;
@@ -134,14 +126,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         signOut.setOnClickListener(this);
         routeUploaderCv.setOnClickListener(this);
         FirebaseAuth.getInstance().addAuthStateListener(this);
-        adminPanelCv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(HomeActivity.this, AdminPanelActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-            }
-        });
+        adminPanelCv.setOnClickListener(this);
 
         fusedLocationProviderClient = new FusedLocationProviderClient(this);
         locationRequest = new LocationRequest();
@@ -156,6 +141,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void loadImage() {
+        Log.d(TAG, "loadImage: called");
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -175,17 +161,13 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         thread.start();
     }
 
-    private void updateDatabase() {
+    private void initDatabase() {
         /**
          * Database initialization
          * */
         Log.d(TAG, "updateDatabase: called");
-        databaseReference = FirebaseDatabase.getInstance().getReference();
-        userUid = mAuth.getCurrentUser().getUid();
-        db = FirebaseFirestore.getInstance();
-        userDoc = FirebaseFirestore.getInstance().collection("users").document(userUid);
-        userLocationData = databaseReference.child("alive").child(userUid);
-        userPathReference = databaseReference.child("destinations").child(userUid).child("path");
+        userLocationData = FirebaseDatabase.getInstance().getReference().child("alive").child(userUid);
+        userPathReference = FirebaseDatabase.getInstance().getReference().child("destinations").child(userUid).child("path");
         userLocationData.onDisconnect().setValue(null);
         userPathReference.onDisconnect().setValue(null);
 
@@ -201,33 +183,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         });
-
-        listener = userDoc.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    Log.w(TAG, "Listen failed.", e);
-                    return;
-                }
-                if (documentSnapshot != null || documentSnapshot.exists()) {
-                    UserInfo.setInstance(documentSnapshot.toObject(UserInfo.class));
-                    userInfo = UserInfo.getInstance();
-                    Log.d(TAG, userInfo.toString());
-                    dashboardSetup();
-                    loadImage();
-                    Log.d(TAG, "onEvent: " + userInfo.toString());
-                    if (!userInfo.isProfileCompleted() || !userInfo.isPermitted()) {
-                        Intent intent = new Intent(HomeActivity.this, ProfileActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(intent);
-                        finish();
-                    }
-                } else {
-                    Log.d(TAG, "Current data: null");
-                }
-            }
-        });
-
     }
 
     private void dashboardSetup() {
@@ -302,8 +257,32 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 }
             });
-            updateDatabase();
+            userUid = mAuth.getCurrentUser().getUid();
+            userInfo.setuId(userUid);
+            Thread dbListener;
+            dbListener = new Thread(new DbListener(new CallBack(){
+                @Override
+                public void ok() {
+                    userInfo = UserInfo.getInstance();
+                    Log.d(TAG, "ok: "+ userInfo.getUserName());
+                    dashboardSetup();
+                    loadImage();
+                }
+
+                @Override
+                public void notOk() {
+                    
+                }
+            }));
+            dbListener.start();
+            initDatabase();
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume: ");
     }
 
     public void turnOnRideShare() {
@@ -495,8 +474,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             startActivity(new Intent(HomeActivity.this, NotificationSettings.class));
         } else if (i == R.id.route_uploader) {
             startActivity(new Intent(HomeActivity.this, RouteManager.class));
+        } else if(i==R.id.admin_panel_cv){
+            Intent intent = new Intent(HomeActivity.this, AdminPanelActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
         }
-
     }
 
     private void gotoSchedule() {

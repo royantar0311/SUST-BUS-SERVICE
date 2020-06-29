@@ -3,11 +3,15 @@ package com.sustbus.driver.util;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.HashMap;
@@ -34,7 +38,6 @@ public class UserInfo {
     private String idUrl;
     public UserInfo() {
     }
-
     public static UserInfo getInstance() {
         if(instance == null){
             instance = new UserInfo();
@@ -69,12 +72,7 @@ public class UserInfo {
         });
         t1.start();
     }
-//    class getFromDB implements Runnable {
-//        @Override
-//        public void run() {
-//             ListenerRegistration listener;
-//        }
-//    }
+
 
     /**
      * Private method needed for the builder
@@ -288,3 +286,4 @@ public class UserInfo {
     }
 
 }
+
