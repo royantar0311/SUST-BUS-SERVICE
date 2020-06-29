@@ -26,10 +26,10 @@ public class UserInfo {
     public static Builder builder = new Builder();
     private static UserInfo instance;
     private String email;
-    private boolean permitted;
+    private boolean permitted = false;
     private String userName;
-    private boolean driver;
-    private boolean profileCompleted;
+    private boolean driver = false;
+    private boolean profileCompleted =false;
     private Double lat;
     private Double lang;
     private String uId;

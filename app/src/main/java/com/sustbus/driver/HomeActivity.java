@@ -100,7 +100,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate: called");
-        setTheme(R.style.SplashTheme);
+        //setTheme(R.style.SplashTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         rideShareIndicatorIV = findViewById(R.id.ride_share_iv);
@@ -271,7 +271,10 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
                 @Override
                 public void notOk() {
-                    
+                    Intent intent = new Intent(HomeActivity.this, ProfileActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                    finish();
                 }
             }));
             dbListener.start();

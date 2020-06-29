@@ -1,5 +1,6 @@
 package com.sustbus.driver.util;
 
+import android.content.Intent;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -8,6 +9,9 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.sustbus.driver.ProfileActivity;
+
+import io.grpc.Context;
 
 public class DbListener implements Runnable {
     private static final String TAG = "getFromDB";
@@ -34,12 +38,9 @@ public class DbListener implements Runnable {
                             callBack.ok();
                             //Log.d(TAG, userInfo.toString());
                             Log.d(TAG, "onEvent: " + userInfo.toString());
-                            //if (!userInfo.isProfileCompleted() || !userInfo.isPermitted()) {
-//                                Intent intent = new Intent(HomeActivity.this, ProfileActivity.class);
-//                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//                                startActivity(intent);
-//                                finish();
-                            //}
+                            if (!userInfo.isProfileCompleted() || !userInfo.isPermitted()) {
+                                callBack.notOk();
+                            }
                         } else {
                             Log.d(TAG, "Current data: null");
                         }

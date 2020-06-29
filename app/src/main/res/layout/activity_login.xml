@@ -12,16 +12,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
+        android:layout_marginTop="44dp"
         android:fontFamily="@font/bungee_shade"
         android:text="BUS"
         android:textColor="@color/fui_bgGitHub"
         android:textSize="34dp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.06999999" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/login_tv"
@@ -29,46 +27,16 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
 
-        android:layout_marginTop="44dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
         android:fontFamily="@font/amiko_bold"
         android:text="Login"
         android:textColor="@color/dark_red"
         android:textSize="30dp"
+        app:layout_constraintBottom_toTopOf="@+id/username_tf"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/title" />
-
-    <studio.carbonylgroup.textfieldboxes.TextFieldBoxes
-        android:id="@+id/username_tf"
-        android:layout_width="266dp"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/login_tv"
-
-        android:layout_marginTop="32dp"
-        android:background="@drawable/edit_round"
-        app:hasClearButton="true"
-        app:helperText="enter email here"
-        app:iconSignifier="@drawable/ic_account_circle_black_24dp"
-        app:labelText="Email"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.42"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/login_tv"
-        app:manualValidateError="true"
-        app:maxCharacters="16"
-        app:minCharacters="4"
-        app:primaryColor="@color/A400red">
-
-        <studio.carbonylgroup.textfieldboxes.ExtendedEditText
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:singleLine="true"
-            tools:layout_conversion_absoluteHeight="20dp"
-            tools:layout_conversion_absoluteWidth="14dp"
-            tools:layout_editor_absoluteX="100dp"
-            tools:layout_editor_absoluteY="206dp" />
-    </studio.carbonylgroup.textfieldboxes.TextFieldBoxes>
 
     <studio.carbonylgroup.textfieldboxes.TextFieldBoxes
         android:id="@+id/password_tf"
@@ -77,14 +45,17 @@
         android:layout_below="@id/username_tf"
 
 
-        android:layout_marginTop="16dp"
-        android:background="@drawable/edit_round"
+        android:layout_marginTop="4dp"
+
+        android:layout_marginBottom="8dp"
         app:hasClearButton="true"
         app:helperText="choose a password"
-
         app:iconSignifier="@drawable/ic_vpn_key_black_24dp"
         app:labelText="Password"
-        app:layout_constraintStart_toStartOf="@+id/username_tf"
+        app:layout_constraintBottom_toTopOf="@+id/forgot_password_tv"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/username_tf"
         app:primaryColor="@color/A400red">
 
@@ -102,18 +73,32 @@
 
     </studio.carbonylgroup.textfieldboxes.TextFieldBoxes>
 
+    <TextView
+        android:id="@+id/forgot_password_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:text="forgot password?"
+        android:textColor="@color/A400red"
+        app:layout_constraintBottom_toTopOf="@+id/login_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/password_tf" />
+
     <Button
         android:id="@+id/login_btn"
         android:layout_width="226dp"
         android:layout_height="48dp"
 
-        android:layout_marginBottom="116dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
         android:background="@drawable/custom_button"
         android:text="login"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/sign_up_tv"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/forgot_password_tv" />
 
     <TextView
         android:id="@+id/sign_up_tv"
@@ -121,27 +106,45 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/login_btn"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="40dp"
         android:text="don't have an account? \n           register here"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/login_btn" />
 
-    <TextView
-        android:id="@+id/forgot_password_tv"
-        android:layout_width="wrap_content"
+    <studio.carbonylgroup.textfieldboxes.TextFieldBoxes
+        android:id="@+id/username_tf"
+        android:layout_width="266dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="16dp"
-        android:text="forgot password?"
-        android:textColor="@color/A400red"
-        app:layout_constraintBottom_toTopOf="@+id/login_btn"
+        android:layout_below="@+id/login_tv"
+
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        app:hasClearButton="true"
+        app:helperText="enter email here"
+        app:iconSignifier="@drawable/ic_account_circle_black_24dp"
+        app:labelText="Email"
+        app:layout_constraintBottom_toTopOf="@+id/password_tf"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/password_tf"
-        app:layout_constraintVertical_bias="0.801" />
+        app:layout_constraintTop_toBottomOf="@+id/login_tv"
+        app:manualValidateError="true"
+        app:maxCharacters="16"
+        app:minCharacters="4"
+        app:primaryColor="@color/A400red">
+
+        <studio.carbonylgroup.textfieldboxes.ExtendedEditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            tools:layout_conversion_absoluteHeight="20dp"
+            tools:layout_conversion_absoluteWidth="14dp"
+            tools:layout_editor_absoluteX="100dp"
+            tools:layout_editor_absoluteY="206dp" />
+    </studio.carbonylgroup.textfieldboxes.TextFieldBoxes>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

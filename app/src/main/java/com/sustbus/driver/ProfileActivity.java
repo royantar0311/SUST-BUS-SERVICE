@@ -95,13 +95,13 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         userInfo = UserInfo.getInstance();
         initUi();
 
-        db = FirebaseFirestore.getInstance()
-                .collection("users")
-                .document(userInfo.getuId());
-        storageReference = FirebaseStorage.getInstance()
-                .getReference()
-                .child("users images")
-                .child(userInfo.getuId());
+//        db = FirebaseFirestore.getInstance()
+//                .collection("users")
+//                .document(userInfo.getuId());
+//        storageReference = FirebaseStorage.getInstance()
+//                .getReference()
+//                .child("users images")
+//                .child(userInfo.getuId());
 
         userNameTf.setSimpleTextChangeWatcher(new SimpleTextChangedWatcher() {
             @Override
@@ -196,6 +196,10 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void userNameValidator(String theNewText) {
+        if(theNewText == null){
+            userNameOk = false;
+            return;
+        }
         userName = theNewText;
         if (theNewText.length() < 4) {
             userNameTf.setHelperText("must contain 6 letters at least");
@@ -210,6 +214,10 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void regiNoValidator(String theNewText) {
+        if(theNewText == null){
+            regiNoOk = false;
+            return;
+        }
         regiNo = theNewText;
         if (theNewText.length() != 10) {
             regiNoTf.setHelperText("registration number must contain 10 numbers");
@@ -235,12 +243,12 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
                 if (dpFilePath != null) {
                     Log.d(TAG, "onClick: dp upload init");
-                    BackgroundImageUpload backgroundImageUpload = new BackgroundImageUpload(storageReference.child("dp.jpg"), "dp");
+                    BackgroundImageUpload backgroundImageUpload = new BackgroundImageUpload("dp");
                     backgroundImageUpload.execute(dpFilePath);
                     dpFilePath = null;
                 }
                 if (idFilePath != null) {
-                    BackgroundImageUpload backgroundImageUpload = new BackgroundImageUpload(storageReference.child("id.jpg"), "id");
+                    BackgroundImageUpload backgroundImageUpload = new BackgroundImageUpload("id");
                     backgroundImageUpload.execute(idFilePath);
                     idFilePath = null;
                 }
@@ -256,20 +264,20 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
         userInfo.setUserName(userName);
         userInfo.setRegiNo(regiNo);
+        if (!userInfo.isProfileCompleted()) {
+            permissionPending();
+            userInfo.setProfileCompleted(true);
+            Toast.makeText(ProfileActivity.this, "Requesting permission", Toast.LENGTH_SHORT).show();
+        } else if (userInfo.isPermitted()) {
+            permitted();
+            Toast.makeText(ProfileActivity.this, "Profile Updated Successfully", Toast.LENGTH_SHORT).show();
+        }
         userInfo.updateToDbase(new CallBack() {
             @Override
             public void ok() {
                 Log.d(TAG, "onSuccess: " + "profile updated");
-                progressDialog.hide();
-                if (!userInfo.isProfileCompleted()) {
-                    permissionPending();
-                    userInfo.setProfileCompleted(true);
-                    db.update(userInfo.toMap());
-                    Toast.makeText(ProfileActivity.this, "Requesting permission", Toast.LENGTH_SHORT).show();
-                } else if (userInfo.isPermitted()) {
-                    permitted();
-                    Toast.makeText(ProfileActivity.this, "Profile Updated Successfully", Toast.LENGTH_SHORT).show();
-                }
+                if(progressDialog.isShowing())progressDialog.hide();
+
             }
 
             @Override
@@ -382,8 +390,13 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     public void backButtonPressed(View view) {
+        if(!userInfo.isProfileCompleted() || !userInfo.isPermitted()){
+            finishAndRemoveTask();
+            return;
+        }
         if (!userInfo.getUserName().equals(userName) || !userInfo.getRegiNo().equals(regiNo) ||
                 dpFilePath != null || idFilePath != null) {
+            //TODO: pressing back causes null ptr on username
             new AlertDialog.Builder(ProfileActivity.this)
                     .setTitle("Save Profile")
                     .setMessage("or your changes will be lost")
@@ -417,10 +430,8 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     public class BackgroundImageUpload extends AsyncTask<Uri, Integer, byte[]> {
         Bitmap bitmap;
         String message;
-        StorageReference storageReference;
 
-        BackgroundImageUpload(StorageReference storageReference, String message) {
-            this.storageReference = storageReference;
+        BackgroundImageUpload(String message) {
             this.message = message;
         }
 
