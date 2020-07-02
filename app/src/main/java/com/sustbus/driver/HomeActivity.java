@@ -36,6 +36,7 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
@@ -77,7 +78,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private ImageView dpEv;
     private DatabaseReference databaseReference, userLocationData, userPathReference;
     private FirebaseFirestore db;
-    private ListenerRegistration listener;
     private DocumentReference userDoc;
     private FirebaseAuth mAuth;
     private ImageView rideShareIndicatorIV;
@@ -96,6 +96,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private String SERVER_KEY = "hello";
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationRequest locationRequest;
+    private LocationCallback locationCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,8 +132,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         fusedLocationProviderClient = new FusedLocationProviderClient(this);
         locationRequest = new LocationRequest();
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setInterval(10000);
-        locationRequest.setFastestInterval(5000);
+        locationRequest.setInterval(4500);
+        locationRequest.setFastestInterval(3000);
 
         userInfo = UserInfo.getInstance();
         mAuth = FirebaseAuth.getInstance();
@@ -166,6 +167,10 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
          * Database initialization
          * */
         Log.d(TAG, "updateDatabase: called");
+        db=FirebaseFirestore.getInstance();
+        userDoc=FirebaseFirestore.getInstance().collection("users").document(userUid);
+
+        databaseReference=FirebaseDatabase.getInstance().getReference();
         userLocationData = FirebaseDatabase.getInstance().getReference().child("alive").child(userUid);
         userPathReference = FirebaseDatabase.getInstance().getReference().child("destinations").child(userUid).child("path");
         userLocationData.onDisconnect().setValue(null);
@@ -294,23 +299,33 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         isRideShareOn = true;
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.end_ride));
         notificationSender = new NotificationSender(this, userUid, SERVER_KEY);
-        fusedLocationProviderClient.requestLocationUpdates(locationRequest,new LocationCallback(){
+
+        locationCallback=new LocationCallback(){
+
             @Override
             public void onLocationResult(LocationResult location) {
                 super.onLocationResult(location);
-                Log.d(TAG, "onLocationResult:  asche");
+                float rotation = 0;
+
+                if (ridersPreviousLocation != null) {
+                    rotation = location.getLastLocation().bearingTo(ridersPreviousLocation);
+                    if(Math.abs(ridersPreviousLocation.getLatitude()-location.getLastLocation().getLatitude())<1e-5  &&
+                       Math.abs(ridersPreviousLocation.getLongitude()-location.getLastLocation().getLongitude())<1e-5
+                       )return;
+                }
+
+                Log.d(TAG, "loc: "+location.getLastLocation().getLatitude() +"  "+ location.getLastLocation().getLongitude());
                 userInfo.setLatLng(location.getLastLocation().getLatitude(),location.getLastLocation().getLongitude());
                 userLocationData.child("lat").setValue(location.getLastLocation().getLatitude());
                 userLocationData.child("lng").setValue(location.getLastLocation().getLongitude());
-                float rotation = 0;
-                if (ridersPreviousLocation != null) {
-                    rotation = location.getLastLocation().bearingTo(ridersPreviousLocation);
-                }
+
                 ridersPreviousLocation = location.getLastLocation();
                 userLocationData.child("rotation").setValue(rotation);
                 handlePath(new GeoCoordinates(location.getLastLocation().getLatitude(), location.getLastLocation().getLongitude()));
             }
-        },getMainLooper());
+        };
+
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest,locationCallback,getMainLooper());
 
     }
 
@@ -373,7 +388,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 toCheck = MapUtil.GeoCoordinatesMap.get(pathString.get(0));
             }
             catch (IndexOutOfBoundsException e){
-                turnOffRideShare();
+                turnOffRideShare(false);
             }
             double distance = newLatLng.distanceTo(toCheck);
         if ( distance <= 50) {
@@ -388,7 +403,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 }
             } else notificationSender.send(toNotify, "away");
 
-            if(pathString.size() == 1)turnOffRideShare();
+            if(pathString.size() == 1)turnOffRideShare(true);
 
             pathString.remove(0);
             updatePath();
@@ -415,13 +430,16 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         return this;
     }
 
-    public void turnOffRideShare() {
-        new AlertDialog.Builder(getActivity())
-                .setTitle("Ride Ended")
-                .setMessage("you have reached your destination")
-                .setNegativeButton("close",null)
-                .setCancelable(false)
-                .show();
+    public void turnOffRideShare(boolean show) {
+
+        if(show){
+            new AlertDialog.Builder(getActivity())
+                    .setTitle("Ride Ended")
+                    .setMessage("you have reached your destination")
+                    .setNegativeButton("close",null)
+                    .setCancelable(false)
+                    .show();
+        }
         userDoc.update("lat",userInfo.getLatLang().latitude);
         userDoc.update("lng",userInfo.getLatLang().longitude);
         notificationSender.destroy();
@@ -430,6 +448,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.start_ride));
         userLocationData.setValue(null);
         userPathReference.setValue(null);
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
         databaseReference.child("busesOnRoad").child(routeIdCurrentlySharing).setValue(null);
     }
 
@@ -455,7 +474,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                     }
                     else gotoSchedule();
 
-                } else turnOffRideShare();
+                } else turnOffRideShare(false);
 
 
         } else if (i == R.id.help_center_cv) {
@@ -545,9 +564,9 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         Log.d(TAG, "onDestroy: ");
         super.onDestroy();
         if (isRideShareOn) {
-            turnOffRideShare();
+            turnOffRideShare(false);
         }
-        if (listener != null) listener.remove();
+        //if (listener != null) listener.remove();
         locationManager = null;
         FirebaseAuth.getInstance().removeAuthStateListener(this);
     }
