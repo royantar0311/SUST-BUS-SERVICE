@@ -9,7 +9,7 @@
         android:id="@+id/profile_user_image_ev"
         android:layout_width="125dp"
         android:layout_height="125dp"
-        android:layout_marginTop="53dp"
+        android:layout_marginTop="40dp"
         android:layout_marginBottom="4dp"
         android:src="@drawable/user_not_available_image"
         app:civ_border_color="@color/A400red"

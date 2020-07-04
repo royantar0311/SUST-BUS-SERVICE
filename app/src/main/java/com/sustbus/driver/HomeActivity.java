@@ -100,7 +100,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate: called");
-        //setTheme(R.style.SplashTheme);
+        setTheme(R.style.SplashTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         rideShareIndicatorIV = findViewById(R.id.ride_share_iv);
@@ -166,6 +166,9 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
          * Database initialization
          * */
         Log.d(TAG, "updateDatabase: called");
+        db = FirebaseFirestore.getInstance();
+        userDoc = FirebaseFirestore.getInstance().collection("users").document(userUid);
+        databaseReference = FirebaseDatabase.getInstance().getReference();
         userLocationData = FirebaseDatabase.getInstance().getReference().child("alive").child(userUid);
         userPathReference = FirebaseDatabase.getInstance().getReference().child("destinations").child(userUid).child("path");
         userLocationData.onDisconnect().setValue(null);

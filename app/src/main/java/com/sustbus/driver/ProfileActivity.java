@@ -396,7 +396,6 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         }
         if (!userInfo.getUserName().equals(userName) || !userInfo.getRegiNo().equals(regiNo) ||
                 dpFilePath != null || idFilePath != null) {
-            //TODO: pressing back causes null ptr on username
             new AlertDialog.Builder(ProfileActivity.this)
                     .setTitle("Save Profile")
                     .setMessage("or your changes will be lost")
