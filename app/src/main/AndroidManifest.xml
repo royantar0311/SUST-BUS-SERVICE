@@ -81,8 +81,9 @@
         </service>
         <service
                   android:name=".LocationUploaderService"
-                  android:exported="false"
+                  android:exported="true"
                   android:enabled="true"
+
                   />
 
     </application>

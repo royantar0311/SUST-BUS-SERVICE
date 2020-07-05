@@ -29,6 +29,7 @@ import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Base64;
@@ -420,7 +421,12 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             intent.putExtra("title",title);
             intent.putExtra("userUid",userUid);
             intent.putExtra("SERVER_KEY",SERVER_KEY);
-            startService(intent);
+            //Start service:
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent);
+            } else {
+                startService(intent);
+            }
             Log.d("DEB","Started");
 
         }
@@ -455,8 +461,10 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             MapUtil.rideShareStatus = false;
             isRideShareOn=false;
             rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.start_ride));
+            sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
             unbindService(mServiceConnection);
             stopService(new Intent(this,LocationUploaderService.class));
+
         }
     }
 }

@@ -63,10 +63,13 @@ public class LocationUploaderService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        edit=getSharedPreferences("observer",MODE_PRIVATE).edit();
+        out("service Oncreate");
         // Android O requires a Notification Channel.
+        NotificationManager mNotificationManager=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
-            NotificationManager mNotificationManager=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
             CharSequence name = getString(R.string.app_name);
             // Create the channel for the notification
             NotificationChannel mChannel =
@@ -75,11 +78,15 @@ public class LocationUploaderService extends Service {
             // Set the Notification Channel for the Notification Manager.
             mNotificationManager.createNotificationChannel(mChannel);
         }
+
+
     }
     @Override
     public void onDestroy() {
 
         out("service Dstroy");
+        edit.putBoolean("running",false);
+        edit.commit();
         stopForeground(true);
         super.onDestroy();
     }
@@ -90,13 +97,12 @@ public class LocationUploaderService extends Service {
 
         edit.putBoolean("running",true);
         edit.commit();
+        startForeground(1,getNotification());
 
         mUploader=new Uploader(intent);
         mUploader.start();
 
         out("After run");
-        startForeground(1,getNotification());
-
         return START_NOT_STICKY;
     }
 
@@ -127,13 +133,13 @@ public class LocationUploaderService extends Service {
 
     }
     private Notification getNotification() {
+        Intent intent = new Intent(this, LocationUploaderService.class);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
                 .setContentText("Ride share is on")
                 //.setContentTitle(Utils.getLocationTitle(this))
                 .setOngoing(true)
                 .setPriority(Notification.PRIORITY_HIGH)
-                .setCategory(Notification.CATEGORY_SERVICE)
                 .setSmallIcon(R.drawable.ic_directions_bus_black_24dp)
                 .setWhen(System.currentTimeMillis());
 
