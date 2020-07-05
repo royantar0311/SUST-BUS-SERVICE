@@ -101,7 +101,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate: called");
-        //setTheme(R.style.SplashTheme);
+        setTheme(R.style.SplashTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         rideShareIndicatorIV = findViewById(R.id.ride_share_iv);
@@ -132,8 +132,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         fusedLocationProviderClient = new FusedLocationProviderClient(this);
         locationRequest = new LocationRequest();
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setInterval(4500);
-        locationRequest.setFastestInterval(3000);
+        locationRequest.setInterval(1000);
+        locationRequest.setFastestInterval(500);
 
         userInfo = UserInfo.getInstance();
         mAuth = FirebaseAuth.getInstance();
