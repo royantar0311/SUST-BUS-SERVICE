@@ -81,27 +81,15 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private CardView shareRideTv;
     private CardView adminPanelCv;
     private ImageView dpEv;
-    private DatabaseReference databaseReference, userLocationData, userPathReference;
-    private FirebaseFirestore db;
-    private DocumentReference userDoc;
     private FirebaseAuth mAuth;
     private ImageView rideShareIndicatorIV;
     private boolean isRideShareOn = false;
     private LocationManager locationManager;
-    private String userUid, routeIdCurrentlySharing;
+    private String userUid;
     private MapUtil mapUtil;
     private PermissionsRequestor permissionsRequestor;
-    private List<String> pathString;
-    private boolean pathOk;
-    private int determineCallCount;
-    private GeoCoordinates previousPosition;
-    private Location ridersPreviousLocation = null;
-    private NotificationSender notificationSender;
     private CardView routeUploaderCv;
     private String SERVER_KEY = "hello";
-    private FusedLocationProviderClient fusedLocationProviderClient;
-    private LocationRequest locationRequest;
-    private LocationCallback locationCallback;
     private LocationUploaderService locationUploaderService;
     private SharedPreferences observer;
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -123,7 +111,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate: called");
-        //setTheme(R.style.SplashTheme);
+        setTheme(R.style.SplashTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         rideShareIndicatorIV = findViewById(R.id.ride_share_iv);
@@ -151,11 +139,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         FirebaseAuth.getInstance().addAuthStateListener(this);
         adminPanelCv.setOnClickListener(this);
 
-        fusedLocationProviderClient = new FusedLocationProviderClient(this);
-        locationRequest = new LocationRequest();
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setInterval(4500);
-        locationRequest.setFastestInterval(3000);
 
         userInfo = UserInfo.getInstance();
         mAuth = FirebaseAuth.getInstance();
@@ -192,19 +175,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
          * Database initialization
          * */
         Log.d(TAG, "updateDatabase: called");
-        db=FirebaseFirestore.getInstance();
-        userDoc=FirebaseFirestore.getInstance().collection("users").document(userUid);
-
-        databaseReference=FirebaseDatabase.getInstance().getReference();
-        userLocationData = FirebaseDatabase.getInstance().getReference().child("alive").child(userUid);
-        userPathReference = FirebaseDatabase.getInstance().getReference().child("destinations").child(userUid).child("path");
-        userLocationData.onDisconnect().setValue(null);
-        userPathReference.onDisconnect().setValue(null);
-
-        /**
-         * getting data from cloud firestore
-         * */
-
         FirebaseFirestore.getInstance().collection("key").document("key").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -341,172 +311,15 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         Log.d(TAG, "onResume: ");
     }
 
-    public void turnOnRideShare() {
-
-        MapUtil.rideShareStatus = true;
-        isRideShareOn = true;
-        rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.end_ride));
-        notificationSender = new NotificationSender(this, userUid, SERVER_KEY);
-
-        locationCallback=new LocationCallback(){
-
-            @Override
-            public void onLocationResult(LocationResult location) {
-                super.onLocationResult(location);
-                float rotation = 0;
-
-                if (ridersPreviousLocation != null) {
-                    rotation = location.getLastLocation().bearingTo(ridersPreviousLocation);
-                    if(Math.abs(ridersPreviousLocation.getLatitude()-location.getLastLocation().getLatitude())<1e-5  &&
-                       Math.abs(ridersPreviousLocation.getLongitude()-location.getLastLocation().getLongitude())<1e-5
-                       )return;
-                }
-
-                Log.d(TAG, "loc: "+location.getLastLocation().getLatitude() +"  "+ location.getLastLocation().getLongitude());
-                userInfo.setLatLng(location.getLastLocation().getLatitude(),location.getLastLocation().getLongitude());
-                userLocationData.child("lat").setValue(location.getLastLocation().getLatitude());
-                userLocationData.child("lng").setValue(location.getLastLocation().getLongitude());
-
-                ridersPreviousLocation = location.getLastLocation();
-                userLocationData.child("rotation").setValue(rotation);
-                handlePath(new GeoCoordinates(location.getLastLocation().getLatitude(), location.getLastLocation().getLongitude()));
-            }
-        };
-
-        fusedLocationProviderClient.requestLocationUpdates(locationRequest,locationCallback,getMainLooper());
-
-    }
-
-    public void determineCurrentLocation(GeoCoordinates latLng) {
-        Log.d(TAG, "determineCurrentLocation: called");
-        if (determineCallCount == 0) previousPosition = latLng;
-        else if (latLng.distanceTo(previousPosition) >= 5) {
-            int rem = 0;
-            for (int i = 0; i + 1 < pathString.size(); i++) {
-                GeoCoordinates co1 = MapUtil.GeoCoordinatesMap.get(pathString.get(i));
-                GeoCoordinates co2 = MapUtil.GeoCoordinatesMap.get(pathString.get(i + 1));
-
-                if (Math.abs(latLng.distanceTo(co2) + previousPosition.distanceTo(co2) - previousPosition.distanceTo(latLng)) <= 1) {
-
-                    if (co1.distanceTo(previousPosition) < co1.distanceTo(latLng)) {
-                        rem = i + 2;
-                        break;
-                    }
-
-                } else if (Math.abs(latLng.distanceTo(co1) + previousPosition.distanceTo(co1) - previousPosition.distanceTo(latLng)) <= 1) {
-
-                    if (co2.distanceTo(previousPosition) > co2.distanceTo(latLng)) {
-                        rem = i + 1;
-                        break;
-                    }
-
-                } else if (co1.distanceTo(previousPosition) < co1.distanceTo(latLng) && co2.distanceTo(previousPosition) > co2.distanceTo(latLng)) {
-                    rem = i + 1;
-                    break;
-
-                }
-
-
-            }
-
-            if (rem == 0) {
-                determineCallCount = 0;
-                return;
-            } else {
-                for (int i = 0; i < rem; i++) pathString.remove(0);
-                pathOk = true;
-                updatePath();
-            }
-        }
-
-
-        determineCallCount = 1;
-
-    }
-
-    public void handlePath(GeoCoordinates newLatLng) {
-
-        if (!pathOk) {
-            determineCurrentLocation(newLatLng);
-            return;
-        }
-        Log.d(TAG, "handlePath: " + pathString.toString());
-        GeoCoordinates toCheck = null;
-            try {
-                toCheck = MapUtil.GeoCoordinatesMap.get(pathString.get(0));
-            }
-            catch (IndexOutOfBoundsException e){
-                turnOffRideShare(false);
-            }
-            double distance = newLatLng.distanceTo(toCheck);
-        if ( distance <= 50) {
-
-            String toNotify = pathString.get(0);
-
-            if (pathString.contains(mapUtil.CAMPUS)) {
-                if (pathString.contains(toNotify)) {
-                    notificationSender.send(toNotify, "away");
-                } else {
-                    notificationSender.send(toNotify, "towards");
-                }
-            } else notificationSender.send(toNotify, "away");
-
-            if(pathString.size() == 1)turnOffRideShare(true);
-
-            pathString.remove(0);
-            updatePath();
-        }
-
-
-    }
 
     public void initializePath() {
-        //startActivityForResult(new Intent(this, ScheduleActivity.class).putExtra("forRideShare", true), 100);
-
-        getSharedPreferences("observer",MODE_PRIVATE).registerOnSharedPreferenceChangeListener(this);
-        Intent intent=new Intent(HomeActivity.this,LocationUploaderService.class);
-        bindService(intent,mServiceConnection, IntentService.BIND_AUTO_CREATE);
-        startService(intent);
-        Log.d("DEB","Started");
-
-    }
-
-    public void updatePath() {
-        String path = "";
-        for (String s : pathString) {
-            path += (s + ";");
-        }
-
-        if (path.isEmpty()) path = "NA;";
-        userPathReference.setValue(path);
+        startActivityForResult(new Intent(this, ScheduleActivity.class).putExtra("forRideShare", true), 100);
     }
 
 
 
     public Activity getActivity() {
         return this;
-    }
-
-    public void turnOffRideShare(boolean show) {
-
-        if(show){
-            new AlertDialog.Builder(getActivity())
-                    .setTitle("Ride Ended")
-                    .setMessage("you have reached your destination")
-                    .setNegativeButton("close",null)
-                    .setCancelable(false)
-                    .show();
-        }
-        userDoc.update("lat",userInfo.getLatLang().latitude);
-        userDoc.update("lng",userInfo.getLatLang().longitude);
-        notificationSender.destroy();
-        notificationSender = null;
-        MapUtil.rideShareStatus = isRideShareOn = false;
-        rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.start_ride));
-        userLocationData.setValue(null);
-        userPathReference.setValue(null);
-        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-        databaseReference.child("busesOnRoad").child(routeIdCurrentlySharing).setValue(null);
     }
 
 
@@ -589,34 +402,26 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 101) {
             if (resultCode == Activity.RESULT_OK) initializePath();
-        } else if (requestCode == 100 && data != null) {
+        }
+        else if (requestCode == 100 && data != null) {
 
-
-            pathString = new ArrayList<>();
             String path = data.getStringExtra("path");
             String routeId = data.getStringExtra("routeId");
             String title = data.getStringExtra("title");
             if (path == null || routeId == null || title == null) return;
 
-            int last = 0;
-            for (int i = 0; i < path.length(); i++) {
-                if (path.charAt(i) == ';') {
-                    pathString.add(path.substring(last, i));
-                    //Log.d("DEB", path.substring(last, i));
-                    last = i + 1;
-                }
-            }
 
-            Log.d(TAG, "onActivityResult: " + pathString.toString());
-            userLocationData.child("title").setValue(title);
-            databaseReference.child("busesOnRoad").child(routeId).onDisconnect().setValue(null);
-            databaseReference.child("busesOnRoad").child(routeId).child("key").setValue(userUid);
-            routeIdCurrentlySharing = routeId;
-            userPathReference.setValue("NA;");
-            pathOk = false;
-            determineCallCount = 0;
+            getSharedPreferences("observer",MODE_PRIVATE).registerOnSharedPreferenceChangeListener(this);
+            Intent intent=new Intent(HomeActivity.this,LocationUploaderService.class);
+            bindService(new Intent(HomeActivity.this,LocationUploaderService.class),mServiceConnection, IntentService.BIND_AUTO_CREATE);
 
-            turnOnRideShare();
+            intent.putExtra("path",path);
+            intent.putExtra("routeId",routeId);
+            intent.putExtra("title",title);
+            intent.putExtra("userUid",userUid);
+            intent.putExtra("SERVER_KEY",SERVER_KEY);
+            startService(intent);
+            Log.d("DEB","Started");
 
         }
 
@@ -632,9 +437,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     protected void onDestroy() {
         Log.d(TAG, "onDestroy: ");
         super.onDestroy();
-        if (false) {
-            turnOffRideShare(false);
-        }
         //if (listener != null) listener.remove();
         locationManager = null;
         FirebaseAuth.getInstance().removeAuthStateListener(this);
