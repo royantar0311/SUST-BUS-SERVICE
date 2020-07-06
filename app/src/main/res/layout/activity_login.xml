@@ -7,19 +7,17 @@
     tools:context=".LoginActivity">
 
 
-    <TextView
+    <ImageView
         android:id="@+id/title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
+        android:layout_width="231dp"
+        android:layout_height="113dp"
         android:layout_marginTop="44dp"
-        android:fontFamily="@font/bungee_shade"
-        android:text="BUS"
-        android:textColor="@color/fui_bgGitHub"
-        android:textSize="34dp"
+        android:layout_marginBottom="4dp"
+        app:layout_constraintBottom_toTopOf="@+id/signup_tv"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/bus_tv_diff" />
 
     <TextView
         android:id="@+id/login_tv"
@@ -31,7 +29,7 @@
         android:layout_marginBottom="4dp"
         android:fontFamily="@font/amiko_bold"
         android:text="Login"
-        android:textColor="@color/dark_red"
+        android:textColor="@color/A400red"
         android:textSize="30dp"
         app:layout_constraintBottom_toTopOf="@+id/username_tf"
         app:layout_constraintEnd_toEndOf="parent"

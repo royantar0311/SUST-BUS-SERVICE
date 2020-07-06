@@ -5,8 +5,7 @@
     <item>
         <bitmap
             android:gravity="center"
-            android:src="@drawable/splash_photo"
-
+            android:src="@drawable/splash_screen"
             ></bitmap>
 
     </item>
