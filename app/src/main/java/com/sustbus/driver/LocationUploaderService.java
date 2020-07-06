@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.os.Binder;
 import android.os.Build;
@@ -18,6 +19,8 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.here.sdk.core.GeoCoordinates;
@@ -28,7 +31,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 
 public class LocationUploaderService extends Service {
 
@@ -93,6 +98,12 @@ public class LocationUploaderService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
+        if(intent.getBooleanExtra("stop",false)){
+            out("got flag");
+            forcestop();
+            return START_NOT_STICKY;
+        }
+
         edit=getSharedPreferences("observer",MODE_PRIVATE).edit();
 
         edit.putBoolean("running",true);
@@ -132,16 +143,23 @@ public class LocationUploaderService extends Service {
          LocationUploaderService getSerVice(){return LocationUploaderService.this;}
 
     }
+
     private Notification getNotification() {
-        Intent intent = new Intent(this, LocationUploaderService.class);
+        Intent intent=new Intent(this,LocationUploaderService.class);
+        intent.putExtra("stop",true);
+        PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 0 /* Request code */, intent,
+                PendingIntent.FLAG_CANCEL_CURRENT);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
-                .setContentText("Ride share is on")
+                .setContentTitle("Ride share on")
                 //.setContentTitle(Utils.getLocationTitle(this))
                 .setOngoing(true)
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setSmallIcon(R.drawable.ic_directions_bus_black_24dp)
+                .setColor(ContextCompat.getColor(getApplicationContext(),R.color.A400red))
+                .addAction(0,"TAP TO STOP",pendingIntent)
                 .setWhen(System.currentTimeMillis());
+
 
         // Set the Channel ID for Android O.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
