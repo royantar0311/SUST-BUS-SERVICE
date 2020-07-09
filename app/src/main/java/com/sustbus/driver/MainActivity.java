@@ -30,10 +30,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String TAG = "MainActivity";
     boolean emailOk = false;
     boolean passwordOk = false;
-    private CheckBox driverCb, studentCb;
+    private CheckBox staffCb, studentCb,teacherCb;
     private TextView signInTv;
     private Button signUpBtn;
-    private TextFieldBoxes userNameEt;
     private TextFieldBoxes emailEt;
     private TextFieldBoxes passwordEt;
     private String email;
@@ -53,9 +52,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         passwordEt = findViewById(R.id.password_tf);
         signUpBtn = findViewById(R.id.signup_btn);
         signInTv = findViewById(R.id.sign_in_tv);
-        driverCb = findViewById(R.id.main_driver_cb);
+        staffCb = findViewById(R.id.main_staff_cb);
         studentCb = findViewById(R.id.main_student_cb);
-
+        teacherCb=findViewById(R.id.teacher_check_box);
         progressDialog = new ProgressDialog(this);
 
 
@@ -76,13 +75,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         studentCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked && driverCb.isChecked()) driverCb.setChecked(false);
+                if (isChecked) {
+                    staffCb.setChecked(false);
+                    teacherCb.setChecked(false);
+                }
             }
         });
-        driverCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        staffCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked && studentCb.isChecked()) studentCb.setChecked(false);
+                if (isChecked){
+                    studentCb.setChecked(false);
+                    teacherCb.setChecked(false);
+                }
+            }
+        });
+
+        teacherCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked){
+                    studentCb.setChecked(false);
+                    staffCb.setChecked(false);
+                }
             }
         });
 
@@ -116,9 +131,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         } else if (i == R.id.signup_btn) {
 
-            if (emailOk && passwordOk && (driverCb.isChecked() || studentCb.isChecked())) {
+            if (emailOk && passwordOk && (staffCb.isChecked() || studentCb.isChecked() || teacherCb.isChecked())) {
 
-                progressDialog.setMessage("Register in progress");
+                progressDialog.setMessage("Registration in progress");
                 progressDialog.setCancelable(false);
                 progressDialog.show();
 
@@ -130,15 +145,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         if (task.isSuccessful()) {
                             progressDialog.hide();
                             UserInfo.getBuilder()
-                                    .setDriver(driverCb.isChecked())
                                     .setPermitted(UserInfo.NOT_PERMITTED)
                                     .setProfileCompleted(false)
                                     .setEmail(email)
                                     .setuId(mAuth.getCurrentUser().getUid())
                                     .build();
+                            userInfo.setTeacher(teacherCb.isChecked());
+                            userInfo.setStaff(staffCb.isChecked());
+                            userInfo.setStudent(studentCb.isChecked());
+
                             db.collection("users")
                                     .document(userInfo.getuId())
                                     .set(userInfo.toMap());
+
                             Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             startActivity(intent);

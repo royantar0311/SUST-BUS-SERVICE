@@ -34,10 +34,11 @@ public class DbListener implements Runnable {
                         }
                         if (snapshot != null || snapshot.exists()) {
                             UserInfo.setInstance(snapshot.toObject(UserInfo.class));
+
                             userInfo = UserInfo.getInstance();
                             callBack.ok();
                             //Log.d(TAG, userInfo.toString());
-                            Log.d(TAG, "onEvent: " + userInfo.toString());
+                            Log.d("DEB", "onEvent: " + userInfo.toString());
                             if (!userInfo.isProfileCompleted() || !userInfo.isPermitted()) {
                                 callBack.notOk();
                             }

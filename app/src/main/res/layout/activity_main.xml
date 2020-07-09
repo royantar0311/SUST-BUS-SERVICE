@@ -59,12 +59,10 @@
         android:layout_width="266dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:layout_marginBottom="4dp"
         app:hasClearButton="true"
         app:helperText="choose a password"
         app:iconSignifier="@drawable/ic_vpn_key_black_24dp"
         app:labelText="Password"
-        app:layout_constraintBottom_toTopOf="@+id/main_driver_cb"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -87,10 +85,13 @@
 
     <Button
         android:id="@+id/signup_btn"
-        android:layout_width="226dp"
-        android:layout_height="48dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:layout_below="@id/password_tf"
 
+        android:layout_marginStart="60dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="60dp"
         android:background="@drawable/custom_button"
         android:text="Sign Up"
         android:textColor="#FFFFFF"
@@ -98,7 +99,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/main_student_cb" />
+        app:layout_constraintTop_toBottomOf="@+id/password_tf" />
 
     <TextView
         android:id="@+id/sign_in_tv"
@@ -106,49 +107,56 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/signup_btn"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="40dp"
+        android:layout_marginBottom="50dp"
         android:text="already have an account? \n                login here"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/signup_btn" />
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <CheckBox
-        android:id="@+id/main_driver_cb"
+        android:id="@+id/main_staff_cb"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="Driver"
-        app:layout_constraintBottom_toTopOf="@+id/main_student_cb"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.501"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp"
+        android:text="Staff"
+        app:layout_constraintBottom_toTopOf="@+id/signup_btn"
+        app:layout_constraintEnd_toStartOf="@+id/teacher_check_box"
+        app:layout_constraintStart_toEndOf="@+id/main_student_cb"
         app:layout_constraintTop_toBottomOf="@+id/password_tf" />
 
     <CheckBox
         android:id="@+id/main_student_cb"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="4dp"
+        android:layout_marginStart="72dp"
+        android:layout_marginTop="16dp"
         android:text="Student"
         app:layout_constraintBottom_toTopOf="@+id/signup_btn"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/main_driver_cb"
-        app:layout_constraintTop_toBottomOf="@+id/main_driver_cb" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/password_tf" />
 
     <ImageView
         android:id="@+id/title"
         android:layout_width="231dp"
         android:layout_height="113dp"
-        android:layout_marginTop="44dp"
+        android:layout_marginTop="50dp"
         android:layout_marginBottom="4dp"
         app:layout_constraintBottom_toTopOf="@+id/signup_tv"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/bus_tv_diff" />
+
+    <CheckBox
+        android:id="@+id/teacher_check_box"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="72dp"
+        android:text="Teacher"
+        app:layout_constraintBottom_toTopOf="@+id/signup_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/password_tf" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -106,6 +106,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             Log.d("DEB","disconnected");
             locationUploaderService = null;
         }
+
     };
 
 
@@ -144,9 +145,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         mAuth = FirebaseAuth.getInstance();
         mapUtil = MapUtil.getInstance();
         observer=getSharedPreferences("observer",MODE_PRIVATE);
-//        SharedPreferences.Editor ed=observer.edit();
-//        ed.putBoolean("running",false);
-//        ed.commit();
     }
 
     private void loadImage() {
@@ -233,7 +231,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             observer.registerOnSharedPreferenceChangeListener(this);
         }
         else{
-
             rideShareIndicatorIV.setImageDrawable(getDrawable(R.drawable.start_ride));
             isRideShareOn=false;
             mapUtil.rideShareStatus=false;
@@ -246,7 +243,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     protected void onStop() {
         super.onStop();
         Log.d(TAG, "onStop: ");
-
 
         if(isRideShareOn){
             unbindService(mServiceConnection);
@@ -266,20 +262,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             startActivity(intent);
             finish();
         } else {
-            FirebaseFirestore.getInstance().collection("admin")
-                    .document(firebaseAuth.getCurrentUser().getUid())
-                    .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                    if (task.isSuccessful() && task.getResult().exists() && task.getResult().getBoolean("active")) {
-                        adminPanelCv.setVisibility(View.VISIBLE);
-                        routeUploaderCv.setVisibility(View.VISIBLE);
-                    } else {
-                        routeUploaderCv.setVisibility(View.GONE);
-                        adminPanelCv.setVisibility(View.GONE);
-                    }
-                }
-            });
+
             userUid = mAuth.getCurrentUser().getUid();
             userInfo.setuId(userUid);
             Thread dbListener;
@@ -287,17 +270,35 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 @Override
                 public void ok() {
                     userInfo = UserInfo.getInstance();
+                    userInfo.setuId(userUid);
                     Log.d(TAG, "ok: "+ userInfo.getUserName());
                     dashboardSetup();
                     loadImage();
+                    FirebaseFirestore.getInstance().collection("admin")
+                            .document(firebaseAuth.getCurrentUser().getUid())
+                            .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            if (task.isSuccessful() && task.getResult().exists() && task.getResult().getBoolean("active")) {
+                                adminPanelCv.setVisibility(View.VISIBLE);
+                                routeUploaderCv.setVisibility(View.VISIBLE);
+                                userInfo.setAdmin(true);
+                                Log.d("DEB", "ok: "+ userInfo.toString());
+
+                            } else {
+                                routeUploaderCv.setVisibility(View.GONE);
+                                adminPanelCv.setVisibility(View.GONE);
+                            }
+                        }
+                    });
                 }
 
                 @Override
                 public void notOk() {
-                    Intent intent = new Intent(HomeActivity.this, ProfileActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
-                    finish();
+//                    Intent intent = new Intent(HomeActivity.this, ProfileActivity.class);
+//                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                    startActivity(intent);
+//                    finish();
                 }
             }));
             dbListener.start();
@@ -315,8 +316,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     public void initializePath() {
         startActivityForResult(new Intent(this, ScheduleActivity.class).putExtra("forRideShare", true), 100);
     }
-
-
 
     public Activity getActivity() {
         return this;

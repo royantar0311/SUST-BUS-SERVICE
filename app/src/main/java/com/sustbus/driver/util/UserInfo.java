@@ -29,6 +29,10 @@ public class UserInfo {
     private boolean permitted = false;
     private String userName;
     private boolean driver = false;
+    private boolean student = false;
+    private boolean teacher = false;
+    private boolean staff = false;
+    private boolean admin=false;
     private boolean profileCompleted =false;
     private Double lat;
     private Double lang;
@@ -126,6 +130,9 @@ public class UserInfo {
         map.put("regiNo", regiNo);
         map.put("url", url);
         map.put("idUrl", idUrl);
+        map.put("student", student);
+        map.put("teacher", teacher);
+        map.put("staff", staff);
         return map;
     }
 
@@ -139,7 +146,11 @@ public class UserInfo {
                 + "\nemail " + instance.getEmail()
                 + "\nurl " + instance.getUrl()
                 + "\nregiNO " + instance.regiNo
-                + "\nuserName " + instance.userName;
+                + "\nuserName " + instance.userName
+                + "\nstaff "+instance.staff
+                + "\nteacher "+instance.teacher
+                + "\nstudent "+instance.student
+                + "\nadmin "+instance.admin;
     }
 
     public String getUrl() {
@@ -222,6 +233,37 @@ public class UserInfo {
     public LatLng getLatLang() {
         return new LatLng(lat, lang);
     }
+    public boolean isStudent() {
+        return student;
+    }
+
+    public boolean isTeacher() {
+        return teacher;
+    }
+
+    public boolean isStaff() {
+        return staff;
+    }
+
+    public boolean isAdmin() {
+        return admin;
+    }
+    public void setStudent(boolean student) {
+        this.student = student;
+    }
+
+    public void setTeacher(boolean teacher) {
+        this.teacher = teacher;
+    }
+
+    public void setStaff(boolean staff) {
+        this.staff = staff;
+    }
+
+    public void setAdmin(boolean admin) {
+        this.admin = admin;
+    }
+
 
     /**
      * Builder pattern to build a Userinfo
