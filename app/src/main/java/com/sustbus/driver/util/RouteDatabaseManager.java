@@ -79,6 +79,7 @@ public class RouteDatabaseManager {
                         editor.putString(key + "time", d.getString("time"));
                         editor.putString(key + "title", d.getString("title"));
                         editor.putString(key + "show", d.getString("show"));
+                        editor.putString(key + "for", d.getString("for"));
 
                     }
 
@@ -87,7 +88,6 @@ public class RouteDatabaseManager {
                     editor.commit();
                     //               Log.d("DEB","firestore");
                     callBack.ok();
-
 
                 } else {
                     callBack.notOk();
@@ -108,6 +108,7 @@ public class RouteDatabaseManager {
             routeInformation.setTime(sharedPreferences.getString(key + "time", "12:30 pm"));
             routeInformation.setTitle(sharedPreferences.getString(key + "title", "SUST-SUST"));
             routeInformation.setShow(sharedPreferences.getString(key + "show", "No Information"));
+            routeInformation.setFor(sharedPreferences.getString(key + "for", "s"));
             // Log.d("DEB",routeInformation.getPath()+" "+routeInformation.getTime());
             lst.add(routeInformation);
         }

@@ -4,6 +4,9 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.KeyEvent;
@@ -12,7 +15,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.CycleInterpolator;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageButton;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,6 +35,7 @@ import com.sustbus.driver.util.CallBack;
 import com.sustbus.driver.util.RecyclerViewAdapter;
 import com.sustbus.driver.util.RouteDatabaseManager;
 import com.sustbus.driver.util.RouteInformation;
+import com.sustbus.driver.util.UserInfo;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -63,6 +69,11 @@ public class ScheduleActivity extends AppCompatActivity {
     private boolean forRideShare;
     private ProgressDialog currentProgressDialogue;
     private AlertDialog alertDialog;
+    private UserInfo user=UserInfo.getInstance();
+    private boolean showStudent,showStaff,showTeacher;
+    private Switch studentSw,teacherSw,staffSw;
+    private SharedPreferences settings;
+    private boolean staffChecked,studentChecked,teacherChecked;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +83,7 @@ public class ScheduleActivity extends AppCompatActivity {
         appBarTextView = findViewById(R.id.appbar_tv);
         refreshImagebutton = findViewById(R.id.appbar_ib);
         forRideShare = getIntent().getBooleanExtra("forRideShare", false);
+        settings=getSharedPreferences("settings",MODE_PRIVATE);
 
         bottomNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -80,6 +92,31 @@ public class ScheduleActivity extends AppCompatActivity {
                 return true;
             }
         });
+
+        showStudent=settings.getBoolean("schedule_showStudent",true);
+        showStaff=settings.getBoolean("schedule_showStaff",true);
+        showTeacher=settings.getBoolean("schedule_showTeacher",true);
+
+
+        if(user.isStudent() && !user.isAdmin()){
+            findViewById(R.id.schedule_dropdown_iv).setVisibility(View.INVISIBLE);
+            showStaff=false;
+            showTeacher=false;
+        }
+        else{
+            findViewById(R.id.schedule_dropdown_iv).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    selectorPopUp();
+                }
+            });
+        }
+
+        if(user.isStaff() && !user.isAdmin()){
+            showTeacher=false;
+        }
+
+
         routeDatabaseManager = new RouteDatabaseManager(this);
         if (!routeDatabaseManager.isUpdated()) {
             dialog("Checking for Schedule update");
@@ -140,7 +177,17 @@ public class ScheduleActivity extends AppCompatActivity {
         next = new ArrayList<>();
         finished = new ArrayList<>();
 
-        next.addAll(routeInformations);
+        for(RouteInformation tmp:routeInformations){
+            if (tmp.getFor().equals("s") && showStudent) {
+                next.add(tmp);
+            }
+            if (tmp.getFor().equals("t") && showTeacher) {
+                next.add(tmp);
+            }
+            if (tmp.getFor().equals("sf") && showStaff) {
+                next.add(tmp);
+            }
+        }
         childEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
@@ -190,7 +237,7 @@ public class ScheduleActivity extends AppCompatActivity {
 
         refreshImagebutton.setClickable(true);
         bottomNav.setSelectedItemId(id);
-        countDownTimerForRefreshingLists = new CountDownTimer(10000000000l, 2 * 1000) {
+        countDownTimerForRefreshingLists = new CountDownTimer(10000000000l, 10 * 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 refresh();
@@ -410,6 +457,11 @@ public class ScheduleActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        SharedPreferences.Editor settingsEditor=settings.edit();
+        settingsEditor.putBoolean("schedule_showStudent",showStudent);
+        settingsEditor.putBoolean("schedule_showTeacher",showTeacher);
+        settingsEditor.putBoolean("schedule_showStaff",showStaff);
+        settingsEditor.commit();
         if (currentProgressDialogue != null) {
             currentProgressDialogue.dismiss();
         }
@@ -471,4 +523,78 @@ public class ScheduleActivity extends AppCompatActivity {
         currentProgressDialogue.show();
 
     }
+    private void selectorPopUp(){
+
+       View v=getLayoutInflater().inflate(R.layout.category_selector_popup,null);
+       staffSw=v.findViewById(R.id.staff_switch);
+       teacherSw=v.findViewById(R.id.teacher_switch);
+       studentSw=v.findViewById(R.id.student_switch);
+
+       staffChecked=showStaff;
+       studentChecked=showStudent;
+       teacherChecked=showTeacher;
+
+       staffSw.setChecked(staffChecked);
+       studentSw.setChecked(studentChecked);
+       teacherSw.setChecked(teacherChecked);
+
+       staffSw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+           @Override
+           public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+               staffChecked=isChecked;
+           }
+       });
+       studentSw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+           @Override
+           public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+               studentChecked=isChecked;
+           }
+       });
+       if(user.isStaff() && !user.isAdmin()){
+           teacherSw.setVisibility(View.GONE);
+       }
+       else{
+           teacherSw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+               @Override
+               public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                   teacherChecked=isChecked;
+               }
+           });
+       }
+
+       AlertDialog alertDialog=new AlertDialog.Builder(this)
+               .setView(v)
+               .create();
+       alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+       alertDialog.show();
+
+       alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+           @Override
+           public void onDismiss(DialogInterface dialog) {
+
+               if(staffChecked!=showStaff || teacherChecked!=showTeacher || studentChecked!=showStudent){
+                   showStaff=staffChecked;
+                   showTeacher=teacherChecked;
+                   showStudent=studentChecked;
+                   handleShow();
+               }
+           }
+       });
+
+    }
+    private void handleShow(){
+
+        refreshImagebutton.setClickable(false);
+        initok = false;
+        currentMenuItemid = 0;
+        if (finished != null) finished.clear();
+        if (onRoad != null) onRoad.clear();
+        if (next != null) next.clear();
+
+        if (countDownTimerForRefreshingLists != null) countDownTimerForRefreshingLists.cancel();
+        init(bottomNav.getSelectedItemId());
+
+    }
+
+
 }

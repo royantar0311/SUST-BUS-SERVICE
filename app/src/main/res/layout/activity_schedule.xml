@@ -38,10 +38,17 @@
                 android:textStyle="bold" />
 
             <ImageButton
+                android:id="@+id/schedule_dropdown_iv"
+                android:layout_width="50dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="40dp"
+                android:background="@color/blue25"
+                app:srcCompat="@drawable/drop_down_foreground" />
+            <ImageButton
                 android:id="@+id/appbar_ib"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="140dp"
+                android:layout_marginLeft="50dp"
                 android:background="@color/blue25"
                 app:srcCompat="@drawable/ic_refresh_black_24dp" />
 
