@@ -149,6 +149,46 @@
             android:text="Add route details"
 
             />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="FOR"
+            android:textSize="14sp"
+            android:textStyle="bold"
+
+            />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="10dp"
+            android:layout_gravity="center"
+            >
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Student"
+                android:id="@+id/routeCreator_student_cb"
+                android:padding="12dp"
+                />
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Staff"
+                android:padding="12dp"
+                android:id="@+id/routeCreator_staff_cb"
+                />
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Teacher"
+                android:padding="12dp"
+                android:id="@+id/routeCreator_techer_cb"
+                />
+
+        </LinearLayout>
+
 
         <Button
 
@@ -157,10 +197,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
-            android:layout_marginTop="70dp"
+            android:layout_marginTop="60dp"
             android:layout_marginRight="16dp"
             android:backgroundTint="@color/A400red"
             android:text="Upload" />
+
+
 
     </LinearLayout>
 </ScrollView>

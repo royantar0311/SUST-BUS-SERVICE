@@ -52,7 +52,20 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             } else {
                 viewHolder.rowCardview.setCardBackgroundColor(ContextCompat.getColor(context, R.color.greenSignal));
             }
+        }
+        String For=routeList.get(position).getFor();
 
+        if(For.equals("s")){
+            viewHolder.routeForTv.setVisibility(View.GONE);
+        }
+        else if(For.equals("t")){
+            viewHolder.routeForTv.setText("TEACHER");
+            viewHolder.routeForTv.setBackgroundColor(ContextCompat.getColor(context,R.color.teacher));
+
+        }
+        else if(For.equals("sf")){
+            viewHolder.routeForTv.setText("STAFF");
+            viewHolder.routeForTv.setBackgroundColor(ContextCompat.getColor(context,R.color.staff));
         }
 
     }
@@ -69,7 +82,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        public TextView timeTv, titleTv, detailsTv;
+        public TextView timeTv, titleTv, detailsTv,routeForTv;
         public CardView rowCardview;
 
         public ViewHolder(@NonNull View itemView) {
@@ -79,6 +92,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             titleTv = itemView.findViewById(R.id.title_text_view);
             detailsTv = itemView.findViewById(R.id.details_text_view);
             rowCardview = itemView.findViewById(R.id.row_card_view);
+            routeForTv=itemView.findViewById(R.id.route_for);
             rowCardview.setOnClickListener(this);
         }
 

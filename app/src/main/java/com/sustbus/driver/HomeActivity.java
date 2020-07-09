@@ -271,7 +271,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 public void ok() {
                     userInfo = UserInfo.getInstance();
                     userInfo.setuId(userUid);
-                    Log.d(TAG, "ok: "+ userInfo.getUserName());
+                    Log.d("DEB",userInfo.toString());
                     dashboardSetup();
                     loadImage();
                     FirebaseFirestore.getInstance().collection("admin")
@@ -283,9 +283,10 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                                 adminPanelCv.setVisibility(View.VISIBLE);
                                 routeUploaderCv.setVisibility(View.VISIBLE);
                                 userInfo.setAdmin(true);
-                                Log.d("DEB", "ok: "+ userInfo.toString());
+                                Log.d("admin", "ok: "+userInfo.toString());
 
                             } else {
+                                Log.d("admin", "notok: "+userInfo.toString());
                                 routeUploaderCv.setVisibility(View.GONE);
                                 adminPanelCv.setVisibility(View.GONE);
                             }

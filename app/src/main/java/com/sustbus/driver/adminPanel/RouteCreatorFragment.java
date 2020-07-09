@@ -48,6 +48,7 @@ public class RouteCreatorFragment extends Fragment implements TimePickerDialog.O
     private List<String> places;
     private List<PlaceChips> placeChips;
     private TimePickerDialog timePickerDialog;
+    private CheckBox studentCb,staffCb,teacherCb;
 
     RouteCreatorFragment() {
         places = MapUtil.placeList;
@@ -81,6 +82,10 @@ public class RouteCreatorFragment extends Fragment implements TimePickerDialog.O
         toChip = root.findViewById(R.id.to_chip);
         submitButton = root.findViewById(R.id.submit_route);
         addRoutedetails = root.findViewById(R.id.add_route_details);
+        staffCb=root.findViewById(R.id.routeCreator_staff_cb);
+        studentCb=root.findViewById(R.id.routeCreator_student_cb);
+        teacherCb=root.findViewById(R.id.routeCreator_techer_cb);
+        studentCb.setChecked(true);
         timePickerDialog = new TimePickerDialog(getContext(), this, 12, 45, false);
         timeChooserButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -100,6 +105,35 @@ public class RouteCreatorFragment extends Fragment implements TimePickerDialog.O
                 handleSubmit();
             }
         });
+        studentCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    staffCb.setChecked(false);
+                    teacherCb.setChecked(false);
+                }
+            }
+        });
+        staffCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked){
+                    studentCb.setChecked(false);
+                    teacherCb.setChecked(false);
+                }
+            }
+        });
+
+        teacherCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked){
+                    studentCb.setChecked(false);
+                    staffCb.setChecked(false);
+                }
+            }
+        });
+
         addRoutedetails.setOnCheckedChangeListener(this);
         return root;
     }
@@ -157,6 +191,8 @@ public class RouteCreatorFragment extends Fragment implements TimePickerDialog.O
         data.put("title", title);
         data.put("time", selectedTimetv.getText().toString().trim());
         data.put("show", showInfoEditText.getText().toString().trim());
+        data.put("for", studentCb.isChecked()?"s":(teacherCb.isChecked()?"t":"sf"));
+
         ProgressDialog dialog = new ProgressDialog(getContext());
         final String tmpp = path;
         final String tmpt = title;
@@ -175,6 +211,7 @@ public class RouteCreatorFragment extends Fragment implements TimePickerDialog.O
                             getActivity().getIntent().putExtra("show", showInfoEditText.getText().toString().trim());
                             getActivity().getIntent().putExtra("title", tmpt);
                             getActivity().getIntent().putExtra("id", task.getResult().getId());
+                            getActivity().getIntent().putExtra("for", studentCb.isChecked()?"s":(teacherCb.isChecked()?"t":"sf"));
                             getActivity().onBackPressed();
                         } else {
                             Toast.makeText(getContext(), "Check Connection", Toast.LENGTH_LONG).show();

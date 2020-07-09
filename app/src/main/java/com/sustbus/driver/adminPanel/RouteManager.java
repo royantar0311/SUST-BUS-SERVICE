@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -67,8 +68,8 @@ public class RouteManager extends AppCompatActivity {
                         routeInformation.setPath(d.getString("path"));
                         routeInformation.setShow(d.getString("show"));
                         routeInformation.setTitle(d.getString("title"));
+                        routeInformation.setFor(d.getString("for"));
                         routeInformation.setRouteId(d.getId());
-
                         routeList.add(routeInformation);
                     }
                     init();
@@ -241,6 +242,8 @@ public class RouteManager extends AppCompatActivity {
             tmp.setPath(i.getStringExtra("path"));
             tmp.setShow(i.getStringExtra("show"));
             tmp.setRouteId(i.getStringExtra("id"));
+            tmp.setFor(i.getStringExtra("for"));
+            Log.d("DEB",i.getStringExtra("for"));
             routeList.add(0, tmp);
             mAdapter.notifyDataSetChanged();
             i.removeExtra("added");
@@ -248,6 +251,7 @@ public class RouteManager extends AppCompatActivity {
             i.removeExtra("title");
             i.removeExtra("path");
             i.removeExtra("id");
+            i.removeExtra("for");
         }
     }
 }

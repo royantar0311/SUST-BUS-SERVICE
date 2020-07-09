@@ -12,4 +12,6 @@
     <color name="black">#000000</color>
     <color name="greenSignal">#D4FBDF</color>
     <color name="smothRed">#FDDBDB</color>
+    <color name="staff">#F4B144</color>
+    <color name="teacher">#04D3E6</color>
 </resources>

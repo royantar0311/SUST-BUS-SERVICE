@@ -25,21 +25,21 @@ public class UserInfo {
     private static final String TAG = "UserInfo";
     public static Builder builder = new Builder();
     private static UserInfo instance;
-    private String email;
+    private String email="hello";
     private boolean permitted = false;
-    private String userName;
+    private String userName="hello";
     private boolean driver = false;
     private boolean student = false;
     private boolean teacher = false;
     private boolean staff = false;
     private boolean admin=false;
     private boolean profileCompleted =false;
-    private Double lat;
-    private Double lang;
-    private String uId;
-    private String regiNo;
-    private String url;
-    private String idUrl;
+    private Double lat=1.1;
+    private Double lang=1.1;
+    private String uId="hello";
+    private String regiNo="hello";
+    private String url="hello";
+    private String idUrl="hello";
     public UserInfo() {
     }
     public static UserInfo getInstance() {
@@ -136,21 +136,21 @@ public class UserInfo {
         return map;
     }
 
+
     public String toString() {
-        return "userInfo new datas"
-                + "\niDurl " + instance.getIdUrl()
-                + "\nisDriver " + instance.isDriver()
-                + "\nuid " + instance.getuId()
-                + "\nisPermitted " + instance.isPermitted()
-                + "\nisProfileCompleted " + instance.isProfileCompleted()
-                + "\nemail " + instance.getEmail()
-                + "\nurl " + instance.getUrl()
-                + "\nregiNO " + instance.regiNo
-                + "\nuserName " + instance.userName
-                + "\nstaff "+instance.staff
-                + "\nteacher "+instance.teacher
-                + "\nstudent "+instance.student
-                + "\nadmin "+instance.admin;
+        return ("userInfo:"
+
+                + "\nisDriver " + this.isDriver()
+                + "\nuid " + this.getuId()
+                + "\nisPermitted " + this.isPermitted()
+                + "\nisProfileCompleted " + this.isProfileCompleted()
+                + "\nemail " + this.getEmail()
+                + "\nregiNO " + this.regiNo
+                + "\nuserName " + this.userName
+                + "\nstaff "+this.staff
+                + "\nteacher "+this.teacher
+                + "\nstudent "+this.student
+                + "\nadmin "+this.admin);
     }
 
     public String getUrl() {
