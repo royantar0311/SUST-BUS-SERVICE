@@ -59,7 +59,9 @@
         android:layout_gravity="center"
         android:layout_marginLeft="12dp"
         android:layout_marginTop="8dp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+
+        >
 
         <Switch
             android:id="@+id/teacher_switch"
@@ -73,6 +75,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Teacher"
+            android:id="@+id/teacher_sw_tv"
             android:textStyle="bold"
             android:textColor="@color/white"
             />

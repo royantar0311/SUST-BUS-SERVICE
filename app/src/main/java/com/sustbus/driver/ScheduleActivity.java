@@ -552,6 +552,7 @@ public class ScheduleActivity extends AppCompatActivity {
        });
        if(user.isStaff() && !user.isAdmin()){
            teacherSw.setVisibility(View.GONE);
+           v.findViewById(R.id.teacher_sw_tv).setVisibility(View.GONE);
        }
        else{
            teacherSw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
