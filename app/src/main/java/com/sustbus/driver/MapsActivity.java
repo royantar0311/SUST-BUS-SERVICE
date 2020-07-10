@@ -181,6 +181,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             });
         }
 
+        if(user.isStaff() && !user.isAdmin()){
+            showTeacher=false;
+        }
+
 
     }
 
