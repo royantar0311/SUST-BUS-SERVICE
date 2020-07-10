@@ -64,7 +64,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
         }
         else if(For.equals("sf")){
-            viewHolder.routeForTv.setText("STAFF");
+            viewHolder.routeForTv.setText(" STAFF ");
             viewHolder.routeForTv.setBackgroundColor(ContextCompat.getColor(context,R.color.staff));
         }
 

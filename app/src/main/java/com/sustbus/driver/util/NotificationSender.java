@@ -77,6 +77,7 @@ public class NotificationSender {
             token1+=".st";
             token2+=".st";
         }
+        Log.d("DEB","TokenstoSend " +token1+" "+token2);
 
         sendTo(passingThrough, body, token1);
         sendTo(passingThrough, body, token2);

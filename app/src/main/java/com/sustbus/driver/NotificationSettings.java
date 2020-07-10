@@ -48,7 +48,7 @@ public class NotificationSettings extends AppCompatActivity {
 
         for (String s : keySet) {
             tokenList.add(s);
-            Log.d("DEBMES", s);
+            Log.d("DEB","Subscription: " +s);
         }
         recyclerViewAdapter2 = new RecyclerViewAdapter2(this, tokenList);
 

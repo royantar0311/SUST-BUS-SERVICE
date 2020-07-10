@@ -82,7 +82,7 @@ public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapt
 
         }
         else if(For.equals("sf")){
-            viewHolder.tcSf.setText("STAFF");
+            viewHolder.tcSf.setText(" STAFF ");
             viewHolder.tcSf.setBackgroundColor(ContextCompat.getColor(context,R.color.staff));
         }
 

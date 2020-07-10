@@ -128,7 +128,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Switch studentSw,teacherSw,staffSw;
     private SharedPreferences settings;
     private boolean staffChecked,studentChecked,teacherChecked;
-
+    private LocationCallback locationCallback=null;
 
 
     @Override
@@ -270,7 +270,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 }
 
-                if (pos != null && key != null) {
+                if (pos != null && key != null && For!=null) {
 
                     tmpMarker = addMark(pos, title,For);
                     tmpMarker.showInfoWindow();
@@ -306,7 +306,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     }
 
-                    if (pos != null && key != null) {
+                    if (pos != null && key != null && For!=null) {
 
                         tmpMarker = addMark(pos, title,For);
                         tmpMarker.showInfoWindow();
@@ -561,7 +561,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             locationManager = null;
             return;
         }
-        fusedLocationProviderClient.requestLocationUpdates(locationRequest,new LocationCallback(){
+        locationCallback=new LocationCallback(){
             @Override
             public void onLocationResult(LocationResult location) {
                 super.onLocationResult(location);
@@ -574,7 +574,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 else
                     myLocationMarker.setPosition(new LatLng(location.getLastLocation().getLatitude(), location.getLastLocation().getLongitude()));
             }
-        },getMainLooper());
+        };
+
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest,locationCallback,getMainLooper());
 
     }
 
@@ -789,5 +791,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         ed.putBoolean("map_showTeacher",showTeacher);
         ed.putBoolean("map_showStaff",showStaff);
         ed.commit();
+        if (locationCallback!=null) {
+            fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+        }
     }
 }
