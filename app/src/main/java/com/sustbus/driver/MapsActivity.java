@@ -148,6 +148,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         locateMeBtn.setOnClickListener(this);
         informationTv = findViewById(R.id.information_tv);
 
+        if(user.isStudent()&& !user.isAdmin()){
+            findViewById(R.id.map_filter_fab).setVisibility(View.GONE);
+            showTeacher=false;
+            showStaff=false;
+        }
+        else{
+            findViewById(R.id.map_filter_fab).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    selectorPopUp();
+                }
+            });
+        }
+
+        if(user.isStaff() && !user.isAdmin()){
+            showTeacher=false;
+        }
+
+
         databaseReference = FirebaseDatabase.getInstance().getReference();
         mAuth = FirebaseAuth.getInstance();
 
@@ -166,21 +185,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         } else userUid = mAuth.getCurrentUser().getUid();
 
         mapUtil = MapUtil.getInstance();
-
-        if(user.isStudent()&& !user.isAdmin()){
-            findViewById(R.id.map_filter_fab).setVisibility(View.GONE);
-            showTeacher=false;
-            showStaff=false;
-        }
-        else{
-            findViewById(R.id.map_filter_fab).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    selectorPopUp();
-                }
-            });
-        }
-
 
     }
 

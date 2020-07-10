@@ -104,6 +104,7 @@ public class ScheduleActivity extends AppCompatActivity {
             showTeacher=false;
         }
         else{
+
             findViewById(R.id.schedule_dropdown_iv).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

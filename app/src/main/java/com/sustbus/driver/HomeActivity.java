@@ -53,6 +53,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.here.sdk.core.GeoCoordinates;
 import com.sustbus.driver.adminPanel.AdminPanelActivity;
 import com.sustbus.driver.adminPanel.RouteManager;
@@ -65,7 +66,9 @@ import com.sustbus.driver.util.ResultListener;
 import com.sustbus.driver.util.UserInfo;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -364,6 +367,21 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         }
         else if (i == R.id.help_center_cv) {
             userInfo.reset();
+            SharedPreferences.Editor ed=getSharedPreferences("settings",MODE_PRIVATE).edit();
+            ed.clear();
+            ed.commit();
+
+
+            SharedPreferences pref = getSharedPreferences("NOTIFICATIONS", MODE_PRIVATE);
+            Set<String> st = pref.getStringSet("tokenSet", new HashSet<>());
+            for (String tmp : st) {
+                FirebaseMessaging.getInstance().unsubscribeFromTopic(tmp);
+            }
+
+            ed=pref.edit();
+            ed.clear();
+            ed.commit();
+
             FirebaseAuth.getInstance().signOut();
             Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
