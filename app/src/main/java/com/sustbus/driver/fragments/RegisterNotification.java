@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,12 +14,14 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.firestore.auth.User;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.pchmn.materialchips.ChipsInput;
 import com.pchmn.materialchips.model.ChipInterface;
 import com.sustbus.driver.R;
 import com.sustbus.driver.util.CallBack;
 import com.sustbus.driver.util.MapUtil;
+import com.sustbus.driver.util.UserInfo;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -32,8 +35,8 @@ public class RegisterNotification extends Fragment implements CompoundButton.OnC
     private ChipsInput chipsInput;
     private List<PlaceChips> chipsList;
 
-    private CheckBox away, towards, _6to9, _9to12, _12to15, _15to18, _18to22, wholeday;
-
+    private CheckBox away, towards, _6to9, _9to12, _12to15, _15to18, _18to22, wholeday,studentCb,teacherCb,staffCb;
+    private UserInfo user=UserInfo.getInstance();
     private CallBack callBack;
 
     public RegisterNotification(CallBack callBack) {
@@ -58,6 +61,26 @@ public class RegisterNotification extends Fragment implements CompoundButton.OnC
         _15to18 = v.findViewById(R.id._15to18);
         _18to22 = v.findViewById(R.id._18to22);
         wholeday = v.findViewById(R.id._whole_day);
+        teacherCb=v.findViewById(R.id.alarm_teacher);
+        studentCb=v.findViewById(R.id.alarm_student);
+        staffCb=v.findViewById(R.id.alarm_staff);
+        staffCb.setChecked(false);
+        studentCb.setChecked(false);
+        teacherCb.setChecked(false);
+        if(user.isStudent() && !user.isAdmin()){
+            teacherCb.setVisibility(View.GONE);
+            staffCb.setVisibility(View.GONE);
+            studentCb.setVisibility(View.GONE);
+            studentCb.setChecked(true);
+        }
+        if(user.isStaff() && !user.isAdmin()){
+            teacherCb.setVisibility(View.GONE);
+            staffCb.setChecked(true);
+        }
+        if(user.isTeacher()){
+            teacherCb.setChecked(true);
+        }
+
         v.findViewById(R.id.notification_register_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -166,6 +189,22 @@ public class RegisterNotification extends Fragment implements CompoundButton.OnC
                 }
             }
         }
+
+        List<String>alt=new ArrayList<>();
+        for(String x:tokenList){
+            if(studentCb.isChecked())
+                alt.add(x+".st");
+            if (staffCb.isChecked()) {
+                alt.add(x+".sf");
+            }
+            if (teacherCb.isChecked()) {
+                alt.add(x + ".tc");
+            }
+        }
+
+        tokenList.clear();
+        tokenList.addAll(alt);
+
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("NOTIFICATIONS", Context.MODE_PRIVATE);
         Set<String> keySet = sharedPreferences.getStringSet("tokenSet", new HashSet<>());
 
@@ -175,7 +214,7 @@ public class RegisterNotification extends Fragment implements CompoundButton.OnC
             if (!keySet.contains(tokenList.get(i))) {
                 FirebaseMessaging.getInstance().subscribeToTopic(tokenList.get(i));
                 tmp.add(tokenList.get(i));
-                //Log.d("DEBMES","added "+tokenList.get(i));
+                Log.d("DEB","added "+tokenList.get(i));
             }
             //Log.d("DEBMES",tokenList.get(i));
         }
@@ -184,8 +223,6 @@ public class RegisterNotification extends Fragment implements CompoundButton.OnC
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putStringSet("tokenSet", tmp);
         editor.commit();
-
-
         callBack.ok();
         getActivity().onBackPressed();
 

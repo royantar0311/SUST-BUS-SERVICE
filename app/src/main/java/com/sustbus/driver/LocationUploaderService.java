@@ -189,7 +189,7 @@ public class LocationUploaderService extends Service {
        private LocationRequest locationRequest;
        private MapUtil mapUtil;
        private GeoCoordinates previousPosition;
-
+       private String  For;
 
        Uploader(Intent data){
 
@@ -198,6 +198,7 @@ public class LocationUploaderService extends Service {
            String title = data.getStringExtra("title");
            userUid=data.getStringExtra("userUid");
            SERVER_KEY=data.getStringExtra("SERVER_KEY");
+           For=data.getStringExtra("for");
 
            databaseReference=FirebaseDatabase.getInstance().getReference();
            userLocationData = FirebaseDatabase.getInstance().getReference().child("alive").child(userUid);
@@ -228,6 +229,7 @@ public class LocationUploaderService extends Service {
            userLocationData.child("title").setValue(title);
            databaseReference.child("busesOnRoad").child(routeId).onDisconnect().setValue(null);
            databaseReference.child("busesOnRoad").child(routeId).child("key").setValue(userUid);
+           databaseReference.child("busesOnRoad").child(routeId).child("for").setValue(For);
            routeIdCurrentlySharing = routeId;
            userPathReference.setValue("NA;");
            pathOk = false;
@@ -239,7 +241,7 @@ public class LocationUploaderService extends Service {
             super.run();
 
 
-           notificationSender = new NotificationSender(LocationUploaderService.this.getApplicationContext(), userUid, SERVER_KEY);
+           notificationSender = new NotificationSender(LocationUploaderService.this.getApplicationContext(), userUid, SERVER_KEY,For);
 
            locationCallback=new LocationCallback(){
 

@@ -189,12 +189,20 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
          * setting up dashboard for user (driver/student)
          * */
         userNameTv.setText(userInfo.getUserName());
-        if (userInfo.isDriver()) {
-            Log.d(TAG, "onEvent: " + " ashena?");
-            driverOrStudent.setText("Driver");
-        } else {
+
+        if (userInfo.isAdmin()) {
+            driverOrStudent.setText("Admin");
+        }
+        else if(userInfo.isTeacher()) {
+            driverOrStudent.setText("Teacher");
+        }
+        else if(userInfo.isStaff()) {
+            driverOrStudent.setText("Staff");
+        }
+        else if(userInfo.isStudent()) {
             driverOrStudent.setText("Student");
         }
+
 
 
         if (getIntent().getStringExtra("markerKey") != null) {
@@ -283,6 +291,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                                 adminPanelCv.setVisibility(View.VISIBLE);
                                 routeUploaderCv.setVisibility(View.VISIBLE);
                                 userInfo.setAdmin(true);
+                                driverOrStudent.append(" (admin)");
                                 Log.d("admin", "ok: "+userInfo.toString());
 
                             } else {
@@ -420,6 +429,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             intent.putExtra("title",title);
             intent.putExtra("userUid",userUid);
             intent.putExtra("SERVER_KEY",SERVER_KEY);
+            intent.putExtra("for",data.getStringExtra("for"));
             //Start service:
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 startForegroundService(intent);

@@ -26,11 +26,13 @@ public class NotificationSender {
     private Context context;
     private String userId;
     private RequestQueue requestQueue;
+    private String For;
 
-    public NotificationSender(Context ctx, String userId, String server) {
+    public NotificationSender(Context ctx, String userId, String server,String For) {
         context = ctx;
         this.userId = userId;
         this.serverKey = server;
+        this.For=For;
         requestQueue = Volley.newRequestQueue(context.getApplicationContext());
     }
 
@@ -61,7 +63,21 @@ public class NotificationSender {
         else if (hour >= 18 && hour <= 22) token2 += "18_22";
 
         //Log.d("DEBMES","Send "+token1);
-        //Log.d("DEBMES","send "+token2);
+        //Log.d("DEBMES","send "+token2)
+        // ;
+        if(For.equals("sf")){
+            token1+=".sf";
+            token2+=".sf";
+        }
+        else if(For.equals("t")){
+            token1+=".tc";
+            token2+=".tc";
+        }
+        else if(For.equals("s")){
+            token1+=".st";
+            token2+=".st";
+        }
+
         sendTo(passingThrough, body, token1);
         sendTo(passingThrough, body, token2);
     }

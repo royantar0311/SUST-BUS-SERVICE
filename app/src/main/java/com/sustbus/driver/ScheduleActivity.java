@@ -124,8 +124,8 @@ public class ScheduleActivity extends AppCompatActivity {
                 @Override
                 public void ok() {
                     if (currentProgressDialogue != null) currentProgressDialogue.dismiss();
-                    if (forRideShare) init(R.id.menu_item_on_road);
-                    else init(R.id.menu_item_next);
+                    if (forRideShare) init(R.id.menu_item_on_road,true);
+                    else init(R.id.menu_item_next,true);
                     Toast.makeText(getApplicationContext(),"Updated",Toast.LENGTH_LONG).show();
                 }
 
@@ -138,13 +138,13 @@ public class ScheduleActivity extends AppCompatActivity {
                         Snackbar.make(findViewById(R.id.frame_container), "Schedules needs update, Check Internet and try Again", Snackbar.LENGTH_INDEFINITE).show();
                     } else {
                         Snackbar.make(findViewById(R.id.frame_container), "Schedules were not updated", Snackbar.LENGTH_LONG).show();
-                        init(R.id.menu_item_next);
+                        init(R.id.menu_item_next,true);
                     }
                 }
             }, false);
         } else {
-            if (forRideShare) init(R.id.menu_item_on_road);
-            else init(R.id.menu_item_next);
+            if (forRideShare) init(R.id.menu_item_on_road,true);
+            else init(R.id.menu_item_next,true);
         }
         refreshImagebutton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -154,18 +154,18 @@ public class ScheduleActivity extends AppCompatActivity {
         });
     }
 
-    public void init(int id) {
+    public void init(int id,boolean needRefetch) {
 
         if (currentFragment != null) {
             getSupportFragmentManager().beginTransaction().remove(currentFragment).commit();
         }
         if (currentProgressDialogue != null) currentProgressDialogue.dismiss();
-        routeInformations = routeDatabaseManager.getAll();
+        if(needRefetch)routeInformations = routeDatabaseManager.getAll();
         if (routeInformations.isEmpty()) {
             Snackbar.make(findViewById(R.id.frame_container), "Please Check Your Internet Connection", Snackbar.LENGTH_LONG).show();
             return;
         }
-        Collections.sort(routeInformations, new Comparator<RouteInformation>() {
+        if(needRefetch)Collections.sort(routeInformations, new Comparator<RouteInformation>() {
             @Override
             public int compare(RouteInformation o1, RouteInformation o2) {
                 return o1.comparableStartTime.compareTo(o2.comparableStartTime);
@@ -237,7 +237,7 @@ public class ScheduleActivity extends AppCompatActivity {
 
         refreshImagebutton.setClickable(true);
         bottomNav.setSelectedItemId(id);
-        countDownTimerForRefreshingLists = new CountDownTimer(10000000000l, 10 * 1000) {
+        countDownTimerForRefreshingLists = new CountDownTimer(10000000000l, 2 * 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 refresh();
@@ -293,13 +293,14 @@ public class ScheduleActivity extends AppCompatActivity {
         if (finished != null) finished.clear();
         if (onRoad != null) onRoad.clear();
         if (next != null) next.clear();
+        if(onRoadMap!=null)onRoadMap.clear();
 
         if (countDownTimerForRefreshingLists != null) countDownTimerForRefreshingLists.cancel();
         FirebaseDatabase.getInstance().getReference().child("busesOnRoad").removeEventListener(childEventListener);
         routeDatabaseManager.checkForUpdate(new CallBack() {
             @Override
             public void ok() {
-                init(bottomNav.getSelectedItemId());
+                init(bottomNav.getSelectedItemId(),true);
                 refreshImagebutton.animate().cancel();
                 refreshImagebutton.clearAnimation();
                 Toast.makeText(getApplicationContext(),"Updated",Toast.LENGTH_LONG).show();
@@ -308,7 +309,7 @@ public class ScheduleActivity extends AppCompatActivity {
             @Override
             public void notOk() {
                 Snackbar.make(findViewById(R.id.frame_container), "Check Connection and Try Again", 3000).show();
-                init(bottomNav.getSelectedItemId());
+                init(bottomNav.getSelectedItemId(),false);
                 refreshImagebutton.animate().cancel();
                 refreshImagebutton.clearAnimation();
             }
@@ -509,6 +510,7 @@ public class ScheduleActivity extends AppCompatActivity {
         intent.putExtra("path", tmp.getPath());
         intent.putExtra("title", tmp.getTitle());
         intent.putExtra("routeId", tmp.getRouteId());
+        intent.putExtra("for", tmp.getFor());
 
         setResult(100, intent);
         finish();
@@ -584,16 +586,16 @@ public class ScheduleActivity extends AppCompatActivity {
 
     }
     private void handleShow(){
-
         refreshImagebutton.setClickable(false);
         initok = false;
         currentMenuItemid = 0;
         if (finished != null) finished.clear();
         if (onRoad != null) onRoad.clear();
         if (next != null) next.clear();
+        if(onRoadMap!=null)onRoadMap.clear();
 
         if (countDownTimerForRefreshingLists != null) countDownTimerForRefreshingLists.cancel();
-        init(bottomNav.getSelectedItemId());
+        init(bottomNav.getSelectedItemId(),false);
 
     }
 
