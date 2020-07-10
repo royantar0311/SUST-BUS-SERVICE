@@ -227,9 +227,9 @@ public class LocationUploaderService extends Service {
 
            Log.d("DEB", "thread created " + pathString.toString());
            userLocationData.child("title").setValue(title);
+           userLocationData.child("for").setValue(For);
            databaseReference.child("busesOnRoad").child(routeId).onDisconnect().setValue(null);
            databaseReference.child("busesOnRoad").child(routeId).child("key").setValue(userUid);
-           databaseReference.child("busesOnRoad").child(routeId).child("for").setValue(For);
            routeIdCurrentlySharing = routeId;
            userPathReference.setValue("NA;");
            pathOk = false;

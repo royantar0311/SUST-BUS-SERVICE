@@ -20,9 +20,14 @@
 package com.sustbus.driver;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
@@ -30,10 +35,13 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
+import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -74,6 +82,7 @@ import com.here.sdk.routing.RoutingError;
 import com.here.sdk.routing.Waypoint;
 import com.sustbus.driver.util.MapUtil;
 import com.sustbus.driver.util.PathInformation;
+import com.sustbus.driver.util.UserInfo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -101,6 +110,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private MapUtil mapUtil;
     private RoutingEngine routingEngine;
     private Map<String, String> pathInformationMap;
+    private Map<String,String> ForMap;
     private boolean ok = false;
     private Polyline currentPolylineOnMap = null;
     private List<Waypoint> waypoints = null;
@@ -113,6 +123,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private String userUid;
     private boolean isCalculatingBusRout = false;
     private CardView informationCard;
+    private UserInfo user=UserInfo.getInstance();
+    private boolean showStudent,showStaff,showTeacher;
+    private Switch studentSw,teacherSw,staffSw;
+    private SharedPreferences settings;
+    private boolean staffChecked,studentChecked,teacherChecked;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,7 +139,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
+        settings=getSharedPreferences("settings",MODE_PRIVATE);
+        showStudent=settings.getBoolean("map_showStudent",true);
+        showTeacher=settings.getBoolean("map_showTeacher",true);
+        showStaff=settings.getBoolean("map_showStaff",true);
         locateMeBtn = findViewById(R.id.locate_me_btn);
         informationCard = findViewById(R.id.information_tv_cardview);
         locateMeBtn.setOnClickListener(this);
@@ -147,6 +167,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         mapUtil = MapUtil.getInstance();
 
+        if(user.isStudent()&& !user.isAdmin()){
+            findViewById(R.id.map_filter_fab).setVisibility(View.GONE);
+            showTeacher=false;
+            showStaff=false;
+        }
+        else{
+            findViewById(R.id.map_filter_fab).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    selectorPopUp();
+                }
+            });
+        }
+
+
     }
 
     @Override
@@ -158,6 +193,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(), 13f), 100, null);
 
         markerMap = new HashMap<>();
+        ForMap=new HashMap<>();
 
 
         try {
@@ -217,23 +253,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
 
                 LatLng pos = null;
-                String key = null, title = null;
+                String key = null, title = null,For="s";
+
 
                 Marker tmpMarker;
                 try {
                     pos = new LatLng(dataSnapshot.child("lat").getValue(Double.class), dataSnapshot.child("lng").getValue(Double.class));
                     key = dataSnapshot.getKey();
                     title = dataSnapshot.child("title").getValue(String.class);
+                    For=dataSnapshot.child("for").getValue(String.class);
                 } catch (Exception e) {
 
                 }
 
                 if (pos != null && key != null) {
-                    tmpMarker = addMark(pos, title);
+
+                    tmpMarker = addMark(pos, title,For);
                     tmpMarker.showInfoWindow();
                     tmpMarker.setTag(key);
                     tmpMarker.setFlat(true);
                     markerMap.put(key, tmpMarker);
+                    ForMap.put(key,For);
 
                 }
 
@@ -245,28 +285,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 LatLng pos = null;
                 Marker tmpMarker;
 
-                String key = dataSnapshot.getKey(), title = null;
+                String key = dataSnapshot.getKey(), title = null,For="s";
                 if (markerMap.containsKey(key)) {
                     pos = new LatLng(dataSnapshot.child("lat").getValue(Double.class), dataSnapshot.child("lng").getValue(Double.class));
                     markerMap.get(key).setPosition(pos);
                     markerMap.get(key).setRotation(dataSnapshot.child("rotation").getValue(Float.class));
-                } else {
+                }
+                else {
 
                     try {
                         pos = new LatLng(dataSnapshot.child("lat").getValue(Double.class), dataSnapshot.child("lng").getValue(Double.class));
                         key = dataSnapshot.getKey();
                         title = dataSnapshot.child("title").getValue(String.class);
+                        For=dataSnapshot.child("for").getValue(String.class);
                     } catch (Exception e) {
 
                     }
 
                     if (pos != null && key != null) {
 
-                        tmpMarker = addMark(pos, title);
+                        tmpMarker = addMark(pos, title,For);
                         tmpMarker.showInfoWindow();
                         tmpMarker.setTag(key);
                         tmpMarker.setFlat(true);
                         markerMap.put(key, tmpMarker);
+                        ForMap.put(key,For);
                     }
 
                 }
@@ -279,6 +322,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (markerMap.containsKey(key)) {
                     markerMap.get(key).remove();
                     markerMap.remove(key);
+                    ForMap.remove(key);
                 }
             }
 
@@ -543,12 +587,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return this;
     }
 
-    public Marker addMark(LatLng cur, String title) {
+    public Marker addMark(LatLng cur, String title,String For) {
+       int id=R.drawable.ic_directions_bus_black_24dp;
+       if(For.equals("t"))id=R.drawable.ic_bus_for_teacher;
+       if(For.equals("sf"))id=R.drawable.ic_bus_for_staff;
+        boolean setVisible=false;
 
-        Marker marker = mMap.addMarker(new MarkerOptions().position(cur)
+        if(For.equals("s") && showStudent)setVisible=true;
+        else if(For.equals("t") && showTeacher)setVisible=true;
+        else if(For.equals("sf") && showStaff)setVisible=true;
+
+
+        Marker marker = mMap.addMarker(new MarkerOptions()
+                        .position(cur)
                 .title(title)
                 .anchor(.5f, .5f)
-                .icon(bitmapDescriptorFromVector(R.drawable.ic_directions_bus_black_24dp)));
+                .icon(bitmapDescriptorFromVector(id))
+                .visible(setVisible)
+                );
         return marker;
 
     }
@@ -638,4 +694,96 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return super.onKeyDown(keyCode, event);
     }
 
+    private void selectorPopUp(){
+
+        View v=getLayoutInflater().inflate(R.layout.category_selector_popup,null);
+        staffSw=v.findViewById(R.id.staff_switch);
+        teacherSw=v.findViewById(R.id.teacher_switch);
+        studentSw=v.findViewById(R.id.student_switch);
+
+        staffChecked=showStaff;
+        studentChecked=showStudent;
+        teacherChecked=showTeacher;
+
+        staffSw.setChecked(staffChecked);
+        studentSw.setChecked(studentChecked);
+        teacherSw.setChecked(teacherChecked);
+
+        staffSw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                staffChecked=isChecked;
+            }
+        });
+        studentSw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                studentChecked=isChecked;
+            }
+        });
+        if(user.isStaff() && !user.isAdmin()){
+            teacherSw.setVisibility(View.GONE);
+            v.findViewById(R.id.teacher_sw_tv).setVisibility(View.GONE);
+        }
+        else{
+            teacherSw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    teacherChecked=isChecked;
+                }
+            });
+        }
+
+        AlertDialog alertDialog=new AlertDialog.Builder(this)
+                .setView(v)
+                .create();
+        alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        alertDialog.show();
+
+        alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+
+                if(staffChecked!=showStaff || teacherChecked!=showTeacher || studentChecked!=showStudent){
+                    showStaff=staffChecked;
+                    showTeacher=teacherChecked;
+                    showStudent=studentChecked;
+                    handleShow();
+                }
+            }
+        });
+
+    }
+
+    public void  handleShow(){
+
+        for(Map.Entry en:ForMap.entrySet()){
+
+            if(en.getValue().equals("s") ) {
+                if (showStudent) markerMap.get(en.getKey()).setVisible(true);
+                else markerMap.get(en.getKey()).setVisible(false);
+            }
+            if(en.getValue().equals("t")) {
+                if (showTeacher) markerMap.get(en.getKey()).setVisible(true);
+                else markerMap.get(en.getKey()).setVisible(false);
+            }
+
+            if(en.getValue().equals("sf")) {
+                if(showStaff)markerMap.get(en.getKey()).setVisible(true);
+                else markerMap.get(en.getKey()).setVisible(false);
+            }
+
+        }
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        SharedPreferences.Editor ed=settings.edit();
+        ed.putBoolean("map_showStudent",showStudent);
+        ed.putBoolean("map_showTeacher",showTeacher);
+        ed.putBoolean("map_showStaff",showStaff);
+        ed.commit();
+    }
 }

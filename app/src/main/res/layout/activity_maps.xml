@@ -7,9 +7,7 @@
     android:background="@drawable/edit_round"
     android:backgroundTint="@color/blue25">
 
-    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:map="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+    <fragment
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
@@ -17,17 +15,27 @@
         tools:context=".MapsActivity" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/map_filter_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/locate_me_btn"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="20dp"
+        android:layout_marginBottom="30dp"
+        android:backgroundTint="@color/white"
+        android:src="@drawable/ic_filter_list_black_24dp" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/locate_me_btn"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentBottom="true"
         android:layout_marginLeft="20dp"
         android:layout_marginBottom="50dp"
         android:src="@drawable/ic_transfer_within_a_station_black_24dp"
-
-        map:backgroundTint="#FBFBFB" />
-
+        android:backgroundTint="@color/white"
+        />
     <androidx.cardview.widget.CardView
         android:id="@+id/information_tv_cardview"
         android:layout_width="match_parent"
