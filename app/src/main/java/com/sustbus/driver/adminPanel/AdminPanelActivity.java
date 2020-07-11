@@ -22,8 +22,9 @@ public class AdminPanelActivity extends AppCompatActivity {
     private ViewPager viewPager;
     private ViewPagerAdapter viewPagerAdapter;
     private FragmentManager fragmentManager;
-    private  String SERVER_KEY;
+    private String SERVER_KEY;
     private NotificationSender notificationSender;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,9 +53,10 @@ public class AdminPanelActivity extends AppCompatActivity {
                 }
             }
         });
-        
+
     }
-    protected void notifyUser(String uId, boolean state){
-        notificationSender.notifyUser(uId,state);
+
+    protected void notifyUser(String uId, boolean state) {
+        notificationSender.notifyUser(uId, state);
     }
 }

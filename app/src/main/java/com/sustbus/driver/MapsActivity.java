@@ -29,13 +29,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
-import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
@@ -63,7 +60,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -96,9 +92,9 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, View.OnClickListener, GoogleMap.OnMarkerClickListener {
-    private static final String TAG = "MapsActivity";
     public static final int MIN_TIME = 2000;
     public static final int MIN_DIST = 5;
+    private static final String TAG = "MapsActivity";
     private GoogleMap mMap;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationRequest locationRequest;
@@ -110,7 +106,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private MapUtil mapUtil;
     private RoutingEngine routingEngine;
     private Map<String, String> pathInformationMap;
-    private Map<String,String> ForMap;
+    private Map<String, String> ForMap;
     private boolean ok = false;
     private Polyline currentPolylineOnMap = null;
     private List<Waypoint> waypoints = null;
@@ -123,12 +119,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private String userUid;
     private boolean isCalculatingBusRout = false;
     private CardView informationCard;
-    private UserInfo user=UserInfo.getInstance();
-    private boolean showStudent,showStaff,showTeacher;
-    private Switch studentSw,teacherSw,staffSw;
+    private UserInfo user = UserInfo.getInstance();
+    private boolean showStudent, showStaff, showTeacher;
+    private Switch studentSw, teacherSw, staffSw;
     private SharedPreferences settings;
-    private boolean staffChecked,studentChecked,teacherChecked;
-    private LocationCallback locationCallback=null;
+    private boolean staffChecked, studentChecked, teacherChecked;
+    private LocationCallback locationCallback = null;
 
 
     @Override
@@ -139,21 +135,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        settings=getSharedPreferences("settings",MODE_PRIVATE);
-        showStudent=settings.getBoolean("map_showStudent",true);
-        showTeacher=settings.getBoolean("map_showTeacher",true);
-        showStaff=settings.getBoolean("map_showStaff",true);
+        settings = getSharedPreferences("settings", MODE_PRIVATE);
+        showStudent = settings.getBoolean("map_showStudent", true);
+        showTeacher = settings.getBoolean("map_showTeacher", true);
+        showStaff = settings.getBoolean("map_showStaff", true);
         locateMeBtn = findViewById(R.id.locate_me_btn);
         informationCard = findViewById(R.id.information_tv_cardview);
         locateMeBtn.setOnClickListener(this);
         informationTv = findViewById(R.id.information_tv);
 
-        if(user.isStudent()&& !user.isAdmin()){
+        if (user.isStudent() && !user.isAdmin()) {
             findViewById(R.id.map_filter_fab).setVisibility(View.GONE);
-            showTeacher=false;
-            showStaff=false;
-        }
-        else{
+            showTeacher = false;
+            showStaff = false;
+        } else {
             findViewById(R.id.map_filter_fab).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -162,8 +157,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             });
         }
 
-        if(user.isStaff() && !user.isAdmin()){
-            showTeacher=false;
+        if (user.isStaff() && !user.isAdmin()) {
+            showTeacher = false;
         }
 
 
@@ -197,7 +192,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(), 13f), 100, null);
 
         markerMap = new HashMap<>();
-        ForMap=new HashMap<>();
+        ForMap = new HashMap<>();
 
 
         try {
@@ -257,7 +252,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
 
                 LatLng pos = null;
-                String key = null, title = null,For="s";
+                String key = null, title = null, For = "s";
 
 
                 Marker tmpMarker;
@@ -265,19 +260,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     pos = new LatLng(dataSnapshot.child("lat").getValue(Double.class), dataSnapshot.child("lng").getValue(Double.class));
                     key = dataSnapshot.getKey();
                     title = dataSnapshot.child("title").getValue(String.class);
-                    For=dataSnapshot.child("for").getValue(String.class);
+                    For = dataSnapshot.child("for").getValue(String.class);
                 } catch (Exception e) {
 
                 }
 
-                if (pos != null && key != null && For!=null) {
+                if (pos != null && key != null && For != null) {
 
-                    tmpMarker = addMark(pos, title,For);
+                    tmpMarker = addMark(pos, title, For);
                     tmpMarker.showInfoWindow();
                     tmpMarker.setTag(key);
                     tmpMarker.setFlat(true);
                     markerMap.put(key, tmpMarker);
-                    ForMap.put(key,For);
+                    ForMap.put(key, For);
 
                 }
 
@@ -289,31 +284,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 LatLng pos = null;
                 Marker tmpMarker;
 
-                String key = dataSnapshot.getKey(), title = null,For="s";
+                String key = dataSnapshot.getKey(), title = null, For = "s";
                 if (markerMap.containsKey(key)) {
                     pos = new LatLng(dataSnapshot.child("lat").getValue(Double.class), dataSnapshot.child("lng").getValue(Double.class));
                     markerMap.get(key).setPosition(pos);
                     markerMap.get(key).setRotation(dataSnapshot.child("rotation").getValue(Float.class));
-                }
-                else {
+                } else {
 
                     try {
                         pos = new LatLng(dataSnapshot.child("lat").getValue(Double.class), dataSnapshot.child("lng").getValue(Double.class));
                         key = dataSnapshot.getKey();
                         title = dataSnapshot.child("title").getValue(String.class);
-                        For=dataSnapshot.child("for").getValue(String.class);
+                        For = dataSnapshot.child("for").getValue(String.class);
                     } catch (Exception e) {
 
                     }
 
-                    if (pos != null && key != null && For!=null) {
+                    if (pos != null && key != null && For != null) {
 
-                        tmpMarker = addMark(pos, title,For);
+                        tmpMarker = addMark(pos, title, For);
                         tmpMarker.showInfoWindow();
                         tmpMarker.setTag(key);
                         tmpMarker.setFlat(true);
                         markerMap.put(key, tmpMarker);
-                        ForMap.put(key,For);
+                        ForMap.put(key, For);
                     }
 
                 }
@@ -561,7 +555,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             locationManager = null;
             return;
         }
-        locationCallback=new LocationCallback(){
+        locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult location) {
                 super.onLocationResult(location);
@@ -576,7 +570,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         };
 
-        fusedLocationProviderClient.requestLocationUpdates(locationRequest,locationCallback,getMainLooper());
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, getMainLooper());
 
     }
 
@@ -593,24 +587,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return this;
     }
 
-    public Marker addMark(LatLng cur, String title,String For) {
-       int id=R.drawable.ic_directions_bus_black_24dp;
-       if(For.equals("t"))id=R.drawable.ic_bus_for_teacher;
-       if(For.equals("sf"))id=R.drawable.ic_bus_for_staff;
-        boolean setVisible=false;
+    public Marker addMark(LatLng cur, String title, String For) {
+        int id = R.drawable.ic_directions_bus_black_24dp;
+        if (For.equals("t")) id = R.drawable.ic_bus_for_teacher;
+        if (For.equals("sf")) id = R.drawable.ic_bus_for_staff;
+        boolean setVisible = false;
 
-        if(For.equals("s") && showStudent)setVisible=true;
-        else if(For.equals("t") && showTeacher)setVisible=true;
-        else if(For.equals("sf") && showStaff)setVisible=true;
+        if (For.equals("s") && showStudent) setVisible = true;
+        else if (For.equals("t") && showTeacher) setVisible = true;
+        else if (For.equals("sf") && showStaff) setVisible = true;
 
 
         Marker marker = mMap.addMarker(new MarkerOptions()
-                        .position(cur)
+                .position(cur)
                 .title(title)
                 .anchor(.5f, .5f)
                 .icon(bitmapDescriptorFromVector(id))
                 .visible(setVisible)
-                );
+        );
         return marker;
 
     }
@@ -683,13 +677,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            if(!ok)Toast.makeText(this, "press back again to exit", Toast.LENGTH_SHORT).show();
+            if (!ok) Toast.makeText(this, "press back again to exit", Toast.LENGTH_SHORT).show();
             if (ok) {
 
                 databaseReference.child("alive").removeEventListener(childEventListener);
                 databaseReference.child("destinations").removeEventListener(pathChangeListner);
                 databaseReference = null;
-                locationManager = null;markerMap.clear();
+                locationManager = null;
+                markerMap.clear();
                 pathInformationMap.clear();
                 finish();
             }
@@ -700,16 +695,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return super.onKeyDown(keyCode, event);
     }
 
-    private void selectorPopUp(){
+    private void selectorPopUp() {
 
-        View v=getLayoutInflater().inflate(R.layout.category_selector_popup,null);
-        staffSw=v.findViewById(R.id.staff_switch);
-        teacherSw=v.findViewById(R.id.teacher_switch);
-        studentSw=v.findViewById(R.id.student_switch);
+        View v = getLayoutInflater().inflate(R.layout.category_selector_popup, null);
+        staffSw = v.findViewById(R.id.staff_switch);
+        teacherSw = v.findViewById(R.id.teacher_switch);
+        studentSw = v.findViewById(R.id.student_switch);
 
-        staffChecked=showStaff;
-        studentChecked=showStudent;
-        teacherChecked=showTeacher;
+        staffChecked = showStaff;
+        studentChecked = showStudent;
+        teacherChecked = showTeacher;
 
         staffSw.setChecked(staffChecked);
         studentSw.setChecked(studentChecked);
@@ -718,29 +713,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         staffSw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                staffChecked=isChecked;
+                staffChecked = isChecked;
             }
         });
         studentSw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                studentChecked=isChecked;
+                studentChecked = isChecked;
             }
         });
-        if(user.isStaff() && !user.isAdmin()){
+        if (user.isStaff() && !user.isAdmin()) {
             teacherSw.setVisibility(View.GONE);
             v.findViewById(R.id.teacher_sw_tv).setVisibility(View.GONE);
-        }
-        else{
+        } else {
             teacherSw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    teacherChecked=isChecked;
+                    teacherChecked = isChecked;
                 }
             });
         }
 
-        AlertDialog alertDialog=new AlertDialog.Builder(this)
+        AlertDialog alertDialog = new AlertDialog.Builder(this)
                 .setView(v)
                 .create();
         alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -750,10 +744,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onDismiss(DialogInterface dialog) {
 
-                if(staffChecked!=showStaff || teacherChecked!=showTeacher || studentChecked!=showStudent){
-                    showStaff=staffChecked;
-                    showTeacher=teacherChecked;
-                    showStudent=studentChecked;
+                if (staffChecked != showStaff || teacherChecked != showTeacher || studentChecked != showStudent) {
+                    showStaff = staffChecked;
+                    showTeacher = teacherChecked;
+                    showStudent = studentChecked;
                     handleShow();
                 }
             }
@@ -761,21 +755,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    public void  handleShow(){
+    public void handleShow() {
 
-        for(Map.Entry en:ForMap.entrySet()){
+        for (Map.Entry en : ForMap.entrySet()) {
 
-            if(en.getValue().equals("s") ) {
+            if (en.getValue().equals("s")) {
                 if (showStudent) markerMap.get(en.getKey()).setVisible(true);
                 else markerMap.get(en.getKey()).setVisible(false);
             }
-            if(en.getValue().equals("t")) {
+            if (en.getValue().equals("t")) {
                 if (showTeacher) markerMap.get(en.getKey()).setVisible(true);
                 else markerMap.get(en.getKey()).setVisible(false);
             }
 
-            if(en.getValue().equals("sf")) {
-                if(showStaff)markerMap.get(en.getKey()).setVisible(true);
+            if (en.getValue().equals("sf")) {
+                if (showStaff) markerMap.get(en.getKey()).setVisible(true);
                 else markerMap.get(en.getKey()).setVisible(false);
             }
 
@@ -786,12 +780,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        SharedPreferences.Editor ed=settings.edit();
-        ed.putBoolean("map_showStudent",showStudent);
-        ed.putBoolean("map_showTeacher",showTeacher);
-        ed.putBoolean("map_showStaff",showStaff);
+        SharedPreferences.Editor ed = settings.edit();
+        ed.putBoolean("map_showStudent", showStudent);
+        ed.putBoolean("map_showTeacher", showTeacher);
+        ed.putBoolean("map_showStaff", showStaff);
         ed.commit();
-        if (locationCallback!=null) {
+        if (locationCallback != null) {
             fusedLocationProviderClient.removeLocationUpdates(locationCallback);
         }
     }

@@ -243,7 +243,7 @@ public class RouteManager extends AppCompatActivity {
             tmp.setShow(i.getStringExtra("show"));
             tmp.setRouteId(i.getStringExtra("id"));
             tmp.setFor(i.getStringExtra("for"));
-            Log.d("DEB",i.getStringExtra("for"));
+            Log.d("DEB", i.getStringExtra("for"));
             routeList.add(0, tmp);
             mAdapter.notifyDataSetChanged();
             i.removeExtra("added");

@@ -180,9 +180,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
         if(userInfo.isTeacher()) {
             driverOrStudent.setText("Teacher");
-        } else if(userInfo.isStaff()) {
+        }
+        else if(userInfo.isStaff()) {
             driverOrStudent.setText("Staff");
-        } else if(userInfo.isStudent()) {
+        }
+        else if(userInfo.isStudent()) {
             driverOrStudent.setText("Student");
         }else if(userInfo.isDriver()) {
             driverOrStudent.setText("Driver");
@@ -325,21 +327,20 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         int i = view.getId();
 
         if (i == R.id.ride_on_cv) {
-                if (!isRideShareOn) {
-                    if (!userInfo.isDriver()) {
-                        new AlertDialog.Builder(this)
-                                .setTitle("Warning!")
-                                .setMessage("Since you are not a Driver, if you misuse this feature legal actions will be taken against you")
-                                .setPositiveButton("I understand", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        gotoSchedule();
-                                    }
-                                })
-                                .setNegativeButton("cancel", null)
-                                .show();
-                    }
-                    else gotoSchedule();
+            if (!isRideShareOn) {
+                if (!userInfo.isDriver()) {
+                    new AlertDialog.Builder(this)
+                            .setTitle("Warning!")
+                            .setMessage("Since you are not a Driver, if you misuse this feature legal actions will be taken against you")
+                            .setPositiveButton("I understand", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    gotoSchedule();
+                                }
+                            })
+                            .setNegativeButton("cancel", null)
+                            .show();
+                } else gotoSchedule();
 
                 }
                 else {
@@ -349,14 +350,13 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                     //turnOffRideShare(false);
                 }
 
-        }
-        else if (i == R.id.logout_cv) {
+        } else if (i == R.id.logout_cv) {
             userInfo.reset();
-            SharedPreferences.Editor ed=getSharedPreferences("settings",MODE_PRIVATE).edit();
+            SharedPreferences.Editor ed = getSharedPreferences("settings", MODE_PRIVATE).edit();
             ed.clear();
             ed.commit();
 
-            ed = getSharedPreferences("userInfo",MODE_PRIVATE).edit();
+            ed = getSharedPreferences("userInfo", MODE_PRIVATE).edit();
             FirebaseMessaging.getInstance().unsubscribeFromTopic(userUid);
             ed.clear();
             ed.commit();

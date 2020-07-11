@@ -10,7 +10,7 @@ public class RouteInformation {
     private String show;
     private String title;
     private String markerId;
-    private String For="s";
+    private String For = "s";
 
     public String getRouteId() {
         return routeId;
@@ -30,14 +30,6 @@ public class RouteInformation {
 
     public String getTime() {
         return time;
-    }
-
-    public String getFor() {
-        return For;
-    }
-
-    public void setFor(String aFor) {
-        For = aFor;
     }
 
     public void setTime(String time) {
@@ -68,6 +60,14 @@ public class RouteInformation {
 
         comparableEndTime = "";
         comparableEndTime += (hour < 10 ? "0" : "") + hour + ":" + (min < 10 ? "0" : "") + min;
+    }
+
+    public String getFor() {
+        return For;
+    }
+
+    public void setFor(String aFor) {
+        For = aFor;
     }
 
     public String getTitle() {

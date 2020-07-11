@@ -7,7 +7,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
 import android.location.Location;
 import android.os.Binder;
 import android.os.Build;
@@ -19,8 +18,6 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.model.BitmapDescriptor;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.here.sdk.core.GeoCoordinates;
@@ -31,37 +28,39 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
 public class LocationUploaderService extends Service {
 
-    private IBinder binderToReturn=new LocalBinder();
+    private final String notificationChannel = "1234";
+    private IBinder binderToReturn = new LocalBinder();
     private SharedPreferences.Editor edit;
-    private boolean isBinded=false;
+    private boolean isBinded = false;
     private Uploader mUploader;
-    private final String notificationChannel="1234";
 
-    public void out(String s){
-        Log.d("DEB",s);
+    public void out(String s) {
+        Log.d("DEB", s);
     }
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        isBinded=true;
+        isBinded = true;
         out("Binded");
         return binderToReturn;
     }
+
     @Override
     public boolean onUnbind(Intent intent) {
         out("unbinded");
-        isBinded=false;
+        isBinded = false;
         return super.onUnbind(intent);
     }
+
     @Override
     public void onRebind(Intent intent) {
-        isBinded=true;
+        isBinded = true;
         super.onRebind(intent);
     }
 
@@ -69,10 +68,10 @@ public class LocationUploaderService extends Service {
     public void onCreate() {
         super.onCreate();
 
-        edit=getSharedPreferences("observer",MODE_PRIVATE).edit();
+        edit = getSharedPreferences("observer", MODE_PRIVATE).edit();
         out("service Oncreate");
         // Android O requires a Notification Channel.
-        NotificationManager mNotificationManager=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
             CharSequence name = getString(R.string.app_name);
@@ -86,31 +85,33 @@ public class LocationUploaderService extends Service {
 
 
     }
+
     @Override
     public void onDestroy() {
 
         out("service Dstroy");
-        edit.putBoolean("running",false);
+        edit.putBoolean("running", false);
         edit.commit();
         stopForeground(true);
         super.onDestroy();
     }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        if(intent.getBooleanExtra("stop",false)){
+        if (intent.getBooleanExtra("stop", false)) {
             out("got flag");
             forcestop();
             return START_NOT_STICKY;
         }
 
-        edit=getSharedPreferences("observer",MODE_PRIVATE).edit();
+        edit = getSharedPreferences("observer", MODE_PRIVATE).edit();
 
-        edit.putBoolean("running",true);
+        edit.putBoolean("running", true);
         edit.commit();
-        startForeground(1,getNotification());
+        startForeground(1, getNotification());
 
-        mUploader=new Uploader(intent);
+        mUploader = new Uploader(intent);
         mUploader.start();
 
         out("After run");
@@ -118,19 +119,18 @@ public class LocationUploaderService extends Service {
     }
 
 
-
-
-    public void forcestop(){
-        if(mUploader!=null && mUploader.isAlive() )mUploader.turnOff();
+    public void forcestop() {
+        if (mUploader != null && mUploader.isAlive()) mUploader.turnOff();
     }
-    private void stop(){
+
+    private void stop() {
         out("InStop()");
 
 
         edit.putBoolean("running", false);
         edit.commit();
 
-        if(!isBinded) {
+        if (!isBinded) {
 
             out("here");
             stopForeground(true);
@@ -138,15 +138,9 @@ public class LocationUploaderService extends Service {
         }
     }
 
-
-    public class LocalBinder extends Binder {
-         LocationUploaderService getSerVice(){return LocationUploaderService.this;}
-
-    }
-
     private Notification getNotification() {
-        Intent intent=new Intent(this,LocationUploaderService.class);
-        intent.putExtra("stop",true);
+        Intent intent = new Intent(this, LocationUploaderService.class);
+        intent.putExtra("stop", true);
         PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 0 /* Request code */, intent,
                 PendingIntent.FLAG_CANCEL_CURRENT);
 
@@ -156,8 +150,8 @@ public class LocationUploaderService extends Service {
                 .setOngoing(true)
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setSmallIcon(R.drawable.ic_directions_bus_black_24dp)
-                .setColor(ContextCompat.getColor(getApplicationContext(),R.color.A400red))
-                .addAction(0,"TAP TO STOP",pendingIntent)
+                .setColor(ContextCompat.getColor(getApplicationContext(), R.color.A400red))
+                .addAction(0, "TAP TO STOP", pendingIntent)
                 .setWhen(System.currentTimeMillis());
 
 
@@ -170,109 +164,114 @@ public class LocationUploaderService extends Service {
         return builder.build();
     }
 
+    public class LocalBinder extends Binder {
+        LocationUploaderService getSerVice() {
+            return LocationUploaderService.this;
+        }
 
-    private class Uploader extends Thread{
+    }
 
-        private  String  TAG="onlocationThread";
-        private volatile boolean stop=false;
-       private boolean taskEnded=false;
-       private List<String> pathString;
-       private String userUid,routeIdCurrentlySharing;
-       private DatabaseReference databaseReference,userLocationData,userPathReference;
-       private boolean pathOk;
-       private int determineCallCount;
-       private  String SERVER_KEY="hello";
-       private NotificationSender notificationSender;
-       private LocationCallback locationCallback;
-       private Location ridersPreviousLocation;
-       private FusedLocationProviderClient fusedLocationProviderClient;
-       private LocationRequest locationRequest;
-       private MapUtil mapUtil;
-       private GeoCoordinates previousPosition;
-       private String  For;
+    private class Uploader extends Thread {
 
-       Uploader(Intent data){
+        private String TAG = "onlocationThread";
+        private volatile boolean stop = false;
+        private boolean taskEnded = false;
+        private List<String> pathString;
+        private String userUid, routeIdCurrentlySharing;
+        private DatabaseReference databaseReference, userLocationData, userPathReference;
+        private boolean pathOk;
+        private int determineCallCount;
+        private String SERVER_KEY = "hello";
+        private NotificationSender notificationSender;
+        private LocationCallback locationCallback;
+        private Location ridersPreviousLocation;
+        private FusedLocationProviderClient fusedLocationProviderClient;
+        private LocationRequest locationRequest;
+        private MapUtil mapUtil;
+        private GeoCoordinates previousPosition;
+        private String For;
 
-           String path = data.getStringExtra("path");
-           String routeId = data.getStringExtra("routeId");
-           String title = data.getStringExtra("title");
-           userUid=data.getStringExtra("userUid");
-           SERVER_KEY=data.getStringExtra("SERVER_KEY");
-           For=data.getStringExtra("for");
+        Uploader(Intent data) {
 
-           databaseReference=FirebaseDatabase.getInstance().getReference();
-           userLocationData = FirebaseDatabase.getInstance().getReference().child("alive").child(userUid);
-           userPathReference = FirebaseDatabase.getInstance().getReference().child("destinations").child(userUid).child("path");
-           userLocationData.onDisconnect().setValue(null);
-           userPathReference.onDisconnect().setValue(null);
-           mapUtil=MapUtil.getInstance();
+            String path = data.getStringExtra("path");
+            String routeId = data.getStringExtra("routeId");
+            String title = data.getStringExtra("title");
+            userUid = data.getStringExtra("userUid");
+            SERVER_KEY = data.getStringExtra("SERVER_KEY");
+            For = data.getStringExtra("for");
 
-           pathString = new ArrayList<>();
-           int last = 0;
-           for (int i = 0; i < path.length(); i++) {
-               if (path.charAt(i) == ';') {
-                   pathString.add(path.substring(last, i));
-                   //Log.d("DEB", path.substring(last, i));
-                   last = i + 1;
-               }
-           }
+            databaseReference = FirebaseDatabase.getInstance().getReference();
+            userLocationData = FirebaseDatabase.getInstance().getReference().child("alive").child(userUid);
+            userPathReference = FirebaseDatabase.getInstance().getReference().child("destinations").child(userUid).child("path");
+            userLocationData.onDisconnect().setValue(null);
+            userPathReference.onDisconnect().setValue(null);
+            mapUtil = MapUtil.getInstance();
+
+            pathString = new ArrayList<>();
+            int last = 0;
+            for (int i = 0; i < path.length(); i++) {
+                if (path.charAt(i) == ';') {
+                    pathString.add(path.substring(last, i));
+                    //Log.d("DEB", path.substring(last, i));
+                    last = i + 1;
+                }
+            }
 
 
+            fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(LocationUploaderService.this.getApplicationContext());
+            locationRequest = new LocationRequest();
+            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            locationRequest.setInterval(4500);
+            locationRequest.setFastestInterval(3000);
 
-           fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(LocationUploaderService.this.getApplicationContext());
-           locationRequest = new LocationRequest();
-           locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-           locationRequest.setInterval(4500);
-           locationRequest.setFastestInterval(3000);
+            Log.d("DEB", "thread created " + pathString.toString());
+            userLocationData.child("title").setValue(title);
+            userLocationData.child("for").setValue(For);
+            databaseReference.child("busesOnRoad").child(routeId).onDisconnect().setValue(null);
+            databaseReference.child("busesOnRoad").child(routeId).child("key").setValue(userUid);
+            routeIdCurrentlySharing = routeId;
+            userPathReference.setValue("NA;");
+            pathOk = false;
+            determineCallCount = 0;
 
-           Log.d("DEB", "thread created " + pathString.toString());
-           userLocationData.child("title").setValue(title);
-           userLocationData.child("for").setValue(For);
-           databaseReference.child("busesOnRoad").child(routeId).onDisconnect().setValue(null);
-           databaseReference.child("busesOnRoad").child(routeId).child("key").setValue(userUid);
-           routeIdCurrentlySharing = routeId;
-           userPathReference.setValue("NA;");
-           pathOk = false;
-           determineCallCount = 0;
+        }
 
-       }
-       @Override
+        @Override
         public void run() {
             super.run();
 
 
-           notificationSender = new NotificationSender(LocationUploaderService.this.getApplicationContext(), userUid, SERVER_KEY,For);
+            notificationSender = new NotificationSender(LocationUploaderService.this.getApplicationContext(), userUid, SERVER_KEY, For);
 
-           locationCallback=new LocationCallback(){
+            locationCallback = new LocationCallback() {
 
-               @Override
-               public void onLocationResult(LocationResult location) {
-                   super.onLocationResult(location);
-                   float rotation = 0;
+                @Override
+                public void onLocationResult(LocationResult location) {
+                    super.onLocationResult(location);
+                    float rotation = 0;
 
-                   if (ridersPreviousLocation != null) {
-                       rotation = location.getLastLocation().bearingTo(ridersPreviousLocation);
-                       if(Math.abs(ridersPreviousLocation.getLatitude()-location.getLastLocation().getLatitude())<1e-5  &&
-                               Math.abs(ridersPreviousLocation.getLongitude()-location.getLastLocation().getLongitude())<1e-5
-                       )return;
-                   }
+                    if (ridersPreviousLocation != null) {
+                        rotation = location.getLastLocation().bearingTo(ridersPreviousLocation);
+                        if (Math.abs(ridersPreviousLocation.getLatitude() - location.getLastLocation().getLatitude()) < 1e-5 &&
+                                Math.abs(ridersPreviousLocation.getLongitude() - location.getLastLocation().getLongitude()) < 1e-5
+                        ) return;
+                    }
 
-                   Log.d("DEB", "loc: "+location.getLastLocation().getLatitude() +"  "+ location.getLastLocation().getLongitude());
-                   //userInfo.setLatLng(location.getLastLocation().getLatitude(),location.getLastLocation().getLongitude());
-                   userLocationData.child("lat").setValue(location.getLastLocation().getLatitude());
-                   userLocationData.child("lng").setValue(location.getLastLocation().getLongitude());
+                    Log.d("DEB", "loc: " + location.getLastLocation().getLatitude() + "  " + location.getLastLocation().getLongitude());
+                    //userInfo.setLatLng(location.getLastLocation().getLatitude(),location.getLastLocation().getLongitude());
+                    userLocationData.child("lat").setValue(location.getLastLocation().getLatitude());
+                    userLocationData.child("lng").setValue(location.getLastLocation().getLongitude());
 
-                   ridersPreviousLocation = location.getLastLocation();
-                   userLocationData.child("rotation").setValue(rotation);
-                   handlePath(new GeoCoordinates(location.getLastLocation().getLatitude(), location.getLastLocation().getLongitude()));
-               }
-           };
+                    ridersPreviousLocation = location.getLastLocation();
+                    userLocationData.child("rotation").setValue(rotation);
+                    handlePath(new GeoCoordinates(location.getLastLocation().getLatitude(), location.getLastLocation().getLongitude()));
+                }
+            };
 
-           fusedLocationProviderClient.requestLocationUpdates(locationRequest,locationCallback,getMainLooper());
+            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, getMainLooper());
 
 
-
-            while(!taskEnded && !stop) {
+            while (!taskEnded && !stop) {
             }
             LocationUploaderService.this.stop();
         }
@@ -334,12 +333,11 @@ public class LocationUploaderService extends Service {
             GeoCoordinates toCheck = null;
             try {
                 toCheck = MapUtil.GeoCoordinatesMap.get(pathString.get(0));
-            }
-            catch (IndexOutOfBoundsException e){
+            } catch (IndexOutOfBoundsException e) {
                 turnOff();
             }
             double distance = newLatLng.distanceTo(toCheck);
-            if ( distance <= 50) {
+            if (distance <= 50) {
 
                 String toNotify = pathString.get(0);
 
@@ -354,7 +352,7 @@ public class LocationUploaderService extends Service {
                 pathString.remove(0);
                 updatePath();
 
-                if(pathString.size() == 0)turnOff();
+                if (pathString.size() == 0) turnOff();
 
             }
 
@@ -373,14 +371,14 @@ public class LocationUploaderService extends Service {
         }
 
 
-        public  void turnOff(){
+        public void turnOff() {
             notificationSender.destroy();
             notificationSender = null;
             userLocationData.setValue(null);
             userPathReference.setValue(null);
             fusedLocationProviderClient.removeLocationUpdates(locationCallback);
             databaseReference.child("busesOnRoad").child(routeIdCurrentlySharing).setValue(null);
-            stop=true;
+            stop = true;
         }
 
     }

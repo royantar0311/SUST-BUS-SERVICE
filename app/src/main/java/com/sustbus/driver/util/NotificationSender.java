@@ -31,36 +31,39 @@ public class NotificationSender {
     private JSONObject notification = new JSONObject();
     private JSONObject data = new JSONObject();
 
-    public NotificationSender(Context ctx, String userId, String server,String For) {
+    public NotificationSender(Context ctx, String userId, String server, String For) {
         context = ctx;
         this.userId = userId;
         this.serverKey = server;
-        this.For=For;
+        this.For = For;
         requestQueue = Volley.newRequestQueue(context.getApplicationContext());
     }
-    public NotificationSender(Context context, String serverKey){
+
+    public NotificationSender(Context context, String serverKey) {
         this.context = context;
         this.serverKey = serverKey;
         requestQueue = Volley.newRequestQueue(context.getApplicationContext());
     }
-    public void notifyUser(String topic, boolean state){
+
+    public void notifyUser(String topic, boolean state) {
 
         try {
-            if(state){
-                data.put("title","Congratulations!");
-                data.put("body","you have been permitted to use SUST Bus");
-            }
-            else{
-                data.put("title","Alert!");
-                data.put("body","you have been unauthorized to use SUST Bus");
+            if (state) {
+                data.put("title", "Congratulations!");
+                data.put("body", "you have been permitted to use SUST Bus");
+            } else {
+                data.put("title", "Alert!");
+                data.put("body", "you have been unauthorized to use SUST Bus");
             }
             data.put("token", "permission");
-            notification.put("to","/topics/" + topic);
-            notification.put("data",data);
+            notification.put("to", "/topics/" + topic);
+            notification.put("data", data);
             Log.d(TAG, "notifyUser: " + notification);
-        }catch (Exception ignored){}
+        } catch (Exception ignored) {
+        }
         request(notification);
     }
+
     public void send(String passingThrough, String awayOrTowards) {
 
 
@@ -90,26 +93,24 @@ public class NotificationSender {
         //Log.d("DEBMES","Send "+token1);
         //Log.d("DEBMES","send "+token2)
         // ;
-        if(For.equals("sf")){
-            token1+=".sf";
-            token2+=".sf";
+        if (For.equals("sf")) {
+            token1 += ".sf";
+            token2 += ".sf";
+        } else if (For.equals("t")) {
+            token1 += ".tc";
+            token2 += ".tc";
+        } else if (For.equals("s")) {
+            token1 += ".st";
+            token2 += ".st";
         }
-        else if(For.equals("t")){
-            token1+=".tc";
-            token2+=".tc";
-        }
-        else if(For.equals("s")){
-            token1+=".st";
-            token2+=".st";
-        }
-        Log.d("DEB","TokenstoSend " +token1+" "+token2);
+        Log.d("DEB", "TokenstoSend " + token1 + " " + token2);
 
         sendTo(passingThrough, body, token1);
         sendTo(passingThrough, body, token2);
     }
 
     private void sendTo(String title, String body, String token) {
-            try {
+        try {
             data.put("markerKey", userId);
             data.put("title", "Bus Passed " + title);
             data.put("token", token);
@@ -122,18 +123,19 @@ public class NotificationSender {
             notification.put("data", data);
 
         } catch (Exception e) {
-          //  Log.d("DEBMES", e.getMessage());
+            //  Log.d("DEBMES", e.getMessage());
             e.printStackTrace();
         }
         request(notification);
 
     }
-    private void request(JSONObject notification){
+
+    private void request(JSONObject notification) {
         StringRequest req = new StringRequest(Request.Method.POST, FCM_API, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
 
-                Log.d(TAG,"notificationSendr"+ response);
+                Log.d(TAG, "notificationSendr" + response);
             }
         }, new Response.ErrorListener() {
             @Override
