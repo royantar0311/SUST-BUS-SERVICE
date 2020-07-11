@@ -178,16 +178,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
          * */
         userNameTv.setText(userInfo.getUserName());
 
-        if (userInfo.isAdmin()) {
-            driverOrStudent.setText("Admin");
-        }
-        else if(userInfo.isTeacher()) {
+        if(userInfo.isTeacher()) {
             driverOrStudent.setText("Teacher");
-        }
-        else if(userInfo.isStaff()) {
+        } else if(userInfo.isStaff()) {
             driverOrStudent.setText("Staff");
-        }
-        else if(userInfo.isStudent()) {
+        } else if(userInfo.isStudent()) {
             driverOrStudent.setText("Student");
         }else if(userInfo.isDriver()) {
             driverOrStudent.setText("Driver");
@@ -268,8 +263,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             ed.putString("uId",userUid);
             ed.commit();
             userInfo.setuId(userUid);
-            Thread dbListener;
-            dbListener = new Thread(new DbListener(new CallBack(){
+            DbListener dbListener = new DbListener(new CallBack(){
                 @Override
                 public void ok() {
                     userInfo = UserInfo.getInstance();
@@ -300,13 +294,12 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
                 @Override
                 public void notOk() {
-//                    Intent intent = new Intent(HomeActivity.this, ProfileActivity.class);
-//                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//                    startActivity(intent);
-//                    finish();
+                    Intent intent = new Intent(HomeActivity.this, ProfileActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                    finish();
                 }
-            }));
-            dbListener.start();
+            });
             initDatabase();
         }
     }

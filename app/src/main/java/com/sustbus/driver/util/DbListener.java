@@ -13,15 +13,15 @@ import com.sustbus.driver.ProfileActivity;
 
 import io.grpc.Context;
 
-public class DbListener implements Runnable {
+public class DbListener {
     private static final String TAG = "getFromDB";
     UserInfo userInfo =  UserInfo.getInstance();
     CallBack callBack;
     public DbListener(CallBack callBack){
         this.callBack = callBack;
+        run();
     }
-    @Override
-    public void run() {
+    private void run() {
         Log.d(TAG, "run: " + Thread.currentThread().getName());
         Log.d(TAG, "run: " + userInfo.getuId());
         FirebaseFirestore.getInstance().collection("users").document(userInfo.getuId())

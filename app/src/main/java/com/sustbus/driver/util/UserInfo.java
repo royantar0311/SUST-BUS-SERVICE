@@ -54,27 +54,22 @@ public class UserInfo {
         Log.d(TAG, "setInstance: " + i.toString());
     }
     public void updateToDbase(CallBack callBack)  {
-        Log.d(TAG, "updateToDbase: " + Thread.currentThread().getName());
-        Thread t1 = new Thread(() ->{
-            Log.d(TAG, "updateToDbase: " + Thread.currentThread().getName());
-            FirebaseFirestore.getInstance()
-                    .collection("users")
-                    .document(this.uId)
-                    .update(this.toMap())
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            callBack.ok();
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            callBack.notOk();
-                        }
-                    });
-        });
-        t1.start();
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(this.uId)
+                .update(this.toMap())
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        callBack.ok();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        callBack.notOk();
+                    }
+                });
     }
 
 

@@ -276,7 +276,6 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             public void ok() {
                 Log.d(TAG, "onSuccess: " + "profile updated");
                 if(progressDialog.isShowing())progressDialog.hide();
-
             }
 
             @Override
