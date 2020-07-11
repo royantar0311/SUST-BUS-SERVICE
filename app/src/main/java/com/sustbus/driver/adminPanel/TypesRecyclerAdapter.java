@@ -16,11 +16,11 @@ import com.sustbus.driver.util.UserInfo;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class StudentsRecyclerAdapter extends FirestoreRecyclerAdapter<UserInfo, StudentsRecyclerAdapter.StudentsViewHolder> {
+public class TypesRecyclerAdapter extends FirestoreRecyclerAdapter<UserInfo, TypesRecyclerAdapter.StudentsViewHolder> {
     private static final String TAG = "StudentsRecyclerAdapter";
     CheckChangedListener checkChangedListener;
 
-    public StudentsRecyclerAdapter(@NonNull FirestoreRecyclerOptions<UserInfo> options, CheckChangedListener checkChangedListener) {
+    public TypesRecyclerAdapter(@NonNull FirestoreRecyclerOptions<UserInfo> options, CheckChangedListener checkChangedListener) {
         super(options);
         this.checkChangedListener = checkChangedListener;
     }

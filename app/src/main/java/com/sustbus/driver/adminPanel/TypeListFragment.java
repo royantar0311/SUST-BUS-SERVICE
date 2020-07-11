@@ -18,7 +18,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -35,15 +34,18 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class StudentsListFragment extends Fragment implements CheckChangedListener {
+public class TypeListFragment extends Fragment implements CheckChangedListener {
     private static final String TAG = "StudentsListFragment";
 
     View view;
     RecyclerView recyclerView;
-    StudentsRecyclerAdapter recyclerAdapter;
+    TypesRecyclerAdapter recyclerAdapter;
     double lat,lng;
     boolean state;
-
+    String type;
+    public TypeListFragment(String type){
+        this.type = type;
+    }
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -62,13 +64,13 @@ public class StudentsListFragment extends Fragment implements CheckChangedListen
     private void initRecyclerView(FirebaseUser currentUser) {
         Query query = FirebaseFirestore.getInstance()
                 .collection("users")
-                .whereEqualTo("driver", false)
+                .whereEqualTo(type, true)
                 .whereEqualTo("profileCompleted", true);
         ;
         FirestoreRecyclerOptions<UserInfo> options = new FirestoreRecyclerOptions.Builder<UserInfo>()
                 .setQuery(query, UserInfo.class)
                 .build();
-        recyclerAdapter = new StudentsRecyclerAdapter(options, this);
+        recyclerAdapter = new TypesRecyclerAdapter(options, this);
         recyclerView.setAdapter(recyclerAdapter);
         recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
         recyclerAdapter.startListening();
@@ -123,7 +125,7 @@ public class StudentsListFragment extends Fragment implements CheckChangedListen
                 regiNoEt.setText(snapshot.getString("regiNo"));
                 permittedSwitch.setChecked(state);
                 profileCompletedSwitch.setChecked(snapshot.getBoolean("profileCompleted"));
-                driverTv.setText(snapshot.getBoolean("driver") ? "Driver" : "Student");
+                driverTv.setText(type);
                 lat = snapshot.getDouble("lat")==null?0.00:snapshot.getDouble("lat");
                 lng = snapshot.getDouble("lng")==null?0.00: snapshot.getDouble("lng");
                 try {

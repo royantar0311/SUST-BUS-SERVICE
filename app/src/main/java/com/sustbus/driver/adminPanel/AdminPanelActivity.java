@@ -1,7 +1,6 @@
 package com.sustbus.driver.adminPanel;
 
 import android.os.Bundle;
-import android.util.Log;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -16,8 +15,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
-
-import java.util.Locale;
 
 public class AdminPanelActivity extends AppCompatActivity {
     private static final String TAG = "AdminPanelActivity";
@@ -37,10 +34,12 @@ public class AdminPanelActivity extends AppCompatActivity {
 
         fragmentManager = getSupportFragmentManager();
         viewPagerAdapter = new ViewPagerAdapter(fragmentManager, FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
-        viewPagerAdapter.addFragment(new StudentsListFragment(), "Students List");
-        viewPagerAdapter.addFragment(new DriversListFragment(), "Drivers List");
+        viewPagerAdapter.addFragment(new TypeListFragment("student"), "Student list");
+        viewPagerAdapter.addFragment(new TypeListFragment("driver"), "Driver list");
+        viewPagerAdapter.addFragment(new TypeListFragment("staff"), "Staff list");
+        viewPagerAdapter.addFragment(new TypeListFragment("teacher"), "Teacher list");
         viewPagerAdapter.addFragment(new CustomQueryFragment(), "Custom Query");
-        viewPager.setOffscreenPageLimit(2);
+        viewPager.setOffscreenPageLimit(4);
         viewPager.setAdapter(viewPagerAdapter);
         tabLayout.setupWithViewPager(viewPager);
         FirebaseFirestore.getInstance().collection("key").document("key").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {

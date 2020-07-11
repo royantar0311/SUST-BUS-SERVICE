@@ -1,5 +1,6 @@
 package com.sustbus.driver.adminPanel;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
@@ -23,7 +24,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -36,28 +36,29 @@ import com.sustbus.driver.util.UserInfo;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class CustomQueryFragment extends Fragment implements CheckChangedListener {
     private static final String TAG = "CustomQueryFragment";
-    View view;
-    Spinner driverSp, permissionSp, ascDescSp;
-    RecyclerView recyclerView;
-    CustomQueryRecyclerAdapter recyclerAdapter;
-    Button searchBtn;
-    String ascDesc, from, to;
-    Query.Direction qd;
-    boolean permission, driver;
-    TextView fromTv, toTv;
-    double lat,lng;
-    boolean state;
+    private View view;
+    private Spinner driverSp, permissionSp, ascDescSp;
+    private RecyclerView recyclerView;
+    private TypesRecyclerAdapter recyclerAdapter;
+    private Button searchBtn;
+    private String from, to;
+    private Query.Direction qd;
+    private boolean permission;
+    private String type;
+    private TextView fromTv, toTv,errorText;
+    private double lat,lng;
+    private boolean state,typeOk,permissionOk,orderOk;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -77,6 +78,7 @@ public class CustomQueryFragment extends Fragment implements CheckChangedListene
         toTv = view.findViewById(R.id.cq_to_tv);
         searchBtn = view.findViewById(R.id.cq_search_btn);
         recyclerView = view.findViewById(R.id.cq_recycler_view);
+        errorText = view.findViewById(R.id.cq_error_text);
         initDriverSp();
         initPermissionSp();
         initAscDescSp();
@@ -84,6 +86,14 @@ public class CustomQueryFragment extends Fragment implements CheckChangedListene
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "onClick: searchPressed");
+                if(typeOk && permissionOk && orderOk){
+                   errorText.setText("");
+                }
+                else {
+                    errorText.setText("please select all fields");
+                    errorText.setTextColor(ContextCompat.getColor(getRootActivity(), R.color.A400red));
+                    return;
+                }
                 from = fromTv.getText().toString().trim();
                 to = toTv.getText().toString().trim();
                 while (from.length() < 10) from = from + '0';
@@ -100,13 +110,13 @@ public class CustomQueryFragment extends Fragment implements CheckChangedListene
                 .orderBy("regiNo", qd)
                 .whereGreaterThanOrEqualTo("regiNo", from)
                 .whereLessThanOrEqualTo("regiNo", to)
-                .whereEqualTo("driver", driver)
+                .whereEqualTo(type, true)
                 .whereEqualTo("permitted", permission)
                 .whereEqualTo("profileCompleted", true);
         FirestoreRecyclerOptions<UserInfo> options = new FirestoreRecyclerOptions.Builder<UserInfo>()
                 .setQuery(query, UserInfo.class)
                 .build();
-        recyclerAdapter = new CustomQueryRecyclerAdapter(options, this);
+        recyclerAdapter = new TypesRecyclerAdapter(options, this);
         recyclerView.setAdapter(recyclerAdapter);
         recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
         recyclerAdapter.startListening();
@@ -124,15 +134,13 @@ public class CustomQueryFragment extends Fragment implements CheckChangedListene
         ascDescSp.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (position == 0) {
-                    searchBtn.setEnabled(false);
-                } else if (position == 1) {
+               if (position == 1) {
                     searchBtn.setEnabled(true);
                     qd = Query.Direction.ASCENDING;
                 } else if (position == 2) {
-                    searchBtn.setEnabled(true);
                     qd = Query.Direction.DESCENDING;
                 }
+               orderOk = position > 0;
             }
 
             @Override
@@ -154,14 +162,12 @@ public class CustomQueryFragment extends Fragment implements CheckChangedListene
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(TAG, "onItemSelected: " + position);
-                if (position == 0) searchBtn.setEnabled(false);
-                else if (position == 1) {
+                if (position == 1) {
                     permission = true;
-                    searchBtn.setEnabled(true);
                 } else if (position == 2) {
                     permission = false;
-                    searchBtn.setEnabled(true);
                 }
+                permissionOk = position > 0;
             }
 
             @Override
@@ -176,6 +182,8 @@ public class CustomQueryFragment extends Fragment implements CheckChangedListene
         driverSpElements.add(0, "Select");
         driverSpElements.add(1, "Driver");
         driverSpElements.add(2, "Student");
+        driverSpElements.add(3, "Stuff");
+        driverSpElements.add(4, "Teacher");
         ArrayAdapter<String> adapter = new ArrayAdapter<>(Objects.requireNonNull(getContext()), android.R.layout.simple_spinner_item, driverSpElements);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         driverSp.setAdapter(adapter);
@@ -183,14 +191,18 @@ public class CustomQueryFragment extends Fragment implements CheckChangedListene
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(TAG, "onItemSelected: " + position);
-                if (position == 0) searchBtn.setEnabled(false);
-                else if (position == 1) {
-                    driver = true;
-                    searchBtn.setEnabled(true);
+                type = "";
+                if (position == 1) {
+                    type = "driver";
                 } else if (position == 2) {
-                    driver = false;
-                    searchBtn.setEnabled(true);
+                    type = "student";
+                } else if (position == 3 ){
+                    type ="staff";
                 }
+                else if (position == 4 ){
+                    type ="teacher";
+                }
+                typeOk = position>0;
             }
 
             @Override
@@ -310,5 +322,8 @@ public class CustomQueryFragment extends Fragment implements CheckChangedListene
     }
     private void notifyUsingActivity(String uId, boolean state){
         ((AdminPanelActivity)this.getActivity()).notifyUser(uId,state);
+    }
+    private Activity getRootActivity(){
+        return  ((AdminPanelActivity)this.getActivity());
     }
 }

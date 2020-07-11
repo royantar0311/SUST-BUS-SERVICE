@@ -189,6 +189,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         }
         else if(userInfo.isStudent()) {
             driverOrStudent.setText("Student");
+        }else if(userInfo.isDriver()) {
+            driverOrStudent.setText("Driver");
         }
 
 
