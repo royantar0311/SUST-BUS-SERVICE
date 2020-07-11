@@ -57,7 +57,7 @@ public class CustomQueryFragment extends Fragment implements CheckChangedListene
     boolean permission, driver;
     TextView fromTv, toTv;
     double lat,lng;
-
+    boolean state;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -243,10 +243,11 @@ public class CustomQueryFragment extends Fragment implements CheckChangedListene
         documentReference.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot snapshot) {
+                state = snapshot.getBoolean("permitted");
                 emailEt.setText(snapshot.getString("email"));
                 userNameEt.setText(snapshot.getString("userName"));
                 regiNoEt.setText(snapshot.getString("regiNo"));
-                permittedSwitch.setChecked(snapshot.getBoolean("permitted"));
+                permittedSwitch.setChecked(state);
                 profileCompletedSwitch.setChecked(snapshot.getBoolean("profileCompleted"));
                 driverTv.setText(snapshot.getBoolean("driver") ? "Driver" : "Student");
                 lat = snapshot.getDouble("lat")==null?0.00:snapshot.getDouble("lat");
@@ -276,6 +277,7 @@ public class CustomQueryFragment extends Fragment implements CheckChangedListene
                         documentReference.update("userName", userName);
                         documentReference.update("regiNo", regiNo);
                         documentReference.update("permitted", permittedSwitch.isChecked());
+                        if(state!=permittedSwitch.isChecked())notifyUsingActivity(uId,permittedSwitch.isChecked());
                         documentReference.update("profileCompleted", profileCompletedSwitch.isChecked());
                     }
                 })
@@ -305,5 +307,8 @@ public class CustomQueryFragment extends Fragment implements CheckChangedListene
             Toast.makeText(getActivity(),e.getMessage(),Toast.LENGTH_SHORT).show();
         }
 
+    }
+    private void notifyUsingActivity(String uId, boolean state){
+        ((AdminPanelActivity)this.getActivity()).notifyUser(uId,state);
     }
 }

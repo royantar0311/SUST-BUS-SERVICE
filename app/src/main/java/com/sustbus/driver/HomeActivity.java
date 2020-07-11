@@ -54,6 +54,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingService;
 import com.here.sdk.core.GeoCoordinates;
 import com.sustbus.driver.adminPanel.AdminPanelActivity;
 import com.sustbus.driver.adminPanel.RouteManager;
@@ -142,7 +143,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         routeUploaderCv.setOnClickListener(this);
         FirebaseAuth.getInstance().addAuthStateListener(this);
         adminPanelCv.setOnClickListener(this);
-
 
         userInfo = UserInfo.getInstance();
         mAuth = FirebaseAuth.getInstance();
@@ -275,6 +275,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         } else {
 
             userUid = mAuth.getCurrentUser().getUid();
+            FirebaseMessaging.getInstance().subscribeToTopic(userUid);
+            Log.d(TAG, "onAuthStateChanged: " + userUid);
+            SharedPreferences.Editor ed=getSharedPreferences("userInfo",MODE_PRIVATE).edit();
+            ed.putString("uId",userUid);
+            ed.commit();
             userInfo.setuId(userUid);
             Thread dbListener;
             dbListener = new Thread(new DbListener(new CallBack(){
@@ -371,6 +376,10 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             ed.clear();
             ed.commit();
 
+            ed = getSharedPreferences("userInfo",MODE_PRIVATE).edit();
+            FirebaseMessaging.getInstance().unsubscribeFromTopic(userUid);
+            ed.clear();
+            ed.commit();
 
             SharedPreferences pref = getSharedPreferences("NOTIFICATIONS", MODE_PRIVATE);
             Set<String> st = pref.getStringSet("tokenSet", new HashSet<>());

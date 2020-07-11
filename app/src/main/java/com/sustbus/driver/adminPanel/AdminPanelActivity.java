@@ -1,12 +1,17 @@
 package com.sustbus.driver.adminPanel;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.sustbus.driver.R;
+import com.sustbus.driver.util.NotificationSender;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
@@ -15,11 +20,13 @@ import androidx.viewpager.widget.ViewPager;
 import java.util.Locale;
 
 public class AdminPanelActivity extends AppCompatActivity {
+    private static final String TAG = "AdminPanelActivity";
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private ViewPagerAdapter viewPagerAdapter;
     private FragmentManager fragmentManager;
-
+    private  String SERVER_KEY;
+    private NotificationSender notificationSender;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,5 +43,19 @@ public class AdminPanelActivity extends AppCompatActivity {
         viewPager.setOffscreenPageLimit(2);
         viewPager.setAdapter(viewPagerAdapter);
         tabLayout.setupWithViewPager(viewPager);
+        FirebaseFirestore.getInstance().collection("key").document("key").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    SERVER_KEY = task.getResult().getString("SERVER");
+                    notificationSender = new NotificationSender(AdminPanelActivity.this.getApplicationContext(),
+                            SERVER_KEY);
+                }
+            }
+        });
+        
+    }
+    protected void notifyUser(String uId, boolean state){
+        notificationSender.notifyUser(uId,state);
     }
 }

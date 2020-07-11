@@ -28,18 +28,48 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
 public class MessagingService extends FirebaseMessagingService {
+    private static final String TAG = "MessagingService";
 
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
-       // Log.d("DEBMES",remoteMessage.getData().toString());
-        sendNotification(remoteMessage);
+        Log.d(TAG,remoteMessage.getData().toString());
+        if(remoteMessage.getNotification()!=null){
+            Log.d(TAG, "onMessageReceived: messagepaisi" );
+        }
+        else if(!remoteMessage.getData().get("token").contains(".")){
+            Log.d(TAG, "onMessageReceived: " + "congratulate");
+            congratulate(remoteMessage);
+        }
+        else sendNotification(remoteMessage);
+    }
+
+    private void congratulate(RemoteMessage remoteMessage) {
+        String title =remoteMessage.getData().get("title");
+        String body = remoteMessage.getData().get("body");
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this,"sust_permission_alert")
+                .setContentTitle(title)
+                .setContentText(body)
+                .setSmallIcon(R.drawable.ic_directions_bus_black_24dp)
+                .setColor(ContextCompat.getColor(this, R.color.A400red))
+                .setDefaults(Notification.DEFAULT_ALL)
+                .setPriority(3)
+                .setShowWhen(true);
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            NotificationChannel notificationChannel =
+                    new NotificationChannel("sust_permission_alert","name",
+                            NotificationManager.IMPORTANCE_DEFAULT);
+            notificationManager.createNotificationChannel(notificationChannel);
+        }
+        notificationManager.notify(1,builder.build());
     }
 
     @Override
     public void onNewToken(@NonNull String s) {
         super.onNewToken(s);
         FirebaseMessaging.getInstance().subscribeToTopic("test");
+        //FirebaseMessaging.getInstance().subscribeToTopic(Fire);
         //Log.d("DEBMES","New Token");
         SharedPreferences pref = getSharedPreferences("NOTIFICATIONS", MODE_PRIVATE);
         Set<String> st = pref.getStringSet("tokenSet", new HashSet<>());
@@ -51,7 +81,6 @@ public class MessagingService extends FirebaseMessagingService {
     private void sendNotification(RemoteMessage message) {
 
         String token = message.getData().get("token");
-
         SharedPreferences pref=getSharedPreferences("NOTIFICATIONS", MODE_PRIVATE);
         Boolean giveAlarm=pref.getBoolean(token, false);
 

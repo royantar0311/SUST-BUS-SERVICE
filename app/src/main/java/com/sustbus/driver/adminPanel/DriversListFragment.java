@@ -18,7 +18,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -42,6 +41,7 @@ public class DriversListFragment extends Fragment implements CheckChangedListene
     RecyclerView recyclerView;
     DriversRecyclerAdapter recyclerAdapter;
     double lat,lng;
+    Boolean state;
 
     @Nullable
     @Override
@@ -102,6 +102,7 @@ public class DriversListFragment extends Fragment implements CheckChangedListene
         EditText emailEt, userNameEt, regiNoEt;
         TextView driverTv;
         ImageView userEv;
+
         Switch permittedSwitch, profileCompletedSwitch;
         emailEt = view.findViewById(R.id.ad_email_et);
         userNameEt = view.findViewById(R.id.ad_username_et);
@@ -115,10 +116,11 @@ public class DriversListFragment extends Fragment implements CheckChangedListene
         documentReference.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot snapshot) {
+                state = snapshot.getBoolean("permitted");
                 emailEt.setText(snapshot.getString("email"));
                 userNameEt.setText(snapshot.getString("userName"));
                 regiNoEt.setText(snapshot.getString("regiNo"));
-                permittedSwitch.setChecked(snapshot.getBoolean("permitted"));
+                permittedSwitch.setChecked(state);
                 profileCompletedSwitch.setChecked(snapshot.getBoolean("profileCompleted"));
                 driverTv.setText(snapshot.getBoolean("driver") ? "Driver" : "Student");
                 lat = snapshot.getDouble("lat")==null?0.00:snapshot.getDouble("lat");
@@ -148,7 +150,9 @@ public class DriversListFragment extends Fragment implements CheckChangedListene
                         documentReference.update("userName", userName);
                         documentReference.update("regiNo", regiNo);
                         documentReference.update("permitted", permittedSwitch.isChecked());
+                        if(state!=permittedSwitch.isChecked())notifyUsingActivity(uId,permittedSwitch.isChecked());
                         documentReference.update("profileCompleted", profileCompletedSwitch.isChecked());
+
                     }
                 })
                 .setNegativeButton("cancel", null)
@@ -171,5 +175,8 @@ public class DriversListFragment extends Fragment implements CheckChangedListene
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
         mapIntent.setPackage("com.google.android.apps.maps");
         startActivity(mapIntent);
+    }
+    private void notifyUsingActivity(String uId, boolean state){
+        ((AdminPanelActivity)this.getActivity()).notifyUser(uId,state);
     }
 }

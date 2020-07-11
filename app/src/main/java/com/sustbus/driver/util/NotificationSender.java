@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class NotificationSender {
+    private static final String TAG = "NotificationSender";
     public String FCM_API = "https://fcm.googleapis.com/fcm/send";
     public String serverKey = "";
     public String contentType = "application/json";
@@ -27,6 +28,8 @@ public class NotificationSender {
     private String userId;
     private RequestQueue requestQueue;
     private String For;
+    private JSONObject notification = new JSONObject();
+    private JSONObject data = new JSONObject();
 
     public NotificationSender(Context ctx, String userId, String server,String For) {
         context = ctx;
@@ -35,7 +38,29 @@ public class NotificationSender {
         this.For=For;
         requestQueue = Volley.newRequestQueue(context.getApplicationContext());
     }
+    public NotificationSender(Context context, String serverKey){
+        this.context = context;
+        this.serverKey = serverKey;
+        requestQueue = Volley.newRequestQueue(context.getApplicationContext());
+    }
+    public void notifyUser(String topic, boolean state){
 
+        try {
+            if(state){
+                data.put("title","Congratulations!");
+                data.put("body","you have been permitted to use SUST Bus");
+            }
+            else{
+                data.put("title","Alert!");
+                data.put("body","you have been unauthorized to use SUST Bus");
+            }
+            data.put("token", "permission");
+            notification.put("to","/topics/" + topic);
+            notification.put("data",data);
+            Log.d(TAG, "notifyUser: " + notification);
+        }catch (Exception ignored){}
+        request(notification);
+    }
     public void send(String passingThrough, String awayOrTowards) {
 
 
@@ -84,11 +109,7 @@ public class NotificationSender {
     }
 
     private void sendTo(String title, String body, String token) {
-
-        JSONObject notification = new JSONObject();
-        JSONObject data = new JSONObject();
-
-        try {
+            try {
             data.put("markerKey", userId);
             data.put("title", "Bus Passed " + title);
             data.put("token", token);
@@ -104,22 +125,22 @@ public class NotificationSender {
           //  Log.d("DEBMES", e.getMessage());
             e.printStackTrace();
         }
+        request(notification);
 
-
+    }
+    private void request(JSONObject notification){
         StringRequest req = new StringRequest(Request.Method.POST, FCM_API, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
 
-                Log.d("DEB","notificationSendr"+ response);
+                Log.d(TAG,"notificationSendr"+ response);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-              //  Log.d("DEBMES", error.getMessage());
+                //  Log.d("DEBMES", error.getMessage());
             }
         }) {
-
-
             @Override
             public byte[] getBody() throws AuthFailureError {
                 try {
@@ -137,9 +158,8 @@ public class NotificationSender {
                 return params;
             }
         };
-
+        Log.d(TAG, "request: " + serverKey);
         requestQueue.add(req);
-
     }
 
     public void destroy() {
