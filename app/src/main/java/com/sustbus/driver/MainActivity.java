@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String TAG = "MainActivity";
     boolean emailOk = false;
     boolean passwordOk = false;
-    private CheckBox staffCb, studentCb,teacherCb;
+    private CheckBox staffCb, studentCb, teacherCb;
     private TextView signInTv;
     private Button signUpBtn;
     private TextFieldBoxes emailEt;
@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         signInTv = findViewById(R.id.sign_in_tv);
         staffCb = findViewById(R.id.main_staff_cb);
         studentCb = findViewById(R.id.main_student_cb);
-        teacherCb=findViewById(R.id.teacher_check_box);
+        teacherCb = findViewById(R.id.teacher_check_box);
         progressDialog = new ProgressDialog(this);
 
 
@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         staffCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked){
+                if (isChecked) {
                     studentCb.setChecked(false);
                     teacherCb.setChecked(false);
                 }
@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         teacherCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked){
+                if (isChecked) {
                     studentCb.setChecked(false);
                     staffCb.setChecked(false);
                 }
@@ -157,9 +157,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             db.collection("users")
                                     .document(userInfo.getuId())
                                     .set(userInfo.toMap());
-
                             Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            intent.putExtra("newId", true);
                             startActivity(intent);
                             finish();
                         } else {

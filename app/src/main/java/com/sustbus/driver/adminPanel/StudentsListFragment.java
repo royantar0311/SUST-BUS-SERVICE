@@ -18,7 +18,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -41,7 +40,7 @@ public class StudentsListFragment extends Fragment implements CheckChangedListen
     View view;
     RecyclerView recyclerView;
     StudentsRecyclerAdapter recyclerAdapter;
-    double lat,lng;
+    double lat, lng;
     boolean state;
 
     @Nullable
@@ -124,8 +123,8 @@ public class StudentsListFragment extends Fragment implements CheckChangedListen
                 permittedSwitch.setChecked(state);
                 profileCompletedSwitch.setChecked(snapshot.getBoolean("profileCompleted"));
                 driverTv.setText(snapshot.getBoolean("driver") ? "Driver" : "Student");
-                lat = snapshot.getDouble("lat")==null?0.00:snapshot.getDouble("lat");
-                lng = snapshot.getDouble("lng")==null?0.00: snapshot.getDouble("lng");
+                lat = snapshot.getDouble("lat") == null ? 0.00 : snapshot.getDouble("lat");
+                lng = snapshot.getDouble("lng") == null ? 0.00 : snapshot.getDouble("lng");
                 try {
                     String img = snapshot.getString("idUrl");
                     byte[] imageAsBytes = Base64.decode(img.getBytes(), Base64.DEFAULT);
@@ -151,14 +150,15 @@ public class StudentsListFragment extends Fragment implements CheckChangedListen
                         documentReference.update("userName", userName);
                         documentReference.update("regiNo", regiNo);
                         documentReference.update("permitted", permittedSwitch.isChecked());
-                        if(state!=permittedSwitch.isChecked())notifyUsingActivity(uId,permittedSwitch.isChecked());
+                        if (state != permittedSwitch.isChecked())
+                            notifyUsingActivity(uId, permittedSwitch.isChecked());
                         documentReference.update("profileCompleted", profileCompletedSwitch.isChecked());
                     }
                 })
                 .setNeutralButton("Get Location", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Log.d(TAG, "onClick: "+ lat +","+ lng);
+                        Log.d(TAG, "onClick: " + lat + "," + lng);
                         startGoogleMaps(lat, lng);
                     }
                 })
@@ -167,15 +167,16 @@ public class StudentsListFragment extends Fragment implements CheckChangedListen
     }
 
     void startGoogleMaps(double latitude, double longitude) {
-        if(latitude==0.00 && longitude==0.00){
-            Toast.makeText(getActivity(),"No Location Found",Toast.LENGTH_SHORT).show();
+        if (latitude == 0.00 && longitude == 0.00) {
+            Toast.makeText(getActivity(), "No Location Found", Toast.LENGTH_SHORT).show();
             return;
         }
         Uri gmmIntentUri = Uri.parse("geo:" + latitude + "," + longitude);
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
         mapIntent.setPackage("com.google.android.apps.maps");
     }
-    private void notifyUsingActivity(String uId, boolean state){
-        ((AdminPanelActivity)this.getActivity()).notifyUser(uId,state);
+
+    private void notifyUsingActivity(String uId, boolean state) {
+        ((AdminPanelActivity) this.getActivity()).notifyUser(uId, state);
     }
 }

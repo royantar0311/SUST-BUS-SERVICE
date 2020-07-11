@@ -136,30 +136,30 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_margin="10dp"
             android:layout_gravity="center"
-            >
-           <CheckBox
-               android:layout_width="wrap_content"
-               android:layout_height="wrap_content"
-               android:text="Students' bus"
-               android:id="@+id/alarm_student"
-               />
-           <CheckBox
-               android:layout_width="wrap_content"
-               android:layout_height="wrap_content"
-               android:text="Staffs' Bus"
-               android:id="@+id/alarm_staff"
-               />
-           <CheckBox
-               android:layout_width="wrap_content"
-               android:layout_height="wrap_content"
-               android:text="Teachers' Bus"
-               android:id="@+id/alarm_teacher"
-               />
+            android:layout_margin="10dp"
+            android:orientation="horizontal">
+
+            <CheckBox
+                android:id="@+id/alarm_student"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Students' bus" />
+
+            <CheckBox
+                android:id="@+id/alarm_staff"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Staffs' Bus" />
+
+            <CheckBox
+                android:id="@+id/alarm_teacher"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Teachers' Bus" />
 
         </LinearLayout>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

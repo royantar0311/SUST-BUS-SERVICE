@@ -13,6 +13,7 @@ import android.os.Build;
 import android.provider.AlarmClock;
 import android.util.Log;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -33,21 +34,19 @@ public class MessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
-        Log.d(TAG,remoteMessage.getData().toString());
-        if(remoteMessage.getNotification()!=null){
-            Log.d(TAG, "onMessageReceived: messagepaisi" );
-        }
-        else if(!remoteMessage.getData().get("token").contains(".")){
+        Log.d(TAG, remoteMessage.getData().toString());
+        if (remoteMessage.getNotification() != null) {
+            Log.d(TAG, "onMessageReceived: messagepaisi");
+        } else if (!remoteMessage.getData().get("token").contains(".")) {
             Log.d(TAG, "onMessageReceived: " + "congratulate");
             congratulate(remoteMessage);
-        }
-        else sendNotification(remoteMessage);
+        } else sendNotification(remoteMessage);
     }
 
     private void congratulate(RemoteMessage remoteMessage) {
-        String title =remoteMessage.getData().get("title");
+        String title = remoteMessage.getData().get("title");
         String body = remoteMessage.getData().get("body");
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this,"sust_permission_alert")
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "sust_permission_alert")
                 .setContentTitle(title)
                 .setContentText(body)
                 .setSmallIcon(R.drawable.ic_directions_bus_black_24dp)
@@ -56,13 +55,13 @@ public class MessagingService extends FirebaseMessagingService {
                 .setPriority(3)
                 .setShowWhen(true);
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel notificationChannel =
-                    new NotificationChannel("sust_permission_alert","name",
+                    new NotificationChannel("sust_permission_alert", "name",
                             NotificationManager.IMPORTANCE_DEFAULT);
             notificationManager.createNotificationChannel(notificationChannel);
         }
-        notificationManager.notify(1,builder.build());
+        notificationManager.notify(1, builder.build());
     }
 
     @Override
@@ -71,6 +70,8 @@ public class MessagingService extends FirebaseMessagingService {
         FirebaseMessaging.getInstance().subscribeToTopic("test");
         //FirebaseMessaging.getInstance().subscribeToTopic(Fire);
         //Log.d("DEBMES","New Token");
+        if (FirebaseAuth.getInstance().getCurrentUser() != null)
+            FirebaseMessaging.getInstance().subscribeToTopic(FirebaseAuth.getInstance().getCurrentUser().getUid());
         SharedPreferences pref = getSharedPreferences("NOTIFICATIONS", MODE_PRIVATE);
         Set<String> st = pref.getStringSet("tokenSet", new HashSet<>());
         for (String tmp : st) {
@@ -81,12 +82,12 @@ public class MessagingService extends FirebaseMessagingService {
     private void sendNotification(RemoteMessage message) {
 
         String token = message.getData().get("token");
-        SharedPreferences pref=getSharedPreferences("NOTIFICATIONS", MODE_PRIVATE);
-        Boolean giveAlarm=pref.getBoolean(token, false);
+        SharedPreferences pref = getSharedPreferences("NOTIFICATIONS", MODE_PRIVATE);
+        Boolean giveAlarm = pref.getBoolean(token, false);
 
-          long currentTime=DateTimeUtils.currentTimeMillis();
-          long lastAlarmTime=pref.getLong("lastAlarmTime",currentTime-10*60000);
-        if (giveAlarm && currentTime-lastAlarmTime>=5*60000) {
+        long currentTime = DateTimeUtils.currentTimeMillis();
+        long lastAlarmTime = pref.getLong("lastAlarmTime", currentTime - 10 * 60000);
+        if (giveAlarm && currentTime - lastAlarmTime >= 5 * 60000) {
 
             Intent alarm = new Intent(AlarmClock.ACTION_SET_ALARM);
             alarm.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -104,10 +105,10 @@ public class MessagingService extends FirebaseMessagingService {
             alarm.putExtra(AlarmClock.EXTRA_SKIP_UI, true);
             alarm.putExtra(AlarmClock.EXTRA_MESSAGE, (String) message.getData().get("title") + ", Hurry up!");
             startActivity(alarm);
-            SharedPreferences.Editor editor=pref.edit();
+            SharedPreferences.Editor editor = pref.edit();
 
             editor.remove("lastAlarmTime");
-            editor.putLong("lastAlarmTime",DateTimeUtils.currentTimeMillis());
+            editor.putLong("lastAlarmTime", DateTimeUtils.currentTimeMillis());
             editor.commit();
 
         }

@@ -1,7 +1,6 @@
 package com.sustbus.driver.adminPanel;
 
 import android.os.Bundle;
-import android.util.Log;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -17,16 +16,15 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-import java.util.Locale;
-
 public class AdminPanelActivity extends AppCompatActivity {
     private static final String TAG = "AdminPanelActivity";
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private ViewPagerAdapter viewPagerAdapter;
     private FragmentManager fragmentManager;
-    private  String SERVER_KEY;
+    private String SERVER_KEY;
     private NotificationSender notificationSender;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,9 +51,10 @@ public class AdminPanelActivity extends AppCompatActivity {
                 }
             }
         });
-        
+
     }
-    protected void notifyUser(String uId, boolean state){
-        notificationSender.notifyUser(uId,state);
+
+    protected void notifyUser(String uId, boolean state) {
+        notificationSender.notifyUser(uId, state);
     }
 }

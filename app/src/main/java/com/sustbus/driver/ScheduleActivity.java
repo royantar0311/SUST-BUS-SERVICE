@@ -69,11 +69,11 @@ public class ScheduleActivity extends AppCompatActivity {
     private boolean forRideShare;
     private ProgressDialog currentProgressDialogue;
     private AlertDialog alertDialog;
-    private UserInfo user=UserInfo.getInstance();
-    private boolean showStudent,showStaff,showTeacher;
-    private Switch studentSw,teacherSw,staffSw;
+    private UserInfo user = UserInfo.getInstance();
+    private boolean showStudent, showStaff, showTeacher;
+    private Switch studentSw, teacherSw, staffSw;
     private SharedPreferences settings;
-    private boolean staffChecked,studentChecked,teacherChecked;
+    private boolean staffChecked, studentChecked, teacherChecked;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,7 +83,7 @@ public class ScheduleActivity extends AppCompatActivity {
         appBarTextView = findViewById(R.id.appbar_tv);
         refreshImagebutton = findViewById(R.id.appbar_ib);
         forRideShare = getIntent().getBooleanExtra("forRideShare", false);
-        settings=getSharedPreferences("settings",MODE_PRIVATE);
+        settings = getSharedPreferences("settings", MODE_PRIVATE);
 
         bottomNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -93,17 +93,16 @@ public class ScheduleActivity extends AppCompatActivity {
             }
         });
 
-        showStudent=settings.getBoolean("schedule_showStudent",true);
-        showStaff=settings.getBoolean("schedule_showStaff",true);
-        showTeacher=settings.getBoolean("schedule_showTeacher",true);
+        showStudent = settings.getBoolean("schedule_showStudent", true);
+        showStaff = settings.getBoolean("schedule_showStaff", true);
+        showTeacher = settings.getBoolean("schedule_showTeacher", true);
 
 
-        if(user.isStudent() && !user.isAdmin()){
+        if (user.isStudent() && !user.isAdmin()) {
             findViewById(R.id.schedule_dropdown_iv).setVisibility(View.INVISIBLE);
-            showStaff=false;
-            showTeacher=false;
-        }
-        else{
+            showStaff = false;
+            showTeacher = false;
+        } else {
 
             findViewById(R.id.schedule_dropdown_iv).setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -113,8 +112,8 @@ public class ScheduleActivity extends AppCompatActivity {
             });
         }
 
-        if(user.isStaff() && !user.isAdmin()){
-            showTeacher=false;
+        if (user.isStaff() && !user.isAdmin()) {
+            showTeacher = false;
         }
 
 
@@ -125,9 +124,9 @@ public class ScheduleActivity extends AppCompatActivity {
                 @Override
                 public void ok() {
                     if (currentProgressDialogue != null) currentProgressDialogue.dismiss();
-                    if (forRideShare) init(R.id.menu_item_on_road,true);
-                    else init(R.id.menu_item_next,true);
-                    Toast.makeText(getApplicationContext(),"Updated",Toast.LENGTH_LONG).show();
+                    if (forRideShare) init(R.id.menu_item_on_road, true);
+                    else init(R.id.menu_item_next, true);
+                    Toast.makeText(getApplicationContext(), "Updated", Toast.LENGTH_LONG).show();
                 }
 
                 @Override
@@ -139,13 +138,13 @@ public class ScheduleActivity extends AppCompatActivity {
                         Snackbar.make(findViewById(R.id.frame_container), "Schedules needs update, Check Internet and try Again", Snackbar.LENGTH_INDEFINITE).show();
                     } else {
                         Snackbar.make(findViewById(R.id.frame_container), "Schedules were not updated", Snackbar.LENGTH_LONG).show();
-                        init(R.id.menu_item_next,true);
+                        init(R.id.menu_item_next, true);
                     }
                 }
             }, false);
         } else {
-            if (forRideShare) init(R.id.menu_item_on_road,true);
-            else init(R.id.menu_item_next,true);
+            if (forRideShare) init(R.id.menu_item_on_road, true);
+            else init(R.id.menu_item_next, true);
         }
         refreshImagebutton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -155,18 +154,18 @@ public class ScheduleActivity extends AppCompatActivity {
         });
     }
 
-    public void init(int id,boolean needRefetch) {
+    public void init(int id, boolean needRefetch) {
 
         if (currentFragment != null) {
             getSupportFragmentManager().beginTransaction().remove(currentFragment).commit();
         }
         if (currentProgressDialogue != null) currentProgressDialogue.dismiss();
-        if(needRefetch)routeInformations = routeDatabaseManager.getAll();
+        if (needRefetch) routeInformations = routeDatabaseManager.getAll();
         if (routeInformations.isEmpty()) {
             Snackbar.make(findViewById(R.id.frame_container), "Please Check Your Internet Connection", Snackbar.LENGTH_LONG).show();
             return;
         }
-        if(needRefetch)Collections.sort(routeInformations, new Comparator<RouteInformation>() {
+        if (needRefetch) Collections.sort(routeInformations, new Comparator<RouteInformation>() {
             @Override
             public int compare(RouteInformation o1, RouteInformation o2) {
                 return o1.comparableStartTime.compareTo(o2.comparableStartTime);
@@ -178,7 +177,7 @@ public class ScheduleActivity extends AppCompatActivity {
         next = new ArrayList<>();
         finished = new ArrayList<>();
 
-        for(RouteInformation tmp:routeInformations){
+        for (RouteInformation tmp : routeInformations) {
             if (tmp.getFor().equals("s") && showStudent) {
                 next.add(tmp);
             }
@@ -294,23 +293,23 @@ public class ScheduleActivity extends AppCompatActivity {
         if (finished != null) finished.clear();
         if (onRoad != null) onRoad.clear();
         if (next != null) next.clear();
-        if(onRoadMap!=null)onRoadMap.clear();
+        if (onRoadMap != null) onRoadMap.clear();
 
         if (countDownTimerForRefreshingLists != null) countDownTimerForRefreshingLists.cancel();
         FirebaseDatabase.getInstance().getReference().child("busesOnRoad").removeEventListener(childEventListener);
         routeDatabaseManager.checkForUpdate(new CallBack() {
             @Override
             public void ok() {
-                init(bottomNav.getSelectedItemId(),true);
+                init(bottomNav.getSelectedItemId(), true);
                 refreshImagebutton.animate().cancel();
                 refreshImagebutton.clearAnimation();
-                Toast.makeText(getApplicationContext(),"Updated",Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Updated", Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void notOk() {
                 Snackbar.make(findViewById(R.id.frame_container), "Check Connection and Try Again", 3000).show();
-                init(bottomNav.getSelectedItemId(),false);
+                init(bottomNav.getSelectedItemId(), false);
                 refreshImagebutton.animate().cancel();
                 refreshImagebutton.clearAnimation();
             }
@@ -349,17 +348,16 @@ public class ScheduleActivity extends AppCompatActivity {
                 i--;
             }
         }
-        int i=0;
+        int i = 0;
         for (RouteInformation tmp : onRoad) {
-            String id=tmp.getMarkerId();
-            String currentId=onRoadMap.get(tmp.getRouteId());
-            if(id==null){
-                if(currentId!=null){
+            String id = tmp.getMarkerId();
+            String currentId = onRoadMap.get(tmp.getRouteId());
+            if (id == null) {
+                if (currentId != null) {
                     tmp.setMarkerId(currentId);
                     onadapter.notifyItemChanged(i);
                 }
-            }
-            else if (!id.equals(currentId)) {
+            } else if (!id.equals(currentId)) {
                 tmp.setMarkerId(currentId);
                 onadapter.notifyItemChanged(i);
             }
@@ -395,6 +393,7 @@ public class ScheduleActivity extends AppCompatActivity {
                         Snackbar.make(findViewById(R.id.frame_container), "This Schedule is Already Running", 2000).show();
                     }
                 }
+
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
                     currentProgressDialogue.dismiss();
@@ -431,38 +430,39 @@ public class ScheduleActivity extends AppCompatActivity {
         }
 
     }
-    private void openReportAd(String title){
+
+    private void openReportAd(String title) {
         LayoutInflater inflater = getLayoutInflater();
         View view = inflater.inflate(R.layout.open_report_alertdialog, null);
         CheckBox busPosiErrorCb = view.findViewById(R.id.report_bus_posi_error_cb);
-        new  AlertDialog.Builder(this)
+        new AlertDialog.Builder(this)
                 .setTitle("Report")
                 .setMessage("Select an issue")
                 .setView(view)
                 .setPositiveButton("Submit", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if(busPosiErrorCb.isChecked()) {
+                        if (busPosiErrorCb.isChecked()) {
                             FirebaseDatabase.getInstance()
                                     .getReference()
                                     .child("reports")
                                     .child(title)
                                     .setValue("location error");
-                            Toast.makeText(ScheduleActivity.this, "Youre Report will be reviewed",Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ScheduleActivity.this, "Youre Report will be reviewed", Toast.LENGTH_SHORT).show();
                         }
                     }
                 })
-                .setNegativeButton("Cancel",null)
+                .setNegativeButton("Cancel", null)
                 .show();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        SharedPreferences.Editor settingsEditor=settings.edit();
-        settingsEditor.putBoolean("schedule_showStudent",showStudent);
-        settingsEditor.putBoolean("schedule_showTeacher",showTeacher);
-        settingsEditor.putBoolean("schedule_showStaff",showStaff);
+        SharedPreferences.Editor settingsEditor = settings.edit();
+        settingsEditor.putBoolean("schedule_showStudent", showStudent);
+        settingsEditor.putBoolean("schedule_showTeacher", showTeacher);
+        settingsEditor.putBoolean("schedule_showStaff", showStaff);
         settingsEditor.commit();
         if (currentProgressDialogue != null) {
             currentProgressDialogue.dismiss();
@@ -526,77 +526,78 @@ public class ScheduleActivity extends AppCompatActivity {
         currentProgressDialogue.show();
 
     }
-    private void selectorPopUp(){
 
-       View v=getLayoutInflater().inflate(R.layout.category_selector_popup,null);
-       staffSw=v.findViewById(R.id.staff_switch);
-       teacherSw=v.findViewById(R.id.teacher_switch);
-       studentSw=v.findViewById(R.id.student_switch);
+    private void selectorPopUp() {
 
-       staffChecked=showStaff;
-       studentChecked=showStudent;
-       teacherChecked=showTeacher;
+        View v = getLayoutInflater().inflate(R.layout.category_selector_popup, null);
+        staffSw = v.findViewById(R.id.staff_switch);
+        teacherSw = v.findViewById(R.id.teacher_switch);
+        studentSw = v.findViewById(R.id.student_switch);
 
-       staffSw.setChecked(staffChecked);
-       studentSw.setChecked(studentChecked);
-       teacherSw.setChecked(teacherChecked);
+        staffChecked = showStaff;
+        studentChecked = showStudent;
+        teacherChecked = showTeacher;
 
-       staffSw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-           @Override
-           public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-               staffChecked=isChecked;
-           }
-       });
-       studentSw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-           @Override
-           public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-               studentChecked=isChecked;
-           }
-       });
-       if(user.isStaff() && !user.isAdmin()){
-           teacherSw.setVisibility(View.GONE);
-           v.findViewById(R.id.teacher_sw_tv).setVisibility(View.GONE);
-       }
-       else{
-           teacherSw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-               @Override
-               public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                   teacherChecked=isChecked;
-               }
-           });
-       }
+        staffSw.setChecked(staffChecked);
+        studentSw.setChecked(studentChecked);
+        teacherSw.setChecked(teacherChecked);
 
-       AlertDialog alertDialog=new AlertDialog.Builder(this)
-               .setView(v)
-               .create();
-       alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-       alertDialog.show();
+        staffSw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                staffChecked = isChecked;
+            }
+        });
+        studentSw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                studentChecked = isChecked;
+            }
+        });
+        if (user.isStaff() && !user.isAdmin()) {
+            teacherSw.setVisibility(View.GONE);
+            v.findViewById(R.id.teacher_sw_tv).setVisibility(View.GONE);
+        } else {
+            teacherSw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    teacherChecked = isChecked;
+                }
+            });
+        }
 
-       alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-           @Override
-           public void onDismiss(DialogInterface dialog) {
+        AlertDialog alertDialog = new AlertDialog.Builder(this)
+                .setView(v)
+                .create();
+        alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        alertDialog.show();
 
-               if(staffChecked!=showStaff || teacherChecked!=showTeacher || studentChecked!=showStudent){
-                   showStaff=staffChecked;
-                   showTeacher=teacherChecked;
-                   showStudent=studentChecked;
-                   handleShow();
-               }
-           }
-       });
+        alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+
+                if (staffChecked != showStaff || teacherChecked != showTeacher || studentChecked != showStudent) {
+                    showStaff = staffChecked;
+                    showTeacher = teacherChecked;
+                    showStudent = studentChecked;
+                    handleShow();
+                }
+            }
+        });
 
     }
-    private void handleShow(){
+
+    private void handleShow() {
         refreshImagebutton.setClickable(false);
         initok = false;
         currentMenuItemid = 0;
         if (finished != null) finished.clear();
         if (onRoad != null) onRoad.clear();
         if (next != null) next.clear();
-        if(onRoadMap!=null)onRoadMap.clear();
+        if (onRoadMap != null) onRoadMap.clear();
 
         if (countDownTimerForRefreshingLists != null) countDownTimerForRefreshingLists.cancel();
-        init(bottomNav.getSelectedItemId(),false);
+        init(bottomNav.getSelectedItemId(), false);
 
     }
 

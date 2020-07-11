@@ -2,20 +2,15 @@ package com.sustbus.driver.util;
 
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import androidx.annotation.NonNull;
 
 public class UserInfo {
 
@@ -25,25 +20,27 @@ public class UserInfo {
     private static final String TAG = "UserInfo";
     public static Builder builder = new Builder();
     private static UserInfo instance;
-    private String email="hello";
+    private String email = "hello";
     private boolean permitted = false;
-    private String userName="hello";
+    private String userName = "hello";
     private boolean driver = false;
     private boolean student = false;
     private boolean teacher = false;
     private boolean staff = false;
-    private boolean admin=false;
-    private boolean profileCompleted =false;
-    private Double lat=1.1;
-    private Double lang=1.1;
-    private String uId="hello";
-    private String regiNo="hello";
-    private String url="hello";
-    private String idUrl="hello";
+    private boolean admin = false;
+    private boolean profileCompleted = false;
+    private Double lat = 1.1;
+    private Double lang = 1.1;
+    private String uId = "hello";
+    private String regiNo = "hello";
+    private String url = "hello";
+    private String idUrl = "hello";
+
     public UserInfo() {
     }
+
     public static UserInfo getInstance() {
-        if(instance == null){
+        if (instance == null) {
             instance = new UserInfo();
         }
         return instance;
@@ -53,30 +50,6 @@ public class UserInfo {
         instance = i;
         Log.d(TAG, "setInstance: " + i.toString());
     }
-    public void updateToDbase(CallBack callBack)  {
-        Log.d(TAG, "updateToDbase: " + Thread.currentThread().getName());
-        Thread t1 = new Thread(() ->{
-            Log.d(TAG, "updateToDbase: " + Thread.currentThread().getName());
-            FirebaseFirestore.getInstance()
-                    .collection("users")
-                    .document(this.uId)
-                    .update(this.toMap())
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            callBack.ok();
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            callBack.notOk();
-                        }
-                    });
-        });
-        t1.start();
-    }
-
 
     /**
      * Private method needed for the builder
@@ -101,6 +74,30 @@ public class UserInfo {
 
     public static Builder getBuilder() {
         return builder;
+    }
+
+    public void updateToDbase(CallBack callBack) {
+        Log.d(TAG, "updateToDbase: " + Thread.currentThread().getName());
+        Thread t1 = new Thread(() -> {
+            Log.d(TAG, "updateToDbase: " + Thread.currentThread().getName());
+            FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(this.uId)
+                    .update(this.toMap())
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            callBack.ok();
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            callBack.notOk();
+                        }
+                    });
+        });
+        t1.start();
     }
 
     /**
@@ -147,10 +144,10 @@ public class UserInfo {
                 + "\nemail " + this.getEmail()
                 + "\nregiNO " + this.regiNo
                 + "\nuserName " + this.userName
-                + "\nstaff "+this.staff
-                + "\nteacher "+this.teacher
-                + "\nstudent "+this.student
-                + "\nadmin "+this.admin);
+                + "\nstaff " + this.staff
+                + "\nteacher " + this.teacher
+                + "\nstudent " + this.student
+                + "\nadmin " + this.admin);
     }
 
     public String getUrl() {
@@ -233,31 +230,33 @@ public class UserInfo {
     public LatLng getLatLang() {
         return new LatLng(lat, lang);
     }
+
     public boolean isStudent() {
         return student;
+    }
+
+    public void setStudent(boolean student) {
+        this.student = student;
     }
 
     public boolean isTeacher() {
         return teacher;
     }
 
-    public boolean isStaff() {
-        return staff;
-    }
-
-    public boolean isAdmin() {
-        return admin;
-    }
-    public void setStudent(boolean student) {
-        this.student = student;
-    }
-
     public void setTeacher(boolean teacher) {
         this.teacher = teacher;
     }
 
+    public boolean isStaff() {
+        return staff;
+    }
+
     public void setStaff(boolean staff) {
         this.staff = staff;
+    }
+
+    public boolean isAdmin() {
+        return admin;
     }
 
     public void setAdmin(boolean admin) {

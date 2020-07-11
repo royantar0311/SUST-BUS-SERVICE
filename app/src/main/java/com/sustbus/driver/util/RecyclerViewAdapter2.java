@@ -59,7 +59,7 @@ public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapt
         if (rule.equals("away")) rule = "While going away from Campus";
         else rule = "While Coming towards Campus";
 
-        time = s.substring(i,i+5);
+        time = s.substring(i, i + 5);
 
 
         if (time.equals("00_00")) time = "Notify whenever bus passes";
@@ -68,22 +68,20 @@ public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapt
         else if (time.equals("12_15")) time = "Only between 12pm - 3pm";
         else if (time.equals("15_18")) time = "Only between 3pm - 6pm";
         else if (time.equals("18_22")) time = "Only between 6pm - 10pm";
-        String For=s.substring(i+5+1);
+        String For = s.substring(i + 5 + 1);
 
         viewHolder.timeName.setText(time);
         viewHolder.placeName.setText(place);
         viewHolder.ruleName.setText(rule);
-        if(For.equals("st")){
+        if (For.equals("st")) {
             viewHolder.tcSf.setVisibility(View.GONE);
-        }
-        else if(For.equals("tc")){
+        } else if (For.equals("tc")) {
             viewHolder.tcSf.setText("TEACHER");
-            viewHolder.tcSf.setBackgroundColor(ContextCompat.getColor(context,R.color.teacher));
+            viewHolder.tcSf.setBackgroundColor(ContextCompat.getColor(context, R.color.teacher));
 
-        }
-        else if(For.equals("sf")){
+        } else if (For.equals("sf")) {
             viewHolder.tcSf.setText(" STAFF ");
-            viewHolder.tcSf.setBackgroundColor(ContextCompat.getColor(context,R.color.staff));
+            viewHolder.tcSf.setBackgroundColor(ContextCompat.getColor(context, R.color.staff));
         }
 
         boolean isAlarm = context.getSharedPreferences("NOTIFICATIONS", Context.MODE_PRIVATE).getBoolean(tokenList.get(position), false);
@@ -100,7 +98,7 @@ public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapt
 
     public class ViewHolder2 extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        public TextView placeName, ruleName, timeName,tcSf;
+        public TextView placeName, ruleName, timeName, tcSf;
         public ImageButton deleteButton;
         public ImageView alarm;
 
@@ -113,7 +111,7 @@ public class RecyclerViewAdapter2 extends RecyclerView.Adapter<RecyclerViewAdapt
             alarm = itemView.findViewById(R.id.imageView_for_alarm);
             alarm.setOnClickListener(this);
             deleteButton.setOnClickListener(this);
-            tcSf=itemView.findViewById(R.id.row_notification_teacher_staff_tv);
+            tcSf = itemView.findViewById(R.id.row_notification_teacher_staff_tv);
         }
 
         @Override

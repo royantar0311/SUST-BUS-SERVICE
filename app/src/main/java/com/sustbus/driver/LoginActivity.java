@@ -152,12 +152,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                     .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                                 @Override
                                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                    progressDialog.hide();
+                                    progressDialog.dismiss();
                                     Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                     if (task.isSuccessful() && task.getResult() != null && task.getResult().exists()) {
                                         UserInfo.setInstance(Objects.requireNonNull(task.getResult().toObject(UserInfo.class)));
                                     }
+                                    Log.d(TAG, "onComplete: susbcription");
                                     startActivity(intent);
                                     finish();
 

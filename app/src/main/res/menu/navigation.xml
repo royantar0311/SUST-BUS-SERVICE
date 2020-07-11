@@ -10,7 +10,6 @@
         android:icon="@drawable/ic_subway_black_24dp"
         android:title="Next" />
     <item
-        android:id="@+id/menu_item_finished"
         android:icon="@drawable/ic_beenhere_black_24dp"
         android:title="Finished" />
 </menu>

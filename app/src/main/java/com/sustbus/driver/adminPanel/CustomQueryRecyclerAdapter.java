@@ -1,7 +1,5 @@
 package com.sustbus.driver.adminPanel;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,8 +15,6 @@ import com.sustbus.driver.util.UserInfo;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
-import static androidx.core.content.ContextCompat.startActivity;
 
 public class CustomQueryRecyclerAdapter extends FirestoreRecyclerAdapter<UserInfo, CustomQueryRecyclerAdapter.CustomQueryRecyclerViewHolder> {
     private static final String TAG = "CustomQueryRecyclerAdap";

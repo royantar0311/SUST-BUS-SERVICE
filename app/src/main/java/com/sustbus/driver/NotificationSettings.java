@@ -48,7 +48,7 @@ public class NotificationSettings extends AppCompatActivity {
 
         for (String s : keySet) {
             tokenList.add(s);
-            Log.d("DEB","Subscription: " +s);
+            Log.d("DEB", "Subscription: " + s);
         }
         recyclerViewAdapter2 = new RecyclerViewAdapter2(this, tokenList);
 
@@ -84,12 +84,12 @@ public class NotificationSettings extends AppCompatActivity {
     public void reCheck() {
         SharedPreferences sharedPreferences = getSharedPreferences("NOTIFICATIONS", Context.MODE_PRIVATE);
         Set<String> keySet = sharedPreferences.getStringSet("tokenSet", new HashSet<>());
-        int len=tokenList.size();
+        int len = tokenList.size();
         for (String s : keySet) {
             if (!tokenList.contains(s)) tokenList.add(s);
         }
-        int len2=tokenList.size();
-        recyclerViewAdapter2.notifyItemRangeInserted(len,len2-len+1);
+        int len2 = tokenList.size();
+        recyclerViewAdapter2.notifyItemRangeInserted(len, len2 - len + 1);
     }
 }
 

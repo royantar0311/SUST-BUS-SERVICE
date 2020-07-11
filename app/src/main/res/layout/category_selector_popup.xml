@@ -23,9 +23,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Student"
-            android:textStyle="bold"
             android:textColor="@color/white"
-            />
+            android:textStyle="bold" />
     </LinearLayout>
 
     <LinearLayout
@@ -48,9 +47,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Staff"
-            android:textStyle="bold"
             android:textColor="@color/white"
-            />
+            android:textStyle="bold" />
     </LinearLayout>
 
     <LinearLayout
@@ -72,13 +70,12 @@
             />
 
         <TextView
+            android:id="@+id/teacher_sw_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Teacher"
-            android:id="@+id/teacher_sw_tv"
-            android:textStyle="bold"
             android:textColor="@color/white"
-            />
+            android:textStyle="bold" />
     </LinearLayout>
 
 </LinearLayout>

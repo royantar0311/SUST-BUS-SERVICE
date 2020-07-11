@@ -25,12 +25,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.StorageReference;
 import com.sustbus.driver.util.CallBack;
 import com.sustbus.driver.util.RotateBitmap;
@@ -74,6 +70,12 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     private Uri dpFilePath = null, idFilePath = null;
     private ProgressDialog progressDialog;
 
+    public static byte[] getBytesFromBitmap(Bitmap bitmap, int quality) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream);
+        return stream.toByteArray();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,17 +93,14 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         changePasswordTv = findViewById(R.id.profile_change_password_tv);
         backBtn = findViewById(R.id.profile_back_btn);
         dpChooserBtn = findViewById(R.id.dp_chooser_button);
-
+        if (getIntent().getBooleanExtra("newId", false)) {
+            Log.d(TAG, "subscription: ");
+            if (FirebaseAuth.getInstance().getCurrentUser() != null)
+                FirebaseMessaging.getInstance().subscribeToTopic(FirebaseAuth.getInstance().getUid());
+        }
         userInfo = UserInfo.getInstance();
         initUi();
 
-//        db = FirebaseFirestore.getInstance()
-//                .collection("users")
-//                .document(userInfo.getuId());
-//        storageReference = FirebaseStorage.getInstance()
-//                .getReference()
-//                .child("users images")
-//                .child(userInfo.getuId());
 
         userNameTf.setSimpleTextChangeWatcher(new SimpleTextChangedWatcher() {
             @Override
@@ -196,7 +195,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void userNameValidator(String theNewText) {
-        if(theNewText == null){
+        if (theNewText == null) {
             userNameOk = false;
             return;
         }
@@ -214,7 +213,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void regiNoValidator(String theNewText) {
-        if(theNewText == null){
+        if (theNewText == null) {
             regiNoOk = false;
             return;
         }
@@ -266,6 +265,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         userInfo.setRegiNo(regiNo);
         if (!userInfo.isProfileCompleted()) {
             permissionPending();
+
             userInfo.setProfileCompleted(true);
             Toast.makeText(ProfileActivity.this, "Requesting permission", Toast.LENGTH_SHORT).show();
         } else if (userInfo.isPermitted()) {
@@ -276,7 +276,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             @Override
             public void ok() {
                 Log.d(TAG, "onSuccess: " + "profile updated");
-                if(progressDialog.isShowing())progressDialog.hide();
+                if (progressDialog.isShowing()) progressDialog.hide();
 
             }
 
@@ -381,7 +381,6 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         storageReference = null;
         System.gc();
     }
-    
 
     @Override
     public void onBackPressed() {
@@ -390,7 +389,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     public void backButtonPressed(View view) {
-        if(!userInfo.isProfileCompleted() || !userInfo.isPermitted()){
+        if (!userInfo.isProfileCompleted() || !userInfo.isPermitted()) {
             finishAndRemoveTask();
             return;
         }
@@ -477,15 +476,10 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         protected void onPostExecute(byte[] bytes) {
             super.onPostExecute(bytes);
             Log.d(TAG, "onPostExecute: done " + bytes.length);
-            
+
             Log.d(TAG, "onPostExecute: " + userInfo.toString());
 
         }
     }
-    public static byte[] getBytesFromBitmap(Bitmap bitmap, int quality) {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream);
-        return stream.toByteArray();
-    }
-  
+
 }

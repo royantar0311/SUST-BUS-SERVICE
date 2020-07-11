@@ -23,7 +23,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -36,7 +35,6 @@ import com.sustbus.driver.util.UserInfo;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
 import androidx.annotation.NonNull;
@@ -56,8 +54,9 @@ public class CustomQueryFragment extends Fragment implements CheckChangedListene
     Query.Direction qd;
     boolean permission, driver;
     TextView fromTv, toTv;
-    double lat,lng;
+    double lat, lng;
     boolean state;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -250,8 +249,8 @@ public class CustomQueryFragment extends Fragment implements CheckChangedListene
                 permittedSwitch.setChecked(state);
                 profileCompletedSwitch.setChecked(snapshot.getBoolean("profileCompleted"));
                 driverTv.setText(snapshot.getBoolean("driver") ? "Driver" : "Student");
-                lat = snapshot.getDouble("lat")==null?0.00:snapshot.getDouble("lat");
-                lng = snapshot.getDouble("lng")==null?0.00: snapshot.getDouble("lng");
+                lat = snapshot.getDouble("lat") == null ? 0.00 : snapshot.getDouble("lat");
+                lng = snapshot.getDouble("lng") == null ? 0.00 : snapshot.getDouble("lng");
                 try {
                     String img = snapshot.getString("idUrl");
                     byte[] imageAsBytes = Base64.decode(img.getBytes(), Base64.DEFAULT);
@@ -277,7 +276,8 @@ public class CustomQueryFragment extends Fragment implements CheckChangedListene
                         documentReference.update("userName", userName);
                         documentReference.update("regiNo", regiNo);
                         documentReference.update("permitted", permittedSwitch.isChecked());
-                        if(state!=permittedSwitch.isChecked())notifyUsingActivity(uId,permittedSwitch.isChecked());
+                        if (state != permittedSwitch.isChecked())
+                            notifyUsingActivity(uId, permittedSwitch.isChecked());
                         documentReference.update("profileCompleted", profileCompletedSwitch.isChecked());
                     }
                 })
@@ -285,7 +285,7 @@ public class CustomQueryFragment extends Fragment implements CheckChangedListene
                 .setNeutralButton("Get Location", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Log.d(TAG, "onClick: "+ lat +","+ lng);
+                        Log.d(TAG, "onClick: " + lat + "," + lng);
                         startGoogleMaps(lat, lng);
                     }
                 })
@@ -293,22 +293,23 @@ public class CustomQueryFragment extends Fragment implements CheckChangedListene
     }
 
 
-    void startGoogleMaps(double latitude, double longitude){
-        if(latitude==0.00 && longitude==0.00){
-            Toast.makeText(getActivity(),"No Location Found",Toast.LENGTH_SHORT).show();
+    void startGoogleMaps(double latitude, double longitude) {
+        if (latitude == 0.00 && longitude == 0.00) {
+            Toast.makeText(getActivity(), "No Location Found", Toast.LENGTH_SHORT).show();
             return;
         }
-        Uri gmmIntentUri = Uri.parse("geo:"+latitude+ ","+ longitude);
+        Uri gmmIntentUri = Uri.parse("geo:" + latitude + "," + longitude);
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
         mapIntent.setPackage("com.google.android.apps.maps");
         try {
             startActivity(mapIntent);
-        }catch (ActivityNotFoundException e){
-            Toast.makeText(getActivity(),e.getMessage(),Toast.LENGTH_SHORT).show();
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
         }
 
     }
-    private void notifyUsingActivity(String uId, boolean state){
-        ((AdminPanelActivity)this.getActivity()).notifyUser(uId,state);
+
+    private void notifyUsingActivity(String uId, boolean state) {
+        ((AdminPanelActivity) this.getActivity()).notifyUser(uId, state);
     }
 }
