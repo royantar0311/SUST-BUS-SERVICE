@@ -27,7 +27,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
-import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -38,37 +37,23 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingService;
-import com.here.sdk.core.GeoCoordinates;
 import com.sustbus.driver.adminPanel.AdminPanelActivity;
 import com.sustbus.driver.adminPanel.RouteManager;
 import com.sustbus.driver.util.CallBack;
 import com.sustbus.driver.util.DbListener;
 import com.sustbus.driver.util.MapUtil;
-import com.sustbus.driver.util.NotificationSender;
 import com.sustbus.driver.util.PermissionsRequestor;
 import com.sustbus.driver.util.ResultListener;
 import com.sustbus.driver.util.UserInfo;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import androidx.annotation.NonNull;
@@ -129,7 +114,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         userNameTv = findViewById(R.id.row_item_user_name_tv);
         driverOrStudent = findViewById(R.id.driver_or_student_tv);
         CardView profileCv = findViewById(R.id.profile_cv);
-        CardView signOut = findViewById(R.id.help_center_cv);
+        CardView signOut = findViewById(R.id.logout_cv);
         dpEv = findViewById(R.id.home_user_image_ev);
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
@@ -275,8 +260,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         } else {
 
             userUid = mAuth.getCurrentUser().getUid();
-            FirebaseMessaging.getInstance().subscribeToTopic(userUid);
             Log.d(TAG, "onAuthStateChanged: " + userUid);
+            FirebaseMessaging.getInstance().subscribeToTopic(userUid);
             SharedPreferences.Editor ed=getSharedPreferences("userInfo",MODE_PRIVATE).edit();
             ed.putString("uId",userUid);
             ed.commit();
@@ -370,7 +355,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 }
 
         }
-        else if (i == R.id.help_center_cv) {
+        else if (i == R.id.logout_cv) {
             userInfo.reset();
             SharedPreferences.Editor ed=getSharedPreferences("settings",MODE_PRIVATE).edit();
             ed.clear();

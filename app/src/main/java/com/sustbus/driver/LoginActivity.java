@@ -20,6 +20,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.sustbus.driver.util.UserInfo;
 
 import java.util.Objects;
@@ -152,12 +153,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                     .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                                 @Override
                                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                    progressDialog.hide();
+                                    progressDialog.dismiss();
                                     Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                     if (task.isSuccessful() && task.getResult() != null && task.getResult().exists()) {
                                         UserInfo.setInstance(Objects.requireNonNull(task.getResult().toObject(UserInfo.class)));
                                     }
+                                    Log.d(TAG, "onComplete: susbcription");
                                     startActivity(intent);
                                     finish();
 

@@ -13,9 +13,11 @@ import android.os.Build;
 import android.provider.AlarmClock;
 import android.util.Log;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.sustbus.driver.util.UserInfo;
 
 import org.joda.time.DateTimeUtils;
 
@@ -71,6 +73,8 @@ public class MessagingService extends FirebaseMessagingService {
         FirebaseMessaging.getInstance().subscribeToTopic("test");
         //FirebaseMessaging.getInstance().subscribeToTopic(Fire);
         //Log.d("DEBMES","New Token");
+        if(FirebaseAuth.getInstance().getCurrentUser()!=null)
+        FirebaseMessaging.getInstance().subscribeToTopic(FirebaseAuth.getInstance().getCurrentUser().getUid());
         SharedPreferences pref = getSharedPreferences("NOTIFICATIONS", MODE_PRIVATE);
         Set<String> st = pref.getStringSet("tokenSet", new HashSet<>());
         for (String tmp : st) {

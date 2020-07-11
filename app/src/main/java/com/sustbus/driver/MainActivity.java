@@ -17,6 +17,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.sustbus.driver.util.UserInfo;
 
 import androidx.annotation.NonNull;
@@ -157,9 +158,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             db.collection("users")
                                     .document(userInfo.getuId())
                                     .set(userInfo.toMap());
-
                             Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            intent.putExtra("newId",true);
                             startActivity(intent);
                             finish();
                         } else {

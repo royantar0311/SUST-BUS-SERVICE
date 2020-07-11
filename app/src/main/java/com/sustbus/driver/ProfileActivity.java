@@ -30,6 +30,7 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.sustbus.driver.util.CallBack;
@@ -91,17 +92,14 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         changePasswordTv = findViewById(R.id.profile_change_password_tv);
         backBtn = findViewById(R.id.profile_back_btn);
         dpChooserBtn = findViewById(R.id.dp_chooser_button);
-
+        if(getIntent().getBooleanExtra("newId",false)){
+            Log.d(TAG, "subscription: " );
+            if(FirebaseAuth.getInstance().getCurrentUser()!=null)
+            FirebaseMessaging.getInstance().subscribeToTopic(FirebaseAuth.getInstance().getUid());
+        }
         userInfo = UserInfo.getInstance();
         initUi();
 
-//        db = FirebaseFirestore.getInstance()
-//                .collection("users")
-//                .document(userInfo.getuId());
-//        storageReference = FirebaseStorage.getInstance()
-//                .getReference()
-//                .child("users images")
-//                .child(userInfo.getuId());
 
         userNameTf.setSimpleTextChangeWatcher(new SimpleTextChangedWatcher() {
             @Override
@@ -266,6 +264,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         userInfo.setRegiNo(regiNo);
         if (!userInfo.isProfileCompleted()) {
             permissionPending();
+
             userInfo.setProfileCompleted(true);
             Toast.makeText(ProfileActivity.this, "Requesting permission", Toast.LENGTH_SHORT).show();
         } else if (userInfo.isPermitted()) {
