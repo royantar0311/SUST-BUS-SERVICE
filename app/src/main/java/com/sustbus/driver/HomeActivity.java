@@ -177,19 +177,19 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
          * */
         userNameTv.setText(userInfo.getUserName());
 
-
-        if (userInfo.isTeacher()) {
+        if (userInfo.isAdmin()) {
+            driverOrStudent.setText("Admin");
+        } else if (userInfo.isTeacher()) {
             driverOrStudent.setText("Teacher");
         } else if (userInfo.isStaff()) {
             driverOrStudent.setText("Staff");
         } else if (userInfo.isStudent()) {
             driverOrStudent.setText("Student");
-        } else if (userInfo.isDriver()) {
-            driverOrStudent.setText("Student");
         }
 
 
         if (getIntent().getStringExtra("markerKey") != null) {
+
             Intent intent = new Intent(HomeActivity.this, MapsActivity.class);
             intent.putExtra("fromSchedule", true);
             intent.putExtra("markerToShow", getIntent().getStringExtra("markerKey"));
@@ -371,6 +371,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
+
             finish();
 
         } else if (i == R.id.track_buses_cv) {
