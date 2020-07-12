@@ -22,6 +22,7 @@ public class OnRoadFragment extends Fragment {
     private TextView textView;
     private CountDownTimer countDownTimer;
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 

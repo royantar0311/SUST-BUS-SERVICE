@@ -33,6 +33,7 @@ public class FinishedFragment extends Fragment {
         recyclerView.setAdapter(mAdapter);
         recyclerView.setNestedScrollingEnabled(false);
         textView = root.findViewById(R.id.finished_frag_tv);
+
         countDownTimer = new CountDownTimer(1000000000l, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
@@ -60,6 +61,7 @@ public class FinishedFragment extends Fragment {
         recyclerView.setAdapter(null);
         countDownTimer.cancel();
     }
+
 
 
 }

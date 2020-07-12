@@ -257,7 +257,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             startActivity(intent);
             finish();
         } else {
-
             userUid = mAuth.getCurrentUser().getUid();
             Log.d(TAG, "onAuthStateChanged: " + userUid);
             FirebaseMessaging.getInstance().subscribeToTopic(userUid);
@@ -273,6 +272,12 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                     Log.d("DEB",userInfo.toString());
                     dashboardSetup();
                     loadImage();
+                    if(userInfo.isDriver())FirebaseMessaging.getInstance().subscribeToTopic("driver");
+                    if(userInfo.isStaff())FirebaseMessaging.getInstance().subscribeToTopic("staff");
+                    if(userInfo.isStudent())FirebaseMessaging.getInstance().subscribeToTopic("student");
+                    if(userInfo.isTeacher())FirebaseMessaging.getInstance().subscribeToTopic("teacher");
+                    FirebaseMessaging.getInstance().subscribeToTopic("broadcast");
+
                     FirebaseFirestore.getInstance().collection("admin")
                             .document(firebaseAuth.getCurrentUser().getUid())
                             .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -296,6 +301,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
                 @Override
                 public void notOk() {
+                    if(userInfo.isDriver())FirebaseMessaging.getInstance().unsubscribeFromTopic("driver");
+                    if(userInfo.isStaff())FirebaseMessaging.getInstance().unsubscribeFromTopic("staff");
+                    if(userInfo.isStudent())FirebaseMessaging.getInstance().unsubscribeFromTopic("student");
+                    if(userInfo.isTeacher())FirebaseMessaging.getInstance().unsubscribeFromTopic("teacher");
+                    FirebaseMessaging.getInstance().unsubscribeFromTopic("broadcast");
                     Intent intent = new Intent(HomeActivity.this, ProfileActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);
@@ -370,6 +380,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             ed=pref.edit();
             ed.clear();
             ed.commit();
+            if(userInfo.isDriver())FirebaseMessaging.getInstance().subscribeToTopic("driver");
+            if(userInfo.isStaff())FirebaseMessaging.getInstance().subscribeToTopic("staff");
+            if(userInfo.isStudent())FirebaseMessaging.getInstance().subscribeToTopic("student");
+            if(userInfo.isTeacher())FirebaseMessaging.getInstance().subscribeToTopic("teacher");
+
 
             FirebaseAuth.getInstance().signOut();
             Intent intent = new Intent(HomeActivity.this, LoginActivity.class);

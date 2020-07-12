@@ -23,6 +23,9 @@ public class NextFragment extends Fragment {
     private CountDownTimer countDownTimer;
     private View root;
 
+
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 

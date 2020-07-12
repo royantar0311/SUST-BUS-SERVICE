@@ -17,6 +17,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.sustbus.driver.util.UserInfo;
 
 import org.joda.time.DateTimeUtils;
 
@@ -35,18 +36,59 @@ public class MessagingService extends FirebaseMessagingService {
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
         Log.d(TAG, remoteMessage.getData().toString());
-        if (remoteMessage.getNotification() != null) {
-            Log.d(TAG, "onMessageReceived: messagepaisi");
-        } else if (!remoteMessage.getData().get("token").contains(".")) {
+        if (remoteMessage.getNotification() != null || !remoteMessage.getData().get("token").contains(".")) {
             Log.d(TAG, "onMessageReceived: " + "congratulate");
-            congratulate(remoteMessage);
+            showNotification(remoteMessage);
         } else sendNotification(remoteMessage);
     }
 
-    private void congratulate(RemoteMessage remoteMessage) {
-        String title = remoteMessage.getData().get("title");
-        String body = remoteMessage.getData().get("body");
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "sust_permission_alert")
+    @Override
+    public void onNewToken(@NonNull String s) {
+        super.onNewToken(s);
+
+        UserInfo userInfo = UserInfo.getInstance();
+        FirebaseMessaging.getInstance().subscribeToTopic("broadcast");
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            FirebaseMessaging.getInstance().subscribeToTopic(FirebaseAuth.getInstance().getCurrentUser().getUid());
+            if (userInfo.isDriver()) FirebaseMessaging.getInstance().subscribeToTopic("driver");
+            if (userInfo.isStaff()) FirebaseMessaging.getInstance().subscribeToTopic("staff");
+            if (userInfo.isStudent()) FirebaseMessaging.getInstance().subscribeToTopic("student");
+            if (userInfo.isTeacher()) FirebaseMessaging.getInstance().subscribeToTopic("teacher");
+        }
+
+        FirebaseMessaging.getInstance().subscribeToTopic("broadcast");
+        SharedPreferences pref = getSharedPreferences("NOTIFICATIONS", MODE_PRIVATE);
+        Set<String> st = pref.getStringSet("tokenSet", new HashSet<>());
+        for (String tmp : st) {
+            FirebaseMessaging.getInstance().subscribeToTopic(tmp);
+        }
+    }
+
+
+    private void showNotification(RemoteMessage remoteMessage) {
+        String body,title,channelID,channelName;
+        int id;
+        /**TODO: this portion will be removed after the development of backend server
+         *  getNotification sends the notification to system tray if the app is in background
+         *  we must provide data key-value pair not notification in the payload
+         *  sending from the firebase console will trigger default notification
+         * */
+        if(remoteMessage.getNotification()!=null){
+            id = 1;
+            body = remoteMessage.getNotification().getBody();
+            title = remoteMessage.getNotification().getTitle();
+            channelID = "broadcast";
+            channelName = "Broadcast Channel";
+            Log.d(TAG, "showNotification: " + "here");
+        }
+        else {
+            id = 2;
+            title = remoteMessage.getData().get("title");
+            body = remoteMessage.getData().get("body");
+            channelID = "SUST_Bus_target";
+            channelName = "Permission Alert";
+        }
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this,channelID)
                 .setContentTitle(title)
                 .setContentText(body)
                 .setSmallIcon(R.drawable.ic_directions_bus_black_24dp)
@@ -57,34 +99,19 @@ public class MessagingService extends FirebaseMessagingService {
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel notificationChannel =
-                    new NotificationChannel("sust_permission_alert", "name",
+                    new NotificationChannel(channelID, channelName,
                             NotificationManager.IMPORTANCE_DEFAULT);
             notificationManager.createNotificationChannel(notificationChannel);
         }
-        notificationManager.notify(1, builder.build());
+        notificationManager.notify(id, builder.build());
     }
 
-    @Override
-    public void onNewToken(@NonNull String s) {
-        super.onNewToken(s);
-        FirebaseMessaging.getInstance().subscribeToTopic("test");
-        //FirebaseMessaging.getInstance().subscribeToTopic(Fire);
-        //Log.d("DEBMES","New Token");
-        if (FirebaseAuth.getInstance().getCurrentUser() != null)
-            FirebaseMessaging.getInstance().subscribeToTopic(FirebaseAuth.getInstance().getCurrentUser().getUid());
-        SharedPreferences pref = getSharedPreferences("NOTIFICATIONS", MODE_PRIVATE);
-        Set<String> st = pref.getStringSet("tokenSet", new HashSet<>());
-        for (String tmp : st) {
-            FirebaseMessaging.getInstance().subscribeToTopic(tmp);
-        }
-    }
 
     private void sendNotification(RemoteMessage message) {
 
         String token = message.getData().get("token");
         SharedPreferences pref = getSharedPreferences("NOTIFICATIONS", MODE_PRIVATE);
         Boolean giveAlarm = pref.getBoolean(token, false);
-
         long currentTime = DateTimeUtils.currentTimeMillis();
         long lastAlarmTime = pref.getLong("lastAlarmTime", currentTime - 10 * 60000);
         if (giveAlarm && currentTime - lastAlarmTime >= 5 * 60000) {
@@ -100,7 +127,6 @@ public class MessagingService extends FirebaseMessagingService {
                 hour++;
             }
             alarm.putExtra(AlarmClock.EXTRA_HOUR, hour);
-
             alarm.putExtra(AlarmClock.EXTRA_MINUTES, min);
             alarm.putExtra(AlarmClock.EXTRA_SKIP_UI, true);
             alarm.putExtra(AlarmClock.EXTRA_MESSAGE, (String) message.getData().get("title") + ", Hurry up!");
@@ -119,7 +145,7 @@ public class MessagingService extends FirebaseMessagingService {
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                 PendingIntent.FLAG_ONE_SHOT);
 
-        String channelId = "sust";
+        String channelId = "Bus Alert!";
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, channelId)
