@@ -56,8 +56,10 @@ public class NotificationSender {
                 data.put("body", "you have been unauthorized to use SUST Bus");
             }
             data.put("token", "permission");
+
             notification.put("to", "/topics/" + topic);
             notification.put("data", data);
+            notification.put("priority", "high");
             Log.d(TAG, "notifyUser: " + notification);
         } catch (Exception ignored) {
         }
